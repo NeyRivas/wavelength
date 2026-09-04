@@ -1,0 +1,197 @@
+/* Minimal, functional baseline — not a design system. Phase 6 needs this
+   for the required "Finding your wavelength…" animation and for the result
+   screen's readability/responsiveness; earlier phases' markup is untouched
+   and simply inherits these resets. */
+
+:root {
+  --color-text: #1a1a1a;
+  --color-muted: #5c6773;
+  --color-bg: #ffffff;
+  --color-surface: #f6f7f9;
+  --color-border: #e1e4e8;
+  --color-accent: #4361ee;
+
+  /* Alignment levels — deliberately no red anywhere: differences are never
+     framed as failures, so "Low Alignment" gets a neutral slate, not a
+     warning color. */
+  --align-high: #2f9e44;
+  --align-mixed: #b8860b;
+  --align-low: #5c6773;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family:
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+  color: var(--color-text);
+  background: var(--color-bg);
+  line-height: 1.5;
+}
+
+main {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 4rem;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.25;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+input,
+select {
+  font: inherit;
+}
+
+/* ── result screen ──────────────────────────────────────────────────── */
+
+.global-summary {
+  text-align: center;
+  padding: 1.5rem 0 2rem;
+}
+
+.global-summary__score {
+  font-size: 3.5rem;
+  font-weight: 700;
+  margin: 0.5rem 0;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.badge--high {
+  background: var(--align-high);
+}
+
+.badge--mixed {
+  background: var(--align-mixed);
+}
+
+.badge--low {
+  background: var(--align-low);
+}
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 0.75rem;
+  margin: 1rem 0 2rem;
+}
+
+.category-card {
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  background: var(--color-surface);
+}
+
+.category-card__score {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.question-compare {
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  padding: 0.875rem 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.question-compare__answers {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+@media (max-width: 28rem) {
+  .question-compare__answers {
+    grid-template-columns: 1fr;
+  }
+}
+
+.question-compare__who {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--color-muted);
+  margin: 0 0 0.125rem;
+}
+
+.result-section {
+  margin: 2rem 0;
+}
+
+/* ── "Finding your wavelength…" transition ─────────────────────────── */
+
+.wavelength-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  min-height: 60vh;
+  text-align: center;
+}
+
+.wavelength-pulse {
+  width: 5rem;
+  height: 5rem;
+}
+
+.wavelength-pulse circle {
+  fill: none;
+  stroke: var(--color-accent);
+  stroke-width: 2;
+  transform-origin: center;
+  animation: wavelength-ping 1.8s ease-out infinite;
+}
+
+.wavelength-pulse circle:nth-child(2) {
+  animation-delay: 0.4s;
+}
+
+.wavelength-pulse circle:nth-child(3) {
+  animation-delay: 0.8s;
+}
+
+@keyframes wavelength-ping {
+  0% {
+    transform: scale(0.3);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wavelength-pulse circle {
+    animation: none;
+    opacity: 0.6;
+  }
+}

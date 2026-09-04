@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import { saveAnswerB } from "@/app/actions/answers";
 import { AnswerControl } from "@/components/questionnaire/answer-control";
+import { SubmitFinalForm } from "@/components/wavelength/submit-final-form";
 import { requireUserId } from "@/lib/supabase/identity";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -49,6 +50,7 @@ export default async function AnswerPage({ params }: { params: Promise<{ token: 
   const answerByQuestion = new Map((answers ?? []).map((a) => [a.question_id, a.value]));
   const questionList = questions ?? [];
   const answeredCount = questionList.filter((q) => answerByQuestion.has(q.id)).length;
+  const allAnswered = questionList.length > 0 && answeredCount === questionList.length;
 
   return (
     <main>
@@ -70,6 +72,8 @@ export default async function AnswerPage({ params }: { params: Promise<{ token: 
           </li>
         ))}
       </ol>
+
+      {allAnswered && <SubmitFinalForm wavelengthId={wavelength.id} shareToken={token} />}
     </main>
   );
 }

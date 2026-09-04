@@ -33,6 +33,9 @@ export default async function WavelengthPage({ params }: { params: Promise<{ tok
       // Not shared yet — finish building at /create first.
       redirect("/create");
     }
+    if (wavelength.state === "COMPLETED") {
+      redirect(`/w/${token}/result`);
+    }
     const link = await absoluteUrl(`/w/${token}`);
     return (
       <main>
@@ -46,12 +49,9 @@ export default async function WavelengthPage({ params }: { params: Promise<{ tok
     if (wavelength.state === "IN_PROGRESS") {
       redirect(`/w/${token}/answer`);
     }
-    return (
-      <main>
-        <h1>Wavelength complete</h1>
-        <p>The results screen is coming soon.</p>
-      </main>
-    );
+    if (wavelength.state === "COMPLETED") {
+      redirect(`/w/${token}/result`);
+    }
   }
 
   // Not (yet) a participant: fall back to the safe pre-claim preview.

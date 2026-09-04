@@ -12,7 +12,9 @@ export function ShareView({
   bAlias,
 }: {
   link: string;
-  state: "WAITING" | "IN_PROGRESS" | "COMPLETED";
+  // COMPLETED is handled one level up (app/w/[token]/page.tsx redirects to
+  // /w/[token]/result before this component ever renders for that state).
+  state: "WAITING" | "IN_PROGRESS";
   bAlias: string | null;
 }) {
   return (
@@ -31,7 +33,6 @@ export function ShareView({
           finish.
         </p>
       )}
-      {state === "COMPLETED" && <p>Complete! The results screen is coming soon.</p>}
     </section>
   );
 }

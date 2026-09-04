@@ -48,3 +48,39 @@ export async function claimParticipantB(
 
   redirect(`/w/${token}/answer`);
 }
+
+/**
+ * B's final submission: IN_PROGRESS -> COMPLETED via the `submit_final_b`
+ * RPC — the last of the three approved state-transition RPCs
+ * (ARCHITECTURE.md §5). It re-validates everything itself regardless of
+ * what this action sends: that every question has a B answer, that the
+ * caller is this wavelength's B, and that it's still IN_PROGRESS (so a
+ * second submission attempt — accidental double-click, browser back
+ * button, replay — is rejected here rather than silently re-completing
+ * something already done). On success, both participants' answers are
+ * already locked by RLS (no INSERT/UPDATE policy on `answers` matches
+ * outside DRAFT/IN_PROGRESS) — there is nothing else for this action to do
+ * beyond redirecting to the result.
+ */
+export async function submitFinalB(
+  _prevState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const wavelengthId = String(formData.get("wavelengthId") ?? "");
+  const shareToken = String(formData.get("shareToken") ?? "");
+  if (!wavelengthId || !shareToken) return { error: GENERIC_ERROR };
+
+  await requireUserId();
+  const supabase = await createSupabaseServerClient();
+
+  const { error } = await supabase.rpc("submit_final_b", { p_id: wavelengthId });
+
+  if (error) {
+    // Same reasoning as above: the RPC's own message ("has not answered
+    // all questions (x/y)", "not found, not owned by caller, or not in
+    // IN_PROGRESS state") is plain-English and safe to show directly.
+    return { error: error.message };
+  }
+
+  redirect(`/w/${shareToken}/result`);
+}

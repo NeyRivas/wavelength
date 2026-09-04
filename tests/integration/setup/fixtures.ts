@@ -139,6 +139,10 @@ export async function claimAsB(bId: string, shareToken: string, alias = "Bailey"
   });
 }
 
+export async function submitFinalB(bId: string, wavelengthId: string): Promise<void> {
+  await asRequest(bId, (client) => client.query("select submit_final_b($1)", [wavelengthId]));
+}
+
 /** Builds a full DRAFT -> WAITING -> IN_PROGRESS -> COMPLETED wavelength,
  * ready for read-privacy assertions. Returns every id a test typically needs. */
 export async function createCompletedWavelength(): Promise<{
@@ -156,7 +160,7 @@ export async function createCompletedWavelength(): Promise<{
   const bId = await createTestUser();
   await claimAsB(bId, shareToken);
   await answerAll(bId, wavelengthId, questions, "B");
-  await asRequest(bId, (client) => client.query("select submit_final_b($1)", [wavelengthId]));
+  await submitFinalB(bId, wavelengthId);
 
   return { aId, bId, wavelengthId, shareToken, questions };
 }

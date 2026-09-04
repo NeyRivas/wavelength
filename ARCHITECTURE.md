@@ -31,13 +31,13 @@ wavelength/
 │   ├── w/[token]/
 │   │   ├── page.tsx                 # Entry router: A's share view, B's join screen, "already taken", or not-found
 │   │   ├── answer/page.tsx          # Participant B: answering flow (IN_PROGRESS)
-│   │   └── result/page.tsx          # Phase 6: shared result (both participants, COMPLETED only) — not built yet
+│   │   └── result/page.tsx          # Shared result (both participants, COMPLETED only)
 │   └── actions/                     # Server Actions — the only server-side entry point
 │       ├── shared.ts                # ActionState convention shared by every mutating action
 │       ├── draft.ts                 # createDraft, finalizeDraft (→ finalize_draft RPC)
 │       ├── questions.ts             # add/update/delete/moveQuestion/changeType
 │       ├── answers.ts               # saveAnswerA, saveAnswerB (one shared internal helper)
-│       └── join.ts                  # claimParticipantB (→ claim_participant_b RPC); submitFinalB lands in Phase 6
+│       └── join.ts                  # claimParticipantB, submitFinalB (→ claim_participant_b / submit_final_b RPCs)
 ├── proxy.ts                          # Next.js "proxy" (middleware) entry point — see lib/supabase/proxy.ts
 ├── lib/
 │   ├── supabase/
@@ -53,11 +53,12 @@ wavelength/
 │   └── wavelength/
 │       ├── categories.ts            # the 6 fixed categories, 3 question types, scale labels
 │       ├── state.ts                 # TS mirror of the state enum + UI-only guards
-│       └── absolute-url.ts          # builds the share link from request headers (Phase 5)
+│       ├── absolute-url.ts          # builds the share link from request headers (Phase 5)
+│       └── result.ts                # scoring -> presentation mapping/sorting for the result screens (Phase 6)
 ├── components/
 │   ├── questionnaire/                # question editor, reorder list, type switcher, finalize form
-│   ├── wavelength/                   # share view + copy button (A), join form (B) — Phase 5
-│   ├── result/                       # global score, category list, aligned/different sections
+│   ├── wavelength/                   # share view + copy button (A), join form (B), submit-final form
+│   ├── result/                       # global summary, wave indicator, category grid, aligned/different/all-questions sections, reveal transition
 │   └── ui/
 ├── supabase/
 │   └── migrations/                   # Phase 1 schema/RLS/RPCs; extended in Phase 4 (reorder_questions, category immutability)
@@ -268,7 +269,7 @@ No separate REST/GraphQL layer. Next.js **Server Actions** are the only server-s
 3. Call a table query or one of the three RPCs.
 4. Return a typed result / `redirect()` / `revalidatePath()` as appropriate.
 
-Concrete actions (✅ = implemented as of the phase noted): `createDraft` ✅ Phase 4, `addQuestion` ✅ Phase 4, `updateQuestion` ✅ Phase 4, `deleteQuestion` ✅ Phase 4, `moveQuestion` ✅ Phase 4 (calls the `reorder_questions` RPC — §5), `changeQuestionType` ✅ Phase 4, `saveAnswerA` ✅ Phase 4, `finalizeDraft` ✅ Phase 5 (`app/actions/draft.ts` → `finalize_draft` RPC, then `redirect()`s to the share link), `getWavelengthPreview` ✅ Phase 5 (called directly from `app/w/[token]/page.tsx` — a read, so no Server Action wrapper; every other entry here is a mutation), `claimParticipantB` ✅ Phase 5 (`app/actions/join.ts` → `claim_participant_b` RPC), `saveAnswerB` ✅ Phase 5 (`app/actions/answers.ts`, shares its implementation with `saveAnswerA` via one internal helper — `participant` is hardcoded per exported wrapper, never client-supplied), `submitFinalB` → RPC (Phase 6 — deliberately not built; B can answer and revise every question this phase, but nothing yet transitions IN_PROGRESS → COMPLETED), `getResult` (Phase 6; fetches questions+answers under RLS, then runs the scoring module — only produces meaningful data once `COMPLETED`, since pre-completion RLS simply won't return the other participant's rows).
+Concrete actions (✅ = implemented as of the phase noted): `createDraft` ✅ Phase 4, `addQuestion` ✅ Phase 4, `updateQuestion` ✅ Phase 4, `deleteQuestion` ✅ Phase 4, `moveQuestion` ✅ Phase 4 (calls the `reorder_questions` RPC — §5), `changeQuestionType` ✅ Phase 4, `saveAnswerA` ✅ Phase 4, `finalizeDraft` ✅ Phase 5 (`app/actions/draft.ts` → `finalize_draft` RPC, then `redirect()`s to the share link), `getWavelengthPreview` ✅ Phase 5 (called directly from `app/w/[token]/page.tsx` — a read, so no Server Action wrapper; every other entry here is a mutation), `claimParticipantB` ✅ Phase 5 (`app/actions/join.ts` → `claim_participant_b` RPC), `saveAnswerB` ✅ Phase 5 (`app/actions/answers.ts`, shares its implementation with `saveAnswerA` via one internal helper — `participant` is hardcoded per exported wrapper, never client-supplied), `submitFinalB` ✅ Phase 6 (`app/actions/join.ts` → `submit_final_b` RPC, then `redirect()`s to the result page), `getResult` ✅ Phase 6 (not a Server Action — a read, done directly in `app/w/[token]/result/page.tsx`: fetches questions+answers under RLS, then `lib/wavelength/result.ts` runs the scoring module and the presentation-layer sorting/grouping on top — only produces meaningful data once `COMPLETED`, since pre-completion RLS simply won't return the other participant's rows).
 
 `updateDraftConfig` (changing question count/categories after questions already exist) was scoped out of Phase 4 — reconciling existing questions against a shrunk category set is real added complexity the approved spec doesn't ask for; A can still freely add/edit/delete/reorder questions and their own config was fixed correctly at creation time (categories already capped by the chosen count).
 
@@ -299,6 +300,8 @@ computeWavelengthResult(questions, answers): WavelengthResult // the above, comp
 `computeCategoryScores`/`computeWavelengthResult` return categories and questions in original order, **not** sorted by score — sorting "highest alignment first", picking the top-3 "Where You're Aligned" questions, and grouping "Different Wavelengths" are Result-screen presentation logic (a later phase), not scoring; this module only guarantees the numbers (and each question's original `orderIndex`) that presentation logic will need.
 
 Run server-side inside `getResult`, after fetching questions + both participants' answers (which RLS only allows once `COMPLETED`). Nothing is persisted — recomputed on every view, which is cheap (≤12 questions) and guarantees the result can never drift from the underlying answers.
+
+**Phase 6 addition:** `lib/wavelength/result.ts` sits between this module and the result screen. It maps DB rows into `computeWavelengthResult`'s input shape, joins the returned scores back to human-readable question/answer text (`formatAnswer` — the option text for choice/situation, the fixed 1-5 label for scale, never a raw index/number), and does the presentation-only sorting/selection the result screens need: categories highest-alignment-first, the top-3 "Where You're Aligned" (regardless of category), every differing question for "Different Wavelengths" (lowest-alignment-first), and per-category question grouping for "All Questions". None of that sorting/selection is a scoring rule — every score itself still comes from `lib/scoring/score.ts` unchanged — and `Array.sort`'s guaranteed stability is what keeps ties in original question order without extra bookkeeping. A category tie is broken by its first question's `orderIndex`, since the spec ties category order to question order rather than defining a separate one.
 
 ---
 
@@ -346,8 +349,8 @@ Must be in place before Phase 1 can start:
 2. ✅ **Participant identity plumbing** — anonymous sign-in bootstrap (`proxy.ts`), SSR client helpers, `getUserId`/`requireUserId`.
 3. ✅ **Scoring engine** — pure TS module + exhaustive unit tests (no DB dependency).
 4. ✅ **Participant A flow (DRAFT)** — category/count selection, question CRUD/reorder/type-change, duplicate prevention, answering, and changing answers before finalization. Finalization itself (`finalizeDraft`, the alias step, "Create my Wavelength") is deliberately **not** built yet — that's Phase 5/6's entry point, once the share link and Participant B flow exist to receive it.
-5. ✅ **Shareable link + Participant B flow** — `finalizeDraft` (DRAFT → WAITING, alias entry, "Create my Wavelength"), the `/w/[token]` entry router (participant-aware: A's share view, B's join screen, or "already taken"), `claimParticipantB`, B's answering flow with incremental saving and resume-on-same-browser. **Not** built: `submitFinalB` ("See our results") — that's Phase 6's entry point, once there's a result screen for it to lead to.
-6. **Completion + Result** — `submitFinalB`, "Finding your wavelength…" loading state, full result view (Global → Categories → Aligned → Different → Questions).
+5. ✅ **Shareable link + Participant B flow** — `finalizeDraft` (DRAFT → WAITING, alias entry, "Create my Wavelength"), the `/w/[token]` entry router (participant-aware: A's share view, B's join screen, or "already taken"), `claimParticipantB`, B's answering flow with incremental saving and resume-on-same-browser.
+6. ✅ **Completion + Result** — `submitFinalB` ("See our results", only enabled once every question is answered), a brief "Finding your wavelength…" transition (`components/result/result-reveal.tsx` — purely presentational, delays revealing an already-computed result; no recomputation, no AI), and the full result view at `/w/[token]/result` in the approved order: Global → Categories → Where You're Aligned → Different Wavelengths → Questions.
 7. **AI-assisted suggestions** (optional layer, isolated so it can slip without blocking MVP) — question/option suggestions A can accept/edit/ignore.
 8. **Polish & hardening** — accessibility, responsive design, full E2E suite, RLS/security audit pass.
 9. **Deployment** — production Supabase project, production env config, smoke tests.
