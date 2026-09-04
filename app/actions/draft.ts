@@ -1,10 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 import { requireUserId } from "@/lib/supabase/identity";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { parseCreateDraftInput } from "@/lib/validation/schemas";
+import { parseAlias, parseCreateDraftInput } from "@/lib/validation/schemas";
 
 import { GENERIC_ERROR, type ActionState } from "./shared";
 
@@ -41,4 +42,45 @@ export async function createDraft(
 
   revalidatePath("/create");
   return { error: null };
+}
+
+/**
+ * Finalizes A's draft: DRAFT -> WAITING via the `finalize_draft` RPC — one
+ * of the three approved state-transition RPCs (ARCHITECTURE.md §5), which
+ * re-validates everything itself regardless of what this action sends: the
+ * alias, that every question has an A answer, and that the question count
+ * matches. After this, the questionnaire and A's answers are locked
+ * (enforced by RLS — no UPDATE/INSERT policy on `questions`/`answers`
+ * matches outside DRAFT state); there is no "undo" action.
+ *
+ * The RPC's own exception messages (alias validation, "not answered all
+ * questions", etc.) are surfaced directly — they're plain-English messages
+ * we authored in Phase 1 specifically to be shown to a user, not raw
+ * internal errors.
+ */
+export async function finalizeDraft(
+  _prevState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const wavelengthId = String(formData.get("wavelengthId") ?? "");
+  const shareToken = String(formData.get("shareToken") ?? "");
+  if (!wavelengthId || !shareToken) return { error: GENERIC_ERROR };
+
+  const parsedAlias = parseAlias(formData);
+  if (!parsedAlias.success) return { error: parsedAlias.error };
+
+  await requireUserId();
+  const supabase = await createSupabaseServerClient();
+
+  const { error } = await supabase.rpc("finalize_draft", {
+    p_id: wavelengthId,
+    p_alias: parsedAlias.data,
+  });
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath("/create");
+  redirect(`/w/${shareToken}`);
 }

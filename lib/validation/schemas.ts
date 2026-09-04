@@ -229,4 +229,27 @@ export function parseAnswerValue(
   return { success: true, data: result.data };
 }
 
+/**
+ * Mirrors the DB's `is_valid_alias` exactly (supabase/migrations): 1-60
+ * characters after trimming, no ASCII control characters. Deliberately NOT
+ * ASCII-only — full Unicode (accents, non-Latin scripts, emoji, etc.) is
+ * allowed, per the approved security clarification (Phase 1). The RPCs
+ * (`finalize_draft`, `claim_participant_b`) re-validate this themselves
+ * regardless of what this schema lets through.
+ */
+export const aliasSchema = z
+  .string()
+  .trim()
+  .min(1, "enter a name")
+  .max(60, "name must be at most 60 characters")
+  .refine((s) => !/[\x00-\x1f\x7f]/.test(s), { message: "name contains invalid characters" });
+
+export function parseAlias(formData: FormData, field = "alias"): ParseResult<string> {
+  const result = aliasSchema.safeParse(formData.get(field));
+  if (!result.success) {
+    return { success: false, error: firstIssueMessage(result.error) };
+  }
+  return { success: true, data: result.data };
+}
+
 export type { Category };

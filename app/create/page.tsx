@@ -3,10 +3,9 @@ import { QuestionnaireBuilder } from "@/components/questionnaire/questionnaire-b
 import { requireUserId } from "@/lib/supabase/identity";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-// Participant A's DRAFT flow (ARCHITECTURE.md §12 Phase 4). Not implemented
-// here: finalization ("Create my Wavelength"), the share link, Participant
-// B's flow, or the result screen — see ARCHITECTURE.md §12 for the phase
-// plan.
+// Participant A's DRAFT flow (ARCHITECTURE.md §12 Phase 4), now including
+// finalization ("Create my Wavelength" — Phase 5). Not implemented here:
+// Participant B's flow (app/w/[token]/) or the result screen (Phase 6).
 export default async function CreatePage() {
   const userId = await requireUserId();
   const supabase = await createSupabaseServerClient();
@@ -17,7 +16,7 @@ export default async function CreatePage() {
   // questionnaire, and this keeps the flow simple without a draft-picker UI.
   const { data: draft } = await supabase
     .from("wavelengths")
-    .select("id, question_count, categories")
+    .select("id, share_token, question_count, categories")
     .eq("participant_a_id", userId)
     .eq("state", "DRAFT")
     .order("created_at", { ascending: false })

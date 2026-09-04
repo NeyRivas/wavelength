@@ -1,12 +1,14 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  aliasSchema,
   answerValueSchema,
   categoriesSchema,
   createDraftInputSchema,
   isDuplicateQuestionText,
   normalizeText,
   optionsSchema,
+  parseAlias,
   parseAnswerValue,
   parseCreateDraftInput,
   parseQuestionInput,
@@ -293,6 +295,60 @@ describe("FormData parsing helpers", () => {
     const fd = new FormData();
     fd.set("value", "not-a-number");
     const result = parseAnswerValue(fd, { type: "scale" });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("aliasSchema (mirrors the DB's is_valid_alias exactly — Phase 1 security clarification)", () => {
+  it("accepts a normal name", () => {
+    expect(aliasSchema.safeParse("Alex").success).toBe(true);
+  });
+
+  it("rejects an empty or all-whitespace alias", () => {
+    expect(aliasSchema.safeParse("").success).toBe(false);
+    expect(aliasSchema.safeParse("   ").success).toBe(false);
+  });
+
+  it("trims before validating and storing", () => {
+    const result = aliasSchema.safeParse("  Alex  ");
+    expect(result).toEqual({ success: true, data: "Alex" });
+  });
+
+  it("accepts the 60-character boundary and rejects 61", () => {
+    expect(aliasSchema.safeParse("a".repeat(60)).success).toBe(true);
+    expect(aliasSchema.safeParse("a".repeat(61)).success).toBe(false);
+  });
+
+  it("is not ASCII-only — full Unicode is allowed (accents, non-Latin scripts, emoji)", () => {
+    expect(aliasSchema.safeParse("Renée").success).toBe(true);
+    expect(aliasSchema.safeParse("안녕").success).toBe(true);
+    expect(aliasSchema.safeParse("こんにちは").success).toBe(true);
+    expect(aliasSchema.safeParse("🙂 Alex 🙂").success).toBe(true);
+  });
+
+  it("rejects ASCII control characters embedded in the name (not just leading/trailing whitespace, which .trim() already strips)", () => {
+    expect(aliasSchema.safeParse("Alex" + String.fromCharCode(0) + "Bailey").success).toBe(false); // null byte
+    expect(aliasSchema.safeParse("Alex\nBailey").success).toBe(false); // newline
+    expect(aliasSchema.safeParse("Alex" + String.fromCharCode(127) + "Bailey").success).toBe(false); // DEL
+  });
+});
+
+describe("parseAlias", () => {
+  it("reads and validates the 'alias' field by default", () => {
+    const fd = new FormData();
+    fd.set("alias", "Bailey");
+    expect(parseAlias(fd)).toEqual({ success: true, data: "Bailey" });
+  });
+
+  it("supports reading a differently-named field", () => {
+    const fd = new FormData();
+    fd.set("displayName", "Bailey");
+    expect(parseAlias(fd, "displayName")).toEqual({ success: true, data: "Bailey" });
+  });
+
+  it("returns a friendly error for a missing alias", () => {
+    const fd = new FormData();
+    const result = parseAlias(fd);
     expect(result.success).toBe(false);
   });
 });

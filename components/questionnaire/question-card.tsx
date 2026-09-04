@@ -1,3 +1,4 @@
+import { saveAnswerA } from "@/app/actions/answers";
 import { deleteQuestion, moveQuestion } from "@/app/actions/questions";
 import { CATEGORY_LABELS } from "@/lib/wavelength/categories";
 
@@ -56,7 +57,12 @@ export function QuestionCard({
 
       <TypeChangeControl questionId={question.id} currentType={question.type} />
       <QuestionEditForm wavelengthId={wavelengthId} question={question} />
-      <AnswerControl wavelengthId={wavelengthId} question={question} currentValue={answerValue} />
+      <AnswerControl
+        action={saveAnswerA}
+        wavelengthId={wavelengthId}
+        question={question}
+        currentValue={answerValue}
+      />
     </article>
   );
 }

@@ -1,4 +1,5 @@
 import { CategoryBalance } from "./category-balance";
+import { FinalizeForm } from "./finalize-form";
 import { QuestionAddForm } from "./question-add-form";
 import { QuestionCard } from "./question-card";
 import type { QuestionRow } from "./types";
@@ -9,13 +10,14 @@ export function QuestionnaireBuilder({
   questions,
   answers,
 }: {
-  wavelength: { id: string; question_count: number; categories: Category[] };
+  wavelength: { id: string; share_token: string; question_count: number; categories: Category[] };
   questions: QuestionRow[];
   answers: { question_id: string; value: number }[];
 }) {
   const answerByQuestion = new Map(answers.map((a) => [a.question_id, a.value]));
   const answeredCount = questions.filter((q) => answerByQuestion.has(q.id)).length;
   const reachedPlannedCount = questions.length >= wavelength.question_count;
+  const readyToFinalize = reachedPlannedCount && answeredCount === questions.length;
 
   return (
     <div>
@@ -47,6 +49,12 @@ export function QuestionnaireBuilder({
         </p>
       ) : (
         <QuestionAddForm wavelengthId={wavelength.id} categories={wavelength.categories} />
+      )}
+
+      {readyToFinalize ? (
+        <FinalizeForm wavelengthId={wavelength.id} shareToken={wavelength.share_token} />
+      ) : (
+        reachedPlannedCount && <p>Answer every question to create your Wavelength.</p>
       )}
     </div>
   );

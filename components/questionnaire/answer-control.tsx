@@ -2,26 +2,35 @@
 
 import { useActionState } from "react";
 
-import { saveAnswerA } from "@/app/actions/answers";
+import type { ActionState } from "@/app/actions/shared";
 import { initialActionState } from "@/app/actions/shared";
 import { SCALE_LABELS } from "@/lib/wavelength/categories";
 
 import type { QuestionRow } from "./types";
 
-/** Choice/situation: radio per option, value = its 0-based index (matches
- * the DB's stored answer shape). Scale: radio per fixed 1-5 label. A can
- * change a saved answer any time before finalization (approved rule) — this
- * is a plain upsert either way. */
+type SaveAnswerAction = (prevState: ActionState, formData: FormData) => Promise<ActionState>;
+
+/**
+ * Choice/situation: radio per option, value = its 0-based index (matches
+ * the DB's stored answer shape). Scale: radio per fixed 1-5 label. Both A
+ * (before finalization) and B (before final submission) can change a saved
+ * answer at any time — this is a plain upsert either way, so the same
+ * component works for both; `action` picks which participant it writes as
+ * (`saveAnswerA` or `saveAnswerB` — see app/actions/answers.ts, where
+ * `participant` is hardcoded server-side per action, never client-supplied).
+ */
 export function AnswerControl({
+  action,
   wavelengthId,
   question,
   currentValue,
 }: {
+  action: SaveAnswerAction;
   wavelengthId: string;
   question: QuestionRow;
   currentValue: number | undefined;
 }) {
-  const [state, formAction, pending] = useActionState(saveAnswerA, initialActionState);
+  const [state, formAction, pending] = useActionState(action, initialActionState);
 
   return (
     <form action={formAction}>
