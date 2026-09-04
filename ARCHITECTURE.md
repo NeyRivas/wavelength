@@ -269,17 +269,27 @@ Concrete actions: `createDraft`, `updateDraftConfig` (question count/categories)
 
 ## 8. Scoring implementation approach
 
-Pure, deterministic, **no AI**, implemented as a plain TypeScript module (`lib/scoring/score.ts`) so it's trivially unit-testable and has no DB/network dependency:
+Pure, deterministic, **no AI**, implemented in `lib/scoring/score.ts` (Phase 3) — no DB/network/React dependency, so every rule is directly unit-testable:
 
-```
-scoreQuestion(question, answerA, answerB): number  // 0–100
-  choice/situation → answerA.value === answerB.value ? 100 : 0
-  scale            → { 0:100, 1:75, 2:50, 3:25, 4:0 }[ |answerA.value - answerB.value| ]
+```ts
+scoreQuestion(question, valueA, valueB): number // 0-100
+  choice/situation → valueA === valueB ? 100 : 0
+  scale            → [100, 75, 50, 25, 0][ |valueA - valueB| ]
 
-categoryScore(category, questions, answers) → average of scoreQuestion() for that category's questions
-globalScore(questions, answers)             → average of scoreQuestion() across all questions
-alignmentLevel(score) → score>=75 High | score>=50 Mixed | else Low   // applied to the rounded integer, so the label always matches what's displayed
+computeQuestionScores(questions, answers): QuestionScore[]
+  // requires exactly one A + one B answer per question (throws otherwise:
+  // MissingAnswerError / DuplicateAnswerError / UnknownQuestionError /
+  // DuplicateQuestionError / InvalidAnswerValueError); output is in
+  // original question order (orderIndex), preserved for later tie-breaking
+
+computeGlobalScore(questionScores): number       // round-half-up average, equal weight
+computeCategoryScores(questionScores): CategoryScore[] // round-half-up average per category, equal weight
+alignmentLevel(score): AlignmentLevel            // >=75 High | >=50 Mixed | else Low, applied to the *rounded* integer
+
+computeWavelengthResult(questions, answers): WavelengthResult // the above, composed
 ```
+
+`computeCategoryScores`/`computeWavelengthResult` return categories and questions in original order, **not** sorted by score — sorting "highest alignment first", picking the top-3 "Where You're Aligned" questions, and grouping "Different Wavelengths" are Result-screen presentation logic (a later phase), not scoring; this module only guarantees the numbers (and each question's original `orderIndex`) that presentation logic will need.
 
 Run server-side inside `getResult`, after fetching questions + both participants' answers (which RLS only allows once `COMPLETED`). Nothing is persisted — recomputed on every view, which is cheap (≤12 questions) and guarantees the result can never drift from the underlying answers.
 
