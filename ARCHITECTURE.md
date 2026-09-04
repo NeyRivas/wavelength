@@ -69,6 +69,7 @@ wavelength/
 ## 3. Database schema (Supabase/PostgreSQL)
 
 Design choices:
+
 - Source of truth is **Questions + Answers + Scoring Rules**, exactly as specified. No `results`/`scores` table — results are computed on read by a pure TypeScript function once `state = COMPLETED` (deterministic, cheap, trivially testable; nothing to keep in sync or invalidate).
 - `wavelengths.question_count` and `.categories` are **configuration**, not derived data — A chooses them before any question exists, so they can't be derived from `questions` at that point. They are not duplicated anywhere else.
 - Category, question type, participant role, and state are fixed, closed sets → Postgres `enum` types (matches "exactly 6 categories / exactly 3 types / exactly 4 states" from the spec, and makes invalid values impossible at the DB level).
@@ -166,15 +167,16 @@ A `BEFORE INSERT/UPDATE` trigger on `answers` validates that `value` is shape/ra
 
 **Supabase Anonymous Auth**, not a client-generated ID in `localStorage`.
 
-Why: the spec requires "an anonymous browser participant credential" whose authorization is "enforced by the backend/database" and explicitly forbids "frontend-only hiding." A plain client-generated UUID stored in a cookie is just a claim — Postgres has no way to verify it, so it *cannot* back a real RLS policy (anyone could forge it via devtools or a raw API call). A Supabase anonymous session (`supabase.auth.signInAnonymously()`) is a cryptographically signed JWT issued by Supabase's auth server; its `sub` claim becomes `auth.uid()` inside every RLS policy and can't be forged by the client. It carries no email/password/identity — it satisfies "no accounts, no passwords, no email" while still being a real, DB-verifiable credential.
+Why: the spec requires "an anonymous browser participant credential" whose authorization is "enforced by the backend/database" and explicitly forbids "frontend-only hiding." A plain client-generated UUID stored in a cookie is just a claim — Postgres has no way to verify it, so it _cannot_ back a real RLS policy (anyone could forge it via devtools or a raw API call). A Supabase anonymous session (`supabase.auth.signInAnonymously()`) is a cryptographically signed JWT issued by Supabase's auth server; its `sub` claim becomes `auth.uid()` inside every RLS policy and can't be forged by the client. It carries no email/password/identity — it satisfies "no accounts, no passwords, no email" while still being a real, DB-verifiable credential.
 
 Flow:
+
 1. On first visit to any page, the browser silently calls `signInAnonymously()` if it has no session. The session (access + refresh token) persists via `@supabase/ssr` cookies, so both Server Components and the browser client see the same identity, and it survives reloads/tab-close — but is lost if the user clears site data or switches browsers/devices, exactly as the spec accepts ("no automatic recovery in MVP").
 2. **Participant A** = whichever `auth.uid()` created the `wavelengths` row (`participant_a_id`, set at draft creation, immutable after).
 3. **Participant B** = whichever `auth.uid()` first successfully **claims** the row via an atomic RPC (`participant_b_id` starts `null`; claim is a conditional `UPDATE ... WHERE participant_b_id IS NULL`, so only the first claimant wins — a second visitor with the same link gets a clear "this Wavelength already has two participants" response, never a takeover).
-4. The `share_token` in the URL is the *invitation*, not the *authorization*. It lets anyone look up a minimal, non-sensitive preview (state, A's alias, category list, whether B is already taken) so the join screen can render — but it grants no read access to questions or answers. Actual read/write access to questions/answers is decided exclusively by whether the caller's `auth.uid()` matches `participant_a_id`/`participant_b_id` on the parent `wavelengths` row, checked by RLS on every query.
+4. The `share_token` in the URL is the _invitation_, not the _authorization_. It lets anyone look up a minimal, non-sensitive preview (state, A's alias, category list, whether B is already taken) so the join screen can render — but it grants no read access to questions or answers. Actual read/write access to questions/answers is decided exclusively by whether the caller's `auth.uid()` matches `participant_a_id`/`participant_b_id` on the parent `wavelengths` row, checked by RLS on every query.
 
-This is also why "third parties who merely obtain the link cannot read private responses" holds: knowing the token lets you see the (harmless) preview and, if the B slot is still open, *become* B — which is the product's own design (anyone with the link can join as B, same as any shared-link product) — but it never grants read access to A's or B's actual answers.
+This is also why "third parties who merely obtain the link cannot read private responses" holds: knowing the token lets you see the (harmless) preview and, if the B slot is still open, _become_ B — which is the product's own design (anyone with the link can join as B, same as any shared-link product) — but it never grants read access to A's or B's actual answers.
 
 ---
 
@@ -183,25 +185,29 @@ This is also why "third parties who merely obtain the link cannot read private r
 RLS is enabled on all three tables. Reads are governed by RLS `SELECT` policies; every **write** with product-rule side effects (claiming B, locking A's draft, completing B's submission) goes through a small, purpose-built RPC function rather than a broad table `UPDATE` policy — this keeps "who can change what, and when" auditable in one place per action instead of spread across generic policies.
 
 **`wavelengths`**
+
 - `SELECT`: `auth.uid() = participant_a_id OR auth.uid() = participant_b_id` (participants only — no open/enumerable `SELECT`, so the table can't be scanned to discover other people's wavelengths).
 - Pre-claim preview (state, categories, A's alias, "is B taken") is served by `get_wavelength_preview(token)`, a narrow `SECURITY DEFINER` function doing an exact `share_token` lookup and returning only that safe projection — never the full row, never `participant_a_id`/`participant_b_id`, never answers.
 - No general client `UPDATE`; all transitions go through the three RPCs below.
 
 **`questions`**
+
 - `SELECT`: participant (A or B) of the parent wavelength, any state — B needs to read question text/options to answer.
 - `INSERT/UPDATE/DELETE`: only `auth.uid() = participant_a_id` **and** parent `state = 'DRAFT'`. Once WAITING, every questions-table write is rejected by RLS regardless of what the client sends.
 
 **`answers`**
+
 - `SELECT`: a participant can always read **their own** answers. They can read the **other** participant's answers only once the parent `state = 'COMPLETED'`. This is the core privacy rule from the spec (B can't see A's answers before finishing; A can't see B's progress or answers), enforced at the query level — a manipulated client simply gets zero rows back, there is nothing to hide client-side.
 - `INSERT/UPDATE` (upsert, supports B "going back and changing answers"): A only when `participant='A' AND auth.uid()=participant_a_id AND wavelength.state='DRAFT'`; B only when `participant='B' AND auth.uid()=participant_b_id AND wavelength.state='IN_PROGRESS'`. Once `COMPLETED`, both are rejected — "responses are locked" after completion.
 - `DELETE`: no policy → denied to all clients.
 
 **RPC functions** (the only way state transitions happen):
-| Function | Security mode | Caller | Effect |
-|---|---|---|---|
-| `finalize_draft(id, alias)` | `INVOKER` (A already owns the row per RLS) | A | Validates alias present, all questions answered by A, question count matches config → `DRAFT → WAITING` |
-| `claim_participant_b(token, alias)` | `DEFINER` (caller isn't a participant yet — this is the one deliberate, narrowly-scoped privilege escalation) | anyone with the link, first to call wins | Atomically binds `participant_b_id = auth.uid()`, sets alias → `WAITING → IN_PROGRESS` |
-| `submit_final_b(id)` | `INVOKER` (B already owns the row per RLS) | B | Validates all questions answered by B → `IN_PROGRESS → COMPLETED` |
+
+| Function                            | Security mode                                                                                                 | Caller                                   | Effect                                                                                                  |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `finalize_draft(id, alias)`         | `INVOKER` (A already owns the row per RLS)                                                                    | A                                        | Validates alias present, all questions answered by A, question count matches config → `DRAFT → WAITING` |
+| `claim_participant_b(token, alias)` | `DEFINER` (caller isn't a participant yet — this is the one deliberate, narrowly-scoped privilege escalation) | anyone with the link, first to call wins | Atomically binds `participant_b_id = auth.uid()`, sets alias → `WAITING → IN_PROGRESS`                  |
+| `submit_final_b(id)`                | `INVOKER` (B already owns the row per RLS)                                                                    | B                                        | Validates all questions answered by B → `IN_PROGRESS → COMPLETED`                                       |
 
 All three re-check their preconditions server-side even though the UI already enforces them — the DB never trusts the client to have checked first.
 
@@ -212,7 +218,8 @@ All three re-check their preconditions server-side even though the UI already en
 States: `DRAFT → WAITING → IN_PROGRESS → COMPLETED`, with `IN_PROGRESS → IN_PROGRESS` as the "B saved partial progress" no-op.
 
 Enforced twice, deliberately redundantly:
-1. **The three RPCs above** are the only intended entry point, and each encodes the *business* precondition for its transition (all questions answered, alias present, slot still free).
+
+1. **The three RPCs above** are the only intended entry point, and each encodes the _business_ precondition for its transition (all questions answered, alias present, slot still free).
 2. **A `BEFORE UPDATE` trigger on `wavelengths`** independently re-validates that `old.state → new.state` is one of the four allowed edges (or a same-state no-op) and re-checks the same "all questions answered" business rule, so that even a direct PostgREST `PATCH` bypassing the RPCs (e.g., a manipulated client hitting the table endpoint directly) cannot force an illegal or premature transition. This is the concrete implementation of "RLS/DB must protect data even if the client is manipulated" applied to the state machine specifically, not just to reads.
 
 ```sql
@@ -249,7 +256,7 @@ The frontend mirrors the enum as a TS union (`lib/wavelength/state.ts`) purely f
 No separate REST/GraphQL layer. Next.js **Server Actions** are the only server-side surface, each following the same shape:
 
 1. Parse/validate input with `zod` (reject malformed shape before touching the DB — UX quality, not security).
-2. Build a Supabase client from the *request's own cookies* (`@supabase/ssr`) — so every query runs **as the calling participant**, under RLS. The service-role key is never used in this request path (see §9).
+2. Build a Supabase client from the _request's own cookies_ (`@supabase/ssr`) — so every query runs **as the calling participant**, under RLS. The service-role key is never used in this request path (see §9).
 3. Call a table query or one of the three RPCs.
 4. Return a typed result / `redirect()` / `revalidatePath()` as appropriate.
 
@@ -277,16 +284,16 @@ Run server-side inside `getResult`, after fetching questions + both participants
 
 ## 9. Security risks & mitigations
 
-| Risk | Mitigation |
-|---|---|
-| Client forges "I am A/B" | Identity is a signed Supabase Anonymous Auth JWT; RLS keys off `auth.uid()`, never a client-supplied field |
-| Service-role key used in the request path, bypassing RLS entirely | Service-role key is a server-only env var, not referenced anywhere in Server Actions; only ever used for offline admin/migration scripts if at all. Code-review checklist item. |
-| Two browsers race to claim the B slot | `claim_participant_b` does a conditional `UPDATE ... WHERE participant_b_id IS NULL`; loser gets an explicit "already joined" error, never a silent takeover |
-| Direct PostgREST call bypasses the RPCs to force a state change or skip "all questions answered" | The state trigger (§6) re-validates transition legality *and* the business precondition independently of the RPC layer |
-| B's answers (or A's) leak into a server-rendered payload before `COMPLETED` | Never fetched with elevated privilege and filtered client-side — the RLS-scoped query itself returns zero rows for the other participant pre-completion, so there is nothing to leak. Covered by an integration test (§10). |
-| Share-token guessing / enumeration | Token is high-entropy (≥21 url-safe chars, ~125 bits) and looked up by exact equality only, never listed; `wavelengths` has no open `SELECT` |
-| Anonymous-auth abuse (bot mass sign-in) | Supabase supports attaching CAPTCHA (e.g. Turnstile) to the anonymous sign-in endpoint; recommended for production hardening but deferred for MVP simplicity unless abuse is observed |
-| XSS via alias/free-text option labels | React auto-escapes on render; server also validates length/charset on every text field, independent of client-side checks |
+| Risk                                                                                             | Mitigation                                                                                                                                                                                                                  |
+| ------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Client forges "I am A/B"                                                                         | Identity is a signed Supabase Anonymous Auth JWT; RLS keys off `auth.uid()`, never a client-supplied field                                                                                                                  |
+| Service-role key used in the request path, bypassing RLS entirely                                | Service-role key is a server-only env var, not referenced anywhere in Server Actions; only ever used for offline admin/migration scripts if at all. Code-review checklist item.                                             |
+| Two browsers race to claim the B slot                                                            | `claim_participant_b` does a conditional `UPDATE ... WHERE participant_b_id IS NULL`; loser gets an explicit "already joined" error, never a silent takeover                                                                |
+| Direct PostgREST call bypasses the RPCs to force a state change or skip "all questions answered" | The state trigger (§6) re-validates transition legality _and_ the business precondition independently of the RPC layer                                                                                                      |
+| B's answers (or A's) leak into a server-rendered payload before `COMPLETED`                      | Never fetched with elevated privilege and filtered client-side — the RLS-scoped query itself returns zero rows for the other participant pre-completion, so there is nothing to leak. Covered by an integration test (§10). |
+| Share-token guessing / enumeration                                                               | Token is high-entropy (≥21 url-safe chars, ~125 bits) and looked up by exact equality only, never listed; `wavelengths` has no open `SELECT`                                                                                |
+| Anonymous-auth abuse (bot mass sign-in)                                                          | Supabase supports attaching CAPTCHA (e.g. Turnstile) to the anonymous sign-in endpoint; recommended for production hardening but deferred for MVP simplicity unless abuse is observed                                       |
+| XSS via alias/free-text option labels                                                            | React auto-escapes on render; server also validates length/charset on every text field, independent of client-side checks                                                                                                   |
 
 ---
 
@@ -301,6 +308,7 @@ Run server-side inside `getResult`, after fetching questions + both participants
 ## 11. Environment / configuration requirements
 
 Must be in place before Phase 1 can start:
+
 - A Supabase project (local via `supabase` CLI + Docker for dev; a separate project for production).
 - **Anonymous Sign-ins enabled** in Supabase Auth settings — off by default, required for the identity model in §4.
 - Env vars: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (server-only; minimal/no runtime use per §9).
@@ -314,7 +322,7 @@ Must be in place before Phase 1 can start:
 ## 12. Implementation phases
 
 0. **Scaffolding** — Next.js + TS app skeleton, tooling (ESLint/Prettier/Vitest/Playwright), CI, env wiring.
-1. **Schema + RLS + state trigger**, proven by the integration test suite *before any UI exists* — this is the layer everything else depends on for correctness.
+1. **Schema + RLS + state trigger**, proven by the integration test suite _before any UI exists_ — this is the layer everything else depends on for correctness.
 2. **Participant identity plumbing** — anonymous sign-in bootstrap, SSR client helpers.
 3. **Scoring engine** — pure TS module + exhaustive unit tests (no DB dependency, can be built in parallel with 1–2).
 4. **Participant A flow (DRAFT)** — category/count selection, question CRUD/reorder/type-change, duplicate prevention, answering, alias, `finalizeDraft`.
@@ -332,23 +340,26 @@ Everything in the spec was either concrete enough to implement directly, or reso
 
 **A. Selected categories vs. question count — RESOLVED: cap categories by question count.**
 The category picker only allows selecting up to `min(6, question_count)` categories, so it's structurally impossible to select more categories than there are questions to distribute. Concretely:
+
 - If A hasn't chosen a question count yet, default the flow to ask question count first, then present the category picker capped at that count (e.g., 5 questions → at most 5 categories selectable; 8–12 questions → all 6 remain selectable).
-- If A later *lowers* the question count below the number of categories already selected, the UI must prompt to drop the excess categories before continuing (can't silently discard a category with questions already written for it — those questions would need to be reassigned or removed first).
+- If A later _lowers_ the question count below the number of categories already selected, the UI must prompt to drop the excess categories before continuing (can't silently discard a category with questions already written for it — those questions would need to be reassigned or removed first).
 - Enforced at the DB level as a hard `check` constraint (`array_length(categories,1) <= question_count`, §3) as the authoritative backstop, with the UI cap as the primary (better) UX so A never hits the DB error in normal use.
 - Net effect: every selected category is now guaranteed at least one question, so "categories used" (shown in results) and "categories selected" (chosen by A) are always the same set — no dead/empty categories.
 
 **B. Strength of "reasonably balanced across categories" — RESOLVED: soft guidance only.**
 Balance is advisory, never blocking:
+
 - While A adds questions, the question editor shows a live per-category tally (e.g., a small count or bar per category) so A can see lopsidedness as it happens.
 - No validation error prevents adding an "unbalanced" set of questions, and `finalizeDraft` never rejects a draft on balance grounds — its only checks remain alias present, all questions answered by A, and question count matches configuration (§5).
 - No DB constraint expresses this rule at all (see the note under §3) — it is pure UI/UX, consistent with "keep the MVP technically simple" and avoids arbitrary tolerance thresholds that the spec never defined.
 
 Minor engineering defaults chosen along the way (none change visible product behavior from what's specified, so not raised as decisions needed):
+
 - DRAFT is persisted to the DB as soon as A begins (not held only in client state), so a reload mid-creation doesn't lose progress.
 - The WAITING → IN_PROGRESS transition fires at the moment B claims the link + submits their alias (the natural reading of "B has started"), not at B's first individual answer.
 - Converting a question between `choice` ⇄ `situation` preserves its existing options (both are "pick one of 2–5"); converting to/from `scale` clears options, since the scale is a fixed, shared 1–5 label set.
 - Duplicate-question prevention is scoped per-questionnaire (per `wavelength_id`), not globally across all Wavelengths ever created.
-- Percentage rounding uses standard round-half-up at display time, and the alignment level (High/Mixed/Low) is computed from the *rounded* integer so the label always matches what's shown.
+- Percentage rounding uses standard round-half-up at display time, and the alignment level (High/Mixed/Low) is computed from the _rounded_ integer so the label always matches what's shown.
 
 ---
 
