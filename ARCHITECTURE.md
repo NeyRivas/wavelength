@@ -37,10 +37,13 @@ wavelength/
 │       ├── questions.ts             # add/update/delete/reorder/changeType
 │       ├── answers.ts               # saveAnswerA, saveAnswerB
 │       └── join.ts                  # getWavelengthPreview, claimParticipantB, submitFinalB
+├── proxy.ts                          # Next.js "proxy" (middleware) entry point — see lib/supabase/proxy.ts
 ├── lib/
 │   ├── supabase/
 │   │   ├── server.ts                # SSR client bound to the request's cookies (RLS-respecting)
-│   │   ├── client.ts                # Browser client (anonymous sign-in bootstrap)
+│   │   ├── client.ts                # Browser client + client-side anonymous-session backstop
+│   │   ├── proxy.ts                 # Per-request session bootstrap/refresh (auth.getUser(), signInAnonymously())
+│   │   ├── identity.ts              # getUserId() / requireUserId() — the auth.uid() every later phase calls
 │   │   └── database.types.ts        # generated via `supabase gen types typescript`
 │   ├── scoring/
 │   │   └── score.ts                 # pure, deterministic scoring functions (+ tests)
@@ -171,7 +174,7 @@ Why: the spec requires "an anonymous browser participant credential" whose autho
 
 Flow:
 
-1. On first visit to any page, the browser silently calls `signInAnonymously()` if it has no session. The session (access + refresh token) persists via `@supabase/ssr` cookies, so both Server Components and the browser client see the same identity, and it survives reloads/tab-close — but is lost if the user clears site data or switches browsers/devices, exactly as the spec accepts ("no automatic recovery in MVP").
+1. On first visit to any page, the browser silently calls `signInAnonymously()` if it has no session. The session (access + refresh token) persists via `@supabase/ssr` cookies, so both Server Components and the browser client see the same identity, and it survives reloads/tab-close — but is lost if the user clears site data or switches browsers/devices, exactly as the spec accepts ("no automatic recovery in MVP"). Concretely (Phase 2): `proxy.ts` (Next.js's middleware entry point) calls `auth.getUser()` on every matched request — which revalidates the token against Supabase Auth and transparently refreshes it if needed — and calls `signInAnonymously()` itself if no valid session comes back, so an identity exists before any Server Component or Server Action runs. `lib/supabase/client.ts`'s `ensureAnonymousSession()` is a client-side backstop for the rare case a Client Component runs without having gone through that first. Server code that needs the caller's id calls `lib/supabase/identity.ts`'s `requireUserId()` (throws a clear, typed error if somehow still missing) or `getUserId()` (returns `null`) — both call `auth.getUser()`, never the unverified `auth.getSession()`.
 2. **Participant A** = whichever `auth.uid()` created the `wavelengths` row (`participant_a_id`, set at draft creation, immutable after).
 3. **Participant B** = whichever `auth.uid()` first successfully **claims** the row via an atomic RPC (`participant_b_id` starts `null`; claim is a conditional `UPDATE ... WHERE participant_b_id IS NULL`, so only the first claimant wins — a second visitor with the same link gets a clear "this Wavelength already has two participants" response, never a takeover).
 4. The `share_token` in the URL is the _invitation_, not the _authorization_. It lets anyone look up a minimal, non-sensitive preview (state, A's alias, category list, whether B is already taken) so the join screen can render — but it grants no read access to questions or answers. Actual read/write access to questions/answers is decided exclusively by whether the caller's `auth.uid()` matches `participant_a_id`/`participant_b_id` on the parent `wavelengths` row, checked by RLS on every query.
