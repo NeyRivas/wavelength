@@ -1,6 +1,6 @@
 # Wavelength — Technical Architecture
 
-Status: **DRAFT FOR REVIEW** — two product-affecting ambiguities are open (see §13). No code has been written yet; this document is the analysis/plan deliverable only.
+Status: **APPROVED** — the two product ambiguities raised in the previous revision are resolved (see §13). No application code has been written yet; this document is the analysis/plan deliverable only.
 
 Stack (approved): Next.js (App Router) + TypeScript + Supabase (Postgres + Auth + RLS). No other backend.
 
@@ -99,7 +99,10 @@ create table wavelengths (
 
   question_count     smallint not null check (question_count between 5 and 12),
   categories         wavelength_category[] not null
-                        check (array_length(categories, 1) between 1 and 6),
+                        check (array_length(categories, 1) between 1 and 6)
+                        -- categories are capped by question_count so every selected category
+                        -- is guaranteed >=1 question (resolved decision, see §13.A)
+                        check (array_length(categories, 1) <= question_count),
 
   created_at         timestamptz not null default now(),
   waiting_at         timestamptz,
@@ -154,6 +157,8 @@ create index answers_wavelength_participant_idx on answers (wavelength_id, parti
 ```
 
 A `BEFORE INSERT/UPDATE` trigger on `answers` validates that `value` is shape/range-correct for the referenced question's `type`/`options` (can't be expressed as a plain `check` because it must join to `questions`).
+
+**Category balance is intentionally not a DB constraint.** "Reasonably balanced across categories" is resolved as UI guidance only (§13.B) — the question editor shows a live per-category count/indicator while A adds questions, but nothing in the schema or RLS blocks an uneven distribution, and `finalizeDraft` never rejects a draft for being unbalanced. The only hard constraint is the categories-capped-by-question-count rule above.
 
 ---
 
@@ -321,15 +326,24 @@ Must be in place before Phase 1 can start:
 
 ---
 
-## 13. Open ambiguities requiring a product decision
+## 13. Resolved product decisions & minor engineering defaults
 
-Everything else in the spec was concrete enough to implement directly, or minor enough to resolve with a reasonable engineering default (noted inline above/below). Two items genuinely change user-facing behavior depending on the answer, so they're **not** resolved here — see the questions sent alongside this document.
+Everything in the spec was either concrete enough to implement directly, or resolved below. Two items genuinely changed user-facing behavior and were decided by you before this revision:
 
-**A. Selected categories vs. question count.** A selects 1–6 categories and separately 5–12 questions. If A selects 6 categories but only 5 questions, at least one selected category is mathematically guaranteed to end up with zero questions. Should the category picker be capped by the chosen question count (so every selected category is guaranteed ≥1 question), or is it acceptable for a selected category to end up empty (and simply not appear in results, since results only show "categories used")?
+**A. Selected categories vs. question count — RESOLVED: cap categories by question count.**
+The category picker only allows selecting up to `min(6, question_count)` categories, so it's structurally impossible to select more categories than there are questions to distribute. Concretely:
+- If A hasn't chosen a question count yet, default the flow to ask question count first, then present the category picker capped at that count (e.g., 5 questions → at most 5 categories selectable; 8–12 questions → all 6 remain selectable).
+- If A later *lowers* the question count below the number of categories already selected, the UI must prompt to drop the excess categories before continuing (can't silently discard a category with questions already written for it — those questions would need to be reassigned or removed first).
+- Enforced at the DB level as a hard `check` constraint (`array_length(categories,1) <= question_count`, §3) as the authoritative backstop, with the UI cap as the primary (better) UX so A never hits the DB error in normal use.
+- Net effect: every selected category is now guaranteed at least one question, so "categories used" (shown in results) and "categories selected" (chosen by A) are always the same set — no dead/empty categories.
 
-**B. Strength of "reasonably balanced across categories."** The spec says questions "should be reasonably balanced" — is this a soft UI hint only (never blocks creation), a hard validation that blocks finalizing the questionnaire outside some tolerance, or should the system pre-allocate a fixed per-category question count up front that A then fills?
+**B. Strength of "reasonably balanced across categories" — RESOLVED: soft guidance only.**
+Balance is advisory, never blocking:
+- While A adds questions, the question editor shows a live per-category tally (e.g., a small count or bar per category) so A can see lopsidedness as it happens.
+- No validation error prevents adding an "unbalanced" set of questions, and `finalizeDraft` never rejects a draft on balance grounds — its only checks remain alias present, all questions answered by A, and question count matches configuration (§5).
+- No DB constraint expresses this rule at all (see the note under §3) — it is pure UI/UX, consistent with "keep the MVP technically simple" and avoids arbitrary tolerance thresholds that the spec never defined.
 
-Minor engineering defaults chosen along the way (none change visible product behavior from what's specified, so not raised as blocking):
+Minor engineering defaults chosen along the way (none change visible product behavior from what's specified, so not raised as decisions needed):
 - DRAFT is persisted to the DB as soon as A begins (not held only in client state), so a reload mid-creation doesn't lose progress.
 - The WAITING → IN_PROGRESS transition fires at the moment B claims the link + submits their alias (the natural reading of "B has started"), not at B's first individual answer.
 - Converting a question between `choice` ⇄ `situation` preserves its existing options (both are "pick one of 2–5"); converting to/from `scale` clears options, since the scale is a fixed, shared 1–5 label set.
@@ -338,4 +352,4 @@ Minor engineering defaults chosen along the way (none change visible product beh
 
 ---
 
-**READY FOR IMPLEMENTATION: NOT YET** — pending the two decisions in §13. Once resolved, this document will be updated and Phase 0 can start.
+**READY FOR IMPLEMENTATION**
