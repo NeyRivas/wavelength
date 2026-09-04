@@ -68,6 +68,7 @@ export interface Database {
           completed_at?: null;
         };
         Update: never;
+        Relationships: [];
       };
       questions: {
         Row: {
@@ -99,6 +100,7 @@ export interface Database {
           options: string[] | null;
           order_index: number;
         }>;
+        Relationships: [];
       };
       answers: {
         Row: {
@@ -122,6 +124,7 @@ export interface Database {
         Update: Partial<{
           value: number;
         }>;
+        Relationships: [];
       };
     };
     Views: Record<string, never>;
@@ -146,6 +149,10 @@ export interface Database {
       };
       submit_final_b: {
         Args: { p_id: string };
+        Returns: void;
+      };
+      reorder_questions: {
+        Args: { p_wavelength_id: string; p_question_ids: string[] };
         Returns: void;
       };
     };

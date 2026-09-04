@@ -33,10 +33,11 @@ wavelength/
 │   │   ├── answer/page.tsx          # Participant B: answering flow (IN_PROGRESS)
 │   │   └── result/page.tsx          # Shared result (both participants, COMPLETED only)
 │   └── actions/                     # Server Actions — the only server-side entry point
-│       ├── draft.ts                 # createDraft, updateDraftConfig, finalizeDraft
-│       ├── questions.ts             # add/update/delete/reorder/changeType
-│       ├── answers.ts               # saveAnswerA, saveAnswerB
-│       └── join.ts                  # getWavelengthPreview, claimParticipantB, submitFinalB
+│       ├── shared.ts                # ActionState convention shared by every mutating action
+│       ├── draft.ts                 # createDraft (finalizeDraft lands in Phase 5 — see §7/§12)
+│       ├── questions.ts             # add/update/delete/moveQuestion/changeType
+│       ├── answers.ts               # saveAnswerA (saveAnswerB in Phase 5)
+│       └── join.ts                  # Phase 5: getWavelengthPreview, claimParticipantB, submitFinalB
 ├── proxy.ts                          # Next.js "proxy" (middleware) entry point — see lib/supabase/proxy.ts
 ├── lib/
 │   ├── supabase/
@@ -57,7 +58,7 @@ wavelength/
 │   ├── result/                       # global score, category list, aligned/different sections
 │   └── ui/
 ├── supabase/
-│   └── migrations/                   # created in Phase 1 (not yet — see §12)
+│   └── migrations/                   # Phase 1 schema/RLS/RPCs; extended in Phase 4 (reorder_questions, category immutability)
 ├── tests/
 │   ├── unit/                         # scoring + validation (Vitest)
 │   ├── integration/                  # two-anonymous-session RLS behavior tests
@@ -197,6 +198,8 @@ RLS is enabled on all three tables. Reads are governed by RLS `SELECT` policies;
 
 - `SELECT`: participant (A or B) of the parent wavelength, any state — B needs to read question text/options to answer.
 - `INSERT/UPDATE/DELETE`: only `auth.uid() = participant_a_id` **and** parent `state = 'DRAFT'`. Once WAITING, every questions-table write is rejected by RLS regardless of what the client sends.
+- A question's `category` is additionally immutable after creation (approved product rule) — a `BEFORE UPDATE` trigger (`enforce_question_category_immutable`, added in Phase 4) rejects any attempt to change it, independent of RLS, so this holds even against a direct API call.
+- Reordering (Phase 4) goes through `reorder_questions(wavelength_id, question_ids)`, `SECURITY INVOKER` — not a state-transition RPC like the three below, just a way to make a multi-row `order_index` swap atomic (the `questions_order_unique` constraint is `DEFERRABLE INITIALLY DEFERRED` for exactly this). RLS applies to its internal `UPDATE`s exactly as if the caller had issued them directly — no privilege escalation.
 
 **`answers`**
 
@@ -263,7 +266,9 @@ No separate REST/GraphQL layer. Next.js **Server Actions** are the only server-s
 3. Call a table query or one of the three RPCs.
 4. Return a typed result / `redirect()` / `revalidatePath()` as appropriate.
 
-Concrete actions: `createDraft`, `updateDraftConfig` (question count/categories), `addQuestion`, `updateQuestion`, `deleteQuestion`, `reorderQuestions`, `changeQuestionType`, `saveAnswerA`, `finalizeDraft` → RPC, `getWavelengthPreview` → RPC, `claimParticipantB` → RPC, `saveAnswerB`, `submitFinalB` → RPC, `getResult` (fetches questions+answers under RLS, then runs the scoring module — only produces meaningful data once `COMPLETED`, since pre-completion RLS simply won't return the other participant's rows).
+Concrete actions (✅ = implemented as of the phase noted): `createDraft` ✅ Phase 4, `addQuestion` ✅ Phase 4, `updateQuestion` ✅ Phase 4, `deleteQuestion` ✅ Phase 4, `moveQuestion` ✅ Phase 4 (calls the `reorder_questions` RPC — §5), `changeQuestionType` ✅ Phase 4, `saveAnswerA` ✅ Phase 4, `finalizeDraft` → RPC (Phase 5, alongside the share link it produces — see §12), `getWavelengthPreview` → RPC (Phase 5), `claimParticipantB` → RPC (Phase 5), `saveAnswerB` (Phase 5), `submitFinalB` → RPC (Phase 6), `getResult` (Phase 6; fetches questions+answers under RLS, then runs the scoring module — only produces meaningful data once `COMPLETED`, since pre-completion RLS simply won't return the other participant's rows).
+
+`updateDraftConfig` (changing question count/categories after questions already exist) was scoped out of Phase 4 — reconciling existing questions against a shrunk category set is real added complexity the approved spec doesn't ask for; A can still freely add/edit/delete/reorder questions and their own config was fixed correctly at creation time (categories already capped by the chosen count).
 
 ---
 
@@ -334,12 +339,12 @@ Must be in place before Phase 1 can start:
 
 ## 12. Implementation phases
 
-0. **Scaffolding** — Next.js + TS app skeleton, tooling (ESLint/Prettier/Vitest/Playwright), CI, env wiring.
-1. **Schema + RLS + state trigger**, proven by the integration test suite _before any UI exists_ — this is the layer everything else depends on for correctness.
-2. **Participant identity plumbing** — anonymous sign-in bootstrap, SSR client helpers.
-3. **Scoring engine** — pure TS module + exhaustive unit tests (no DB dependency, can be built in parallel with 1–2).
-4. **Participant A flow (DRAFT)** — category/count selection, question CRUD/reorder/type-change, duplicate prevention, answering, alias, `finalizeDraft`.
-5. **Shareable link + Participant B flow** — preview screen, `claimParticipantB`, incremental answer saving, resume-on-same-browser.
+0. ✅ **Scaffolding** — Next.js + TS app skeleton, tooling (ESLint/Prettier/Vitest), CI-ready, env wiring.
+1. ✅ **Schema + RLS + state trigger**, proven by the integration test suite _before any UI exists_ — this is the layer everything else depends on for correctness.
+2. ✅ **Participant identity plumbing** — anonymous sign-in bootstrap (`proxy.ts`), SSR client helpers, `getUserId`/`requireUserId`.
+3. ✅ **Scoring engine** — pure TS module + exhaustive unit tests (no DB dependency).
+4. ✅ **Participant A flow (DRAFT)** — category/count selection, question CRUD/reorder/type-change, duplicate prevention, answering, and changing answers before finalization. Finalization itself (`finalizeDraft`, the alias step, "Create my Wavelength") is deliberately **not** built yet — that's Phase 5/6's entry point, once the share link and Participant B flow exist to receive it.
+5. **Shareable link + Participant B flow** — preview screen, `claimParticipantB`, incremental answer saving, resume-on-same-browser. Also where `finalizeDraft` (DRAFT → WAITING, alias entry, "Create my Wavelength") gets built, since it's the step that produces the link this phase delivers.
 6. **Completion + Result** — `submitFinalB`, "Finding your wavelength…" loading state, full result view (Global → Categories → Aligned → Different → Questions).
 7. **AI-assisted suggestions** (optional layer, isolated so it can slip without blocking MVP) — question/option suggestions A can accept/edit/ignore.
 8. **Polish & hardening** — accessibility, responsive design, full E2E suite, RLS/security audit pass.

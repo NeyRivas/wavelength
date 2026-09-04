@@ -32,6 +32,12 @@ export const QUESTION_TYPES = ["choice", "scale", "situation"] as const;
 
 export type QuestionType = (typeof QUESTION_TYPES)[number];
 
+export const QUESTION_TYPE_LABELS: Record<QuestionType, string> = {
+  choice: "Choice",
+  situation: "Situation",
+  scale: "Scale / Importance",
+};
+
 export const MIN_QUESTIONS = 5;
 export const MAX_QUESTIONS = 12;
 export const DEFAULT_QUESTION_COUNT = 8;
