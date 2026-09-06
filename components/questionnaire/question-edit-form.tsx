@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useActionState, useEffect, useRef, useState } from "react";
 
 import { updateQuestion } from "@/app/actions/questions";
 import { initialActionState } from "@/app/actions/shared";
@@ -44,6 +45,21 @@ import type { QuestionRow } from "./types";
  * separate unsaved draft here, and no Save button), so that's a reliable
  * signal, the same "derive it from confirmed reality" approach already
  * used by AnswerControl's own "Saved" indicator.
+ *
+ * QA round 3 fix: explicitly calls `router.refresh()` once a save
+ * succeeds. `updateQuestion`'s own `revalidatePath("/create")` should, per
+ * Next's docs, bundle a fresh RSC payload into the same action response —
+ * but real-browser QA showed AnswerControl (a sibling client-component
+ * island, with its own independent `useActionState`, not this form's own
+ * subtree) kept rendering the pre-edit `currentValue`/"Saved" after a
+ * successful text/option edit. `router.refresh()` is Next's own documented
+ * mechanism for exactly this — "re-fetching data requests, and re-rendering
+ * Server Components... without losing unaffected client-side state" — not
+ * a page reload: no navigation, no lost scroll position, no client state
+ * wiped. This is what actually lets QuestionCard recompute AnswerControl's
+ * invalidation `key` (see question-card.tsx) with the now-current
+ * `question`/`currentValue` — the key alone cannot help if the props
+ * feeding it never change.
  */
 
 interface OptionSlot {
@@ -73,8 +89,21 @@ export function QuestionEditForm({
   wavelengthId: string;
   question: QuestionRow;
 }) {
+  const router = useRouter();
   const [state, formAction, pending] = useActionState(updateQuestion, initialActionState);
   const [slots, setSlots] = useState<OptionSlot[]>(() => initialSlots(question.options));
+
+  // Fires exactly once per completed submission, on the pending -> !pending
+  // transition (never on mount, where pending starts false) — see the QA
+  // round 3 doc comment above for why this is needed on top of
+  // updateQuestion's own revalidatePath.
+  const wasPending = useRef(false);
+  useEffect(() => {
+    if (wasPending.current && !pending && !state.error) {
+      router.refresh();
+    }
+    wasPending.current = pending;
+  }, [pending, state.error, router]);
 
   function submitOnBlur(event: React.FocusEvent<HTMLInputElement>) {
     event.currentTarget.form?.requestSubmit();

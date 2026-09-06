@@ -12,17 +12,34 @@ import {
 } from "./utils/wavelength";
 
 /**
- * E2E #1/#2/#3 — QA round 2 fix: editing a question's text, editing an
- * option's text, or adding an option after A has already answered it
- * invalidates the existing answer, and — this is what round 2 actually
- * fixed — the UI now visibly reflects that (the radio really unchecks in
- * the browser), not just the database. Root cause: AnswerControl's radios
- * are uncontrolled (`defaultChecked`, applied once at mount); QuestionCard
- * now keys `<AnswerControl>` by `[question.text, question.options]` so it
- * fully remounts — picking up the freshly-revalidated (now-cleared) answer
- * — exactly when, and only when, the question was actually edited. See
- * tests/integration/answer-invalidation.test.ts for the same invalidation
- * rule proven directly at the DB layer.
+ * E2E #1/#2/#3 — editing a question's text, editing an option's text, or
+ * adding an option after A has already answered it invalidates the
+ * existing answer, and the UI must visibly reflect that (the radio really
+ * unchecks, and AnswerControl's own "Saved" goes away too), not just the
+ * database.
+ *
+ * Round 2 fix: AnswerControl's radios are uncontrolled (`defaultChecked`,
+ * applied once at mount); QuestionCard keys `<AnswerControl>` by
+ * `[question.text, question.options]` so it fully remounts — picking up
+ * the freshly-revalidated (now-cleared) answer — exactly when the question
+ * was actually edited.
+ *
+ * Round 3 fix (the part every `answerSavedStatus(...)).not.toBeVisible()`
+ * assertion below specifically catches): the round-2 key alone wasn't
+ * enough, because the *props feeding it* weren't actually refreshing.
+ * QuestionEditForm and AnswerControl are two independent client-component
+ * islands, each with its own `useActionState`; updateQuestion's own
+ * `revalidatePath("/create")` wasn't reliably reaching the sibling
+ * AnswerControl island in the real browser (confirmed by manual QA:
+ * AnswerControl kept showing "Saved" — i.e. `currentValue` was still
+ * defined — even though the question text/options had genuinely changed).
+ * question-edit-form.tsx now calls `router.refresh()` after every
+ * successful save, which is what actually delivers the fresh
+ * `question`/`currentValue` props the round-2 key depends on.
+ *
+ * See tests/integration/answer-invalidation.test.ts for the same
+ * invalidation rule proven directly at the DB layer — that was never the
+ * broken part; this file is what actually exercises the browser.
  */
 
 test("editing a Choice question's text invalidates A's existing answer", async ({ page }) => {
