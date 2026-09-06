@@ -3,30 +3,44 @@ import { FinalizeForm } from "./finalize-form";
 import { QuestionAddForm } from "./question-add-form";
 import { QuestionCard } from "./question-card";
 import type { QuestionRow } from "./types";
-import type { Category } from "@/lib/wavelength/categories";
+import {
+  MAX_QUESTIONS,
+  MIN_QUESTIONS,
+  RECOMMENDED_QUESTION_COUNT,
+} from "@/lib/wavelength/categories";
 
+/**
+ * Progressive creation (resolved decision): there is no pre-declared
+ * question count or category set to check against. A can add questions one
+ * at a time, in any category, until reaching MAX_QUESTIONS; finalizing only
+ * requires having reached MIN_QUESTIONS and answered every question so far.
+ * RECOMMENDED_QUESTION_COUNT is shown as a soft note only, never enforced.
+ */
 export function QuestionnaireBuilder({
   wavelength,
   questions,
   answers,
 }: {
-  wavelength: { id: string; share_token: string; question_count: number; categories: Category[] };
+  wavelength: { id: string; share_token: string };
   questions: QuestionRow[];
   answers: { question_id: string; value: number }[];
 }) {
   const answerByQuestion = new Map(answers.map((a) => [a.question_id, a.value]));
   const answeredCount = questions.filter((q) => answerByQuestion.has(q.id)).length;
-  const reachedPlannedCount = questions.length >= wavelength.question_count;
-  const readyToFinalize = reachedPlannedCount && answeredCount === questions.length;
+  const atMax = questions.length >= MAX_QUESTIONS;
+  const canFinalize = questions.length >= MIN_QUESTIONS && answeredCount === questions.length;
 
   return (
     <div>
       <p>
-        {questions.length} of {wavelength.question_count} questions created · {answeredCount} of{" "}
+        {questions.length} question{questions.length === 1 ? "" : "s"} created · {answeredCount} of{" "}
         {questions.length} answered
+        <br />
+        Minimum {MIN_QUESTIONS}, maximum {MAX_QUESTIONS} — {RECOMMENDED_QUESTION_COUNT} is just a
+        friendly recommendation, not a requirement.
       </p>
 
-      <CategoryBalance categories={wavelength.categories} questions={questions} />
+      <CategoryBalance questions={questions} />
 
       <ol>
         {questions.map((question, index) => (
@@ -42,19 +56,27 @@ export function QuestionnaireBuilder({
         ))}
       </ol>
 
-      {reachedPlannedCount ? (
+      {atMax ? (
         <p>
-          You&apos;ve reached your planned question count ({wavelength.question_count}). Delete a
-          question first if you want to add a different one.
+          You&apos;ve reached the maximum of {MAX_QUESTIONS} questions. Delete one first if you want
+          to add a different one.
         </p>
       ) : (
-        <QuestionAddForm wavelengthId={wavelength.id} categories={wavelength.categories} />
+        <QuestionAddForm wavelengthId={wavelength.id} />
       )}
 
-      {readyToFinalize ? (
+      {canFinalize ? (
         <FinalizeForm wavelengthId={wavelength.id} shareToken={wavelength.share_token} />
       ) : (
-        reachedPlannedCount && <p>Answer every question to create your Wavelength.</p>
+        questions.length > 0 && (
+          <p>
+            {questions.length < MIN_QUESTIONS
+              ? `Add at least ${MIN_QUESTIONS - questions.length} more question${
+                  MIN_QUESTIONS - questions.length === 1 ? "" : "s"
+                } to be able to finalize.`
+              : "Answer every question to create your Wavelength."}
+          </p>
+        )
       )}
     </div>
   );

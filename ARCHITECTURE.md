@@ -78,8 +78,8 @@ wavelength/
 Design choices:
 
 - Source of truth is **Questions + Answers + Scoring Rules**, exactly as specified. No `results`/`scores` table — results are computed on read by a pure TypeScript function once `state = COMPLETED` (deterministic, cheap, trivially testable; nothing to keep in sync or invalidate).
-- `wavelengths.question_count` and `.categories` are **configuration**, not derived data — A chooses them before any question exists, so they can't be derived from `questions` at that point. They are not duplicated anywhere else.
-- Category, question type, participant role, and state are fixed, closed sets → Postgres `enum` types (matches "exactly 6 categories / exactly 3 types / exactly 4 states" from the spec, and makes invalid values impossible at the DB level).
+- **MVP update (supersedes the original design below):** `wavelengths` no longer carries an upfront `question_count` or `categories` column at all. Question creation is progressive — A never declares a target count or a category set before building; each question picks its own category as it's created, and the "how many so far" number is always just `count(*) from questions`. The only DB-enforced bounds are a hard cap of 12 questions at any time (`questions_enforce_max_count` trigger) and a 5-12 range check at finalize time (`enforce_wavelength_transition`) — see `supabase/migrations/20260906120000_mvp_choice_scale_progressive.sql`.
+- Category, question type, participant role, and state are fixed, closed sets → Postgres `enum` types. **MVP update:** question type is now 2 values (`choice`, `scale`) — `situation` was removed; it scored identically to `choice` and added no distinct behavior.
 
 ```sql
 create extension if not exists pgcrypto; -- gen_random_uuid()
@@ -90,7 +90,7 @@ create type wavelength_category as enum (
   'relationship', 'lifestyle', 'money', 'adventures_travel', 'future', 'values_priorities'
 );
 
-create type question_type as enum ('choice', 'scale', 'situation');
+create type question_type as enum ('choice', 'scale'); -- MVP: 'situation' removed
 
 create type participant_role as enum ('A', 'B');
 
@@ -105,12 +105,9 @@ create table wavelengths (
   participant_a_alias text,
   participant_b_alias text,
 
-  question_count     smallint not null check (question_count between 5 and 12),
-  categories         wavelength_category[] not null
-                        check (array_length(categories, 1) between 1 and 6)
-                        -- categories are capped by question_count so every selected category
-                        -- is guaranteed >=1 question (resolved decision, see §13.A)
-                        check (array_length(categories, 1) <= question_count),
+  -- MVP: no question_count / categories columns — see the "MVP update" note
+  -- above. Question count and categories used are always derived live from
+  -- `questions`, never pre-declared here.
 
   created_at         timestamptz not null default now(),
   waiting_at         timestamptz,
@@ -130,7 +127,7 @@ create table questions (
   category      wavelength_category not null,
   type          question_type not null,
   text          text not null check (char_length(btrim(text)) between 3 and 300),
-  options       jsonb,          -- required (2–5 strings) for 'choice'/'situation'; null for 'scale'
+  options       jsonb,          -- required (2–5 strings) for 'choice'; null for 'scale'
   order_index   smallint not null,
   created_at    timestamptz not null default now(),
   updated_at    timestamptz not null default now(),
@@ -140,7 +137,7 @@ create table questions (
 
   constraint options_shape check (
     (type = 'scale' and options is null) or
-    (type in ('choice','situation')
+    (type = 'choice'
        and jsonb_typeof(options) = 'array'
        and jsonb_array_length(options) between 2 and 5)
   )
@@ -154,7 +151,7 @@ create table answers (
   wavelength_id uuid not null references wavelengths(id) on delete cascade,  -- denormalized FK, needed by RLS policies
   question_id   uuid not null references questions(id) on delete cascade,
   participant   participant_role not null,
-  value         jsonb not null,   -- integer 0–4 (option index) for choice/situation, 1–5 for scale
+  value         jsonb not null,   -- integer 0–4 (option index) for choice; one of 0/25/50/75/100 for scale
   answered_at   timestamptz not null default now(),
   updated_at    timestamptz not null default now(),
 
@@ -279,10 +276,12 @@ Concrete actions (✅ = implemented as of the phase noted): `createDraft` ✅ Ph
 
 Pure, deterministic, **no AI**, implemented in `lib/scoring/score.ts` (Phase 3) — no DB/network/React dependency, so every rule is directly unit-testable:
 
+**MVP update:** `situation` was removed as a question type (scored identically to `choice`, no distinct behavior). `scale` answers were re-based from a 1-5 index onto the fixed 0/25/50/75/100 value domain, so the scoring formula is now a direct `100 - |A - B|` — no lookup table needed, and it reproduces the approved table exactly.
+
 ```ts
 scoreQuestion(question, valueA, valueB): number // 0-100
-  choice/situation → valueA === valueB ? 100 : 0
-  scale            → [100, 75, 50, 25, 0][ |valueA - valueB| ]
+  choice → valueA === valueB ? 100 : 0
+  scale  → 100 - |valueA - valueB| // values are themselves 0/25/50/75/100
 
 computeQuestionScores(questions, answers): QuestionScore[]
   // requires exactly one A + one B answer per question (throws otherwise:
@@ -301,7 +300,7 @@ computeWavelengthResult(questions, answers): WavelengthResult // the above, comp
 
 Run server-side inside `getResult`, after fetching questions + both participants' answers (which RLS only allows once `COMPLETED`). Nothing is persisted — recomputed on every view, which is cheap (≤12 questions) and guarantees the result can never drift from the underlying answers.
 
-**Phase 6 addition:** `lib/wavelength/result.ts` sits between this module and the result screen. It maps DB rows into `computeWavelengthResult`'s input shape, joins the returned scores back to human-readable question/answer text (`formatAnswer` — the option text for choice/situation, the fixed 1-5 label for scale, never a raw index/number), and does the presentation-only sorting/selection the result screens need: categories highest-alignment-first, the top-3 "Where You're Aligned" (regardless of category), every differing question for "Different Wavelengths" (lowest-alignment-first), and per-category question grouping for "All Questions". None of that sorting/selection is a scoring rule — every score itself still comes from `lib/scoring/score.ts` unchanged — and `Array.sort`'s guaranteed stability is what keeps ties in original question order without extra bookkeeping. A category tie is broken by its first question's `orderIndex`, since the spec ties category order to question order rather than defining a separate one.
+**Phase 6 addition:** `lib/wavelength/result.ts` sits between this module and the result screen. It maps DB rows into `computeWavelengthResult`'s input shape, joins the returned scores back to human-readable question/answer text (`formatAnswer` — the option text for choice, the fixed 0/25/50/75/100 label for scale, never a raw index/number), and does the presentation-only sorting/selection the result screens need: categories highest-alignment-first, the top-3 "Where You're Aligned" (regardless of category), every differing question for "Different Wavelengths" (lowest-alignment-first), and per-category question grouping for "All Questions". None of that sorting/selection is a scoring rule — every score itself still comes from `lib/scoring/score.ts` unchanged — and `Array.sort`'s guaranteed stability is what keeps ties in original question order without extra bookkeeping. A category tie is broken by its first question's `orderIndex`, since the spec ties category order to question order rather than defining a separate one.
 
 ---
 
@@ -361,13 +360,19 @@ Must be in place before Phase 1 can start:
 
 Everything in the spec was either concrete enough to implement directly, or resolved below. Two items genuinely changed user-facing behavior and were decided by you before this revision:
 
-**A. Selected categories vs. question count — RESOLVED: cap categories by question count.**
+**A. Selected categories vs. question count — SUPERSEDED by the MVP's progressive-creation requirement.**
+The original design (cap categories by an upfront question count, quoted below for history) required A to declare a question count before picking categories. The MVP explicitly forbids that: A must be able to start creating questions without deciding a count first. There is no longer an upfront category selection step at all — each question picks its own category as it's created (from the fixed 6, no cap needed), and "categories used" is simply whichever ones actually appear on `questions`, always exactly in sync by construction (no separate declaration to drift out of). `wavelengths.categories`/`.question_count` were dropped entirely — see the "MVP update" note in §3 and `supabase/migrations/20260906120000_mvp_choice_scale_progressive.sql`.
+
+<details><summary>Original decision (superseded, kept for history)</summary>
+
 The category picker only allows selecting up to `min(6, question_count)` categories, so it's structurally impossible to select more categories than there are questions to distribute. Concretely:
 
 - If A hasn't chosen a question count yet, default the flow to ask question count first, then present the category picker capped at that count (e.g., 5 questions → at most 5 categories selectable; 8–12 questions → all 6 remain selectable).
 - If A later _lowers_ the question count below the number of categories already selected, the UI must prompt to drop the excess categories before continuing (can't silently discard a category with questions already written for it — those questions would need to be reassigned or removed first).
 - Enforced at the DB level as a hard `check` constraint (`array_length(categories,1) <= question_count`, §3) as the authoritative backstop, with the UI cap as the primary (better) UX so A never hits the DB error in normal use.
 - Net effect: every selected category is now guaranteed at least one question, so "categories used" (shown in results) and "categories selected" (chosen by A) are always the same set — no dead/empty categories.
+
+</details>
 
 **B. Strength of "reasonably balanced across categories" — RESOLVED: soft guidance only.**
 Balance is advisory, never blocking:
@@ -380,7 +385,8 @@ Minor engineering defaults chosen along the way (none change visible product beh
 
 - DRAFT is persisted to the DB as soon as A begins (not held only in client state), so a reload mid-creation doesn't lose progress.
 - The WAITING → IN_PROGRESS transition fires at the moment B claims the link + submits their alias (the natural reading of "B has started"), not at B's first individual answer.
-- Converting a question between `choice` ⇄ `situation` preserves its existing options (both are "pick one of 2–5"); converting to/from `scale` clears options, since the scale is a fixed, shared 1–5 label set.
+- Converting a question's type (`choice` ⇄ `scale`, the only two MVP types) clears options when switching to `scale`, and gives a fresh 2-option placeholder when switching to `choice` — the scale is a fixed, shared 0/25/50/75/100 label set with no options of its own.
+- **MVP addition:** question count has no upfront target at all — A adds questions progressively (5-12, 8 recommended but not required), and each question chooses its own category; there is no pre-declared category set to cap against (supersedes §13.A above). A hard cap of 12 questions is enforced independently of RLS by a `BEFORE INSERT` trigger (`questions_enforce_max_count`), consistent with `enforce_question_category_immutable`'s "the database enforces the rule" precedent.
 - Duplicate-question prevention is scoped per-questionnaire (per `wavelength_id`), not globally across all Wavelengths ever created.
 - Percentage rounding uses standard round-half-up at display time, and the alignment level (High/Mixed/Low) is computed from the _rounded_ integer so the label always matches what's shown.
 

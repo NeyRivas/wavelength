@@ -210,10 +210,10 @@ describe("end-to-end result computation from real Postgres data", () => {
       client.query(
         `insert into answers (wavelength_id, question_id, participant, value) values
            ($1, $2, 'A', '0'::jsonb),
-           ($1, $3, 'A', '2'::jsonb),
+           ($1, $3, 'A', '50'::jsonb),
            ($1, $4, 'A', '0'::jsonb),
            ($1, $5, 'A', '1'::jsonb),
-           ($1, $6, 'A', '1'::jsonb)`,
+           ($1, $6, 'A', '25'::jsonb)`,
         [wavelengthId, q0!.id, q1!.id, q2!.id, q3!.id, q4!.id],
       ),
     );
@@ -223,16 +223,16 @@ describe("end-to-end result computation from real Postgres data", () => {
     await claimAsB(bId, shareToken);
 
     // B's answers, chosen against A's to produce: q0=100, q1=100 (scale
-    // diff 0), q2=0 (different situation), q3=0 (different choice),
-    // q4=50 (scale diff 2).
+    // diff 0), q2=0 (different choice), q3=0 (different choice), q4=50
+    // (scale diff 50, i.e. 2 levels of the fixed 0/25/50/75/100 domain).
     await asRequest(bId, (client) =>
       client.query(
         `insert into answers (wavelength_id, question_id, participant, value) values
            ($1, $2, 'B', '0'::jsonb),
-           ($1, $3, 'B', '2'::jsonb),
+           ($1, $3, 'B', '50'::jsonb),
            ($1, $4, 'B', '2'::jsonb),
            ($1, $5, 'B', '0'::jsonb),
-           ($1, $6, 'B', '3'::jsonb)`,
+           ($1, $6, 'B', '75'::jsonb)`,
         [wavelengthId, q0!.id, q1!.id, q2!.id, q3!.id, q4!.id],
       ),
     );
@@ -278,8 +278,8 @@ describe("end-to-end result computation from real Postgres data", () => {
 
     // Scale answers render their label, not the raw stored integer.
     const q4Display = view.allQuestions.find((q) => q.id === q4!.id)!;
-    expect(q4Display.answerA).toBe("Nada importante");
-    expect(q4Display.answerB).toBe("Moderadamente importante");
+    expect(q4Display.answerA).toBe("Poco importante");
+    expect(q4Display.answerB).toBe("Muy importante");
 
     // Choice answers render the option text, not the raw index.
     const q0Display = view.allQuestions.find((q) => q.id === q0!.id)!;

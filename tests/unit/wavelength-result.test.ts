@@ -11,13 +11,14 @@ import {
 // Fixed dataset, chosen so every rule under test (global/category
 // averages, level boundaries, top-3 tie-breaking, different-wavelengths
 // selection, category tie-breaking) has a deterministic, hand-checkable
-// expected value.
+// expected value. MVP scope: only choice/scale exist; scale values are the
+// fixed 0/25/50/75/100 domain (see lib/wavelength/categories.ts).
 //
 // order | id | category      | type      | score
 //   0   | q1 | relationship  | choice    | 100  (A=0, B=0 — same option)
-//   1   | q2 | money         | situation |   0  (A=0, B=1 — different)
-//   2   | q3 | future        | scale     | 100  (A=3, B=3 — diff 0)
-//   3   | q4 | relationship  | scale     |   0  (A=1, B=5 — diff 4)
+//   1   | q2 | money         | choice    |   0  (A=0, B=1 — different)
+//   2   | q3 | future        | scale     | 100  (A=50, B=50 — diff 0)
+//   3   | q4 | relationship  | scale     |   0  (A=0, B=100 — diff 100)
 //   4   | q5 | money         | choice    |   0  (A=0, B=1 — different)
 const questions: ResultQuestionRow[] = [
   {
@@ -31,7 +32,7 @@ const questions: ResultQuestionRow[] = [
   {
     id: "q2",
     category: "money",
-    type: "situation",
+    type: "choice",
     text: "Unexpected bonus arrives",
     options: ["Save it", "Spend it", "Invest it"],
     order_index: 1,
@@ -67,10 +68,10 @@ const answers: ResultAnswerRow[] = [
   { question_id: "q1", participant: "B", value: 0 },
   { question_id: "q2", participant: "A", value: 0 },
   { question_id: "q2", participant: "B", value: 1 },
-  { question_id: "q3", participant: "A", value: 3 },
-  { question_id: "q3", participant: "B", value: 3 },
-  { question_id: "q4", participant: "A", value: 1 },
-  { question_id: "q4", participant: "B", value: 5 },
+  { question_id: "q3", participant: "A", value: 50 },
+  { question_id: "q3", participant: "B", value: 50 },
+  { question_id: "q4", participant: "A", value: 0 },
+  { question_id: "q4", participant: "B", value: 100 },
   { question_id: "q5", participant: "A", value: 0 },
   { question_id: "q5", participant: "B", value: 1 },
 ];
@@ -118,16 +119,16 @@ describe("buildWavelengthResultView: categories", () => {
   });
 
   it("breaks a category-score tie using the original order of each category's first question", () => {
-    // Two single-question categories, both scoring 50 (scale diff 2).
+    // Two single-question categories, both scoring 50 (scale diff 50).
     const tiedQuestions: ResultQuestionRow[] = [
       { id: "m1", category: "money", type: "scale", text: "M", options: null, order_index: 0 },
       { id: "f1", category: "future", type: "scale", text: "F", options: null, order_index: 1 },
     ];
     const tiedAnswers: ResultAnswerRow[] = [
-      { question_id: "m1", participant: "A", value: 1 },
-      { question_id: "m1", participant: "B", value: 3 }, // diff 2 -> 50
-      { question_id: "f1", participant: "A", value: 1 },
-      { question_id: "f1", participant: "B", value: 3 }, // diff 2 -> 50
+      { question_id: "m1", participant: "A", value: 25 },
+      { question_id: "m1", participant: "B", value: 75 }, // diff 50 -> 50
+      { question_id: "f1", participant: "A", value: 25 },
+      { question_id: "f1", participant: "B", value: 75 }, // diff 50 -> 50
     ];
     const view = buildWavelengthResultView(tiedQuestions, tiedAnswers);
     expect(view.categories.map((c) => c.category)).toEqual(["money", "future"]);
@@ -168,8 +169,8 @@ describe("buildWavelengthResultView: Different Wavelengths", () => {
 
   it("is empty (not omitted/erroring) when there are no differences at all", () => {
     const perfectAnswers: ResultAnswerRow[] = questions.flatMap((q) => [
-      { question_id: q.id, participant: "A" as const, value: q.type === "scale" ? 3 : 0 },
-      { question_id: q.id, participant: "B" as const, value: q.type === "scale" ? 3 : 0 },
+      { question_id: q.id, participant: "A" as const, value: q.type === "scale" ? 50 : 0 },
+      { question_id: q.id, participant: "B" as const, value: q.type === "scale" ? 50 : 0 },
     ]);
     const view = buildWavelengthResultView(questions, perfectAnswers);
     expect(view.differentWavelengths).toEqual([]);
@@ -194,19 +195,19 @@ describe("buildWavelengthResultView: all questions", () => {
 });
 
 describe("formatAnswer: human-readable text for every question type", () => {
-  it("choice/situation: the option text, not the raw index", () => {
+  it("choice: the option text, not the raw index", () => {
     const q = { type: "choice" as const, options: ["Stay in", "Go out"] };
     expect(formatAnswer(q, 0)).toBe("Stay in");
     expect(formatAnswer(q, 1)).toBe("Go out");
   });
 
-  it("scale: the fixed 1-5 label, not the raw number", () => {
+  it("scale: the fixed 0/25/50/75/100 label, not the raw number alone", () => {
     const q = { type: "scale" as const, options: null };
-    expect(formatAnswer(q, 1)).toBe("Nada importante");
-    expect(formatAnswer(q, 2)).toBe("Poco importante");
-    expect(formatAnswer(q, 3)).toBe("Moderadamente importante");
-    expect(formatAnswer(q, 4)).toBe("Muy importante");
-    expect(formatAnswer(q, 5)).toBe("Esencial");
+    expect(formatAnswer(q, 0)).toBe("Nada importante");
+    expect(formatAnswer(q, 25)).toBe("Poco importante");
+    expect(formatAnswer(q, 50)).toBe("Moderadamente importante");
+    expect(formatAnswer(q, 75)).toBe("Muy importante");
+    expect(formatAnswer(q, 100)).toBe("Extremadamente importante");
   });
 });
 

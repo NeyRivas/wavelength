@@ -5,22 +5,16 @@ import { useActionState, useState } from "react";
 import { addQuestion } from "@/app/actions/questions";
 import { initialActionState } from "@/app/actions/shared";
 import {
+  CATEGORIES,
   CATEGORY_LABELS,
   MAX_CHOICE_OPTIONS,
   MIN_CHOICE_OPTIONS,
   QUESTION_TYPE_LABELS,
   QUESTION_TYPES,
-  type Category,
   type QuestionType,
 } from "@/lib/wavelength/categories";
 
-export function QuestionAddForm({
-  wavelengthId,
-  categories,
-}: {
-  wavelengthId: string;
-  categories: Category[];
-}) {
+export function QuestionAddForm({ wavelengthId }: { wavelengthId: string }) {
   const [state, formAction, pending] = useActionState(addQuestion, initialActionState);
   const [type, setType] = useState<QuestionType>("choice");
   const [optionCount, setOptionCount] = useState(MIN_CHOICE_OPTIONS);
@@ -31,10 +25,10 @@ export function QuestionAddForm({
       <input type="hidden" name="wavelengthId" value={wavelengthId} />
 
       <label htmlFor="add-question-category">Category</label>
-      {/* Only A's selected categories are offered — the category picker
-          already capped these to guarantee each one gets >=1 question. */}
-      <select id="add-question-category" name="category" defaultValue={categories[0]}>
-        {categories.map((c) => (
+      {/* All 6 fixed categories are always offered — there is no upfront
+          category selection to cap this list against (progressive creation). */}
+      <select id="add-question-category" name="category" defaultValue={CATEGORIES[0]}>
+        {CATEGORIES.map((c) => (
           <option key={c} value={c}>
             {CATEGORY_LABELS[c]}
           </option>
@@ -66,7 +60,10 @@ export function QuestionAddForm({
       />
 
       {type === "scale" ? (
-        <p>Answered on the fixed 1–5 importance scale.</p>
+        <p>
+          Answered on a fixed 5-level scale (Nada importante → Extremadamente importante) — no
+          options to set up.
+        </p>
       ) : (
         <fieldset>
           <legend>

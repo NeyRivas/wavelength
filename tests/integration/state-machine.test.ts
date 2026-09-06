@@ -67,6 +67,44 @@ describe("finalize_draft: DRAFT -> WAITING", () => {
   });
 });
 
+describe("finalize_draft: question count boundaries (§10 — no upfront target, just 5-12)", () => {
+  it("rejects finalizing with only 4 questions, even if all are answered", async () => {
+    const { aId, wavelengthId } = await createDraft();
+    const questions = await addQuestions(aId, wavelengthId, 4);
+    await answerAll(aId, wavelengthId, questions, "A");
+
+    await expect(finalizeAsA(aId, wavelengthId)).rejects.toThrow(/between 5 and 12 questions/);
+    expect(await getState(wavelengthId)).toBe("DRAFT");
+  });
+
+  it("succeeds with exactly 5 questions (the minimum)", async () => {
+    const { aId, wavelengthId } = await createDraft();
+    const questions = await addQuestions(aId, wavelengthId, 5);
+    await answerAll(aId, wavelengthId, questions, "A");
+
+    await finalizeAsA(aId, wavelengthId);
+    expect(await getState(wavelengthId)).toBe("WAITING");
+  });
+
+  it("succeeds with 8 questions (the recommended count, not a requirement)", async () => {
+    const { aId, wavelengthId } = await createDraft();
+    const questions = await addQuestions(aId, wavelengthId, 8);
+    await answerAll(aId, wavelengthId, questions, "A");
+
+    await finalizeAsA(aId, wavelengthId);
+    expect(await getState(wavelengthId)).toBe("WAITING");
+  });
+
+  it("succeeds with exactly 12 questions (the maximum)", async () => {
+    const { aId, wavelengthId } = await createDraft();
+    const questions = await addQuestions(aId, wavelengthId, 12);
+    await answerAll(aId, wavelengthId, questions, "A");
+
+    await finalizeAsA(aId, wavelengthId);
+    expect(await getState(wavelengthId)).toBe("WAITING");
+  });
+});
+
 describe("claim_participant_b: WAITING -> IN_PROGRESS", () => {
   async function draftReadyToShare() {
     const { aId, wavelengthId, shareToken } = await createDraft();

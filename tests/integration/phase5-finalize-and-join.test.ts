@@ -23,7 +23,7 @@ beforeEach(async () => {
 });
 
 async function draftReadyToFinalize(overrides: { questionCount?: number } = {}) {
-  const { aId, wavelengthId, shareToken } = await createDraft(overrides);
+  const { aId, wavelengthId, shareToken } = await createDraft();
   const questions = await addQuestions(aId, wavelengthId, overrides.questionCount);
   await answerAll(aId, wavelengthId, questions, "A");
   return { aId, wavelengthId, shareToken, questions };

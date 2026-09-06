@@ -26,7 +26,7 @@ export type WavelengthCategory =
   | "future"
   | "values_priorities";
 
-export type QuestionType = "choice" | "scale" | "situation";
+export type QuestionType = "choice" | "scale";
 
 export type ParticipantRole = "A" | "B";
 
@@ -42,8 +42,6 @@ export interface Database {
           participant_b_id: string | null;
           participant_a_alias: string | null;
           participant_b_alias: string | null;
-          question_count: number;
-          categories: WavelengthCategory[];
           created_at: string;
           waiting_at: string | null;
           in_progress_at: string | null;
@@ -52,6 +50,8 @@ export interface Database {
         // A only ever creates its own DRAFT row directly (an INSERT, not a
         // state transition). Every later mutation goes through the three
         // RPCs in Functions below — there is no client-facing Update type.
+        // No question count or category is declared upfront (progressive
+        // creation, resolved decision) — this insert is just the row's owner.
         Insert: {
           id?: string;
           share_token?: string;
@@ -60,8 +60,6 @@ export interface Database {
           participant_b_id?: null;
           participant_a_alias?: null;
           participant_b_alias?: null;
-          question_count: number;
-          categories: WavelengthCategory[];
           created_at?: string;
           waiting_at?: null;
           in_progress_at?: null;
@@ -134,8 +132,6 @@ export interface Database {
         Returns: {
           state: WavelengthState;
           participant_a_alias: string | null;
-          categories: WavelengthCategory[];
-          question_count: number;
           is_taken: boolean;
         }[];
       };

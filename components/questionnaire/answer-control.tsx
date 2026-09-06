@@ -4,20 +4,25 @@ import { useActionState } from "react";
 
 import type { ActionState } from "@/app/actions/shared";
 import { initialActionState } from "@/app/actions/shared";
-import { SCALE_LABELS } from "@/lib/wavelength/categories";
+import { SCALE_LABELS, SCALE_VALUES } from "@/lib/wavelength/categories";
 
 import type { QuestionRow } from "./types";
 
 type SaveAnswerAction = (prevState: ActionState, formData: FormData) => Promise<ActionState>;
 
 /**
- * Choice/situation: radio per option, value = its 0-based index (matches
- * the DB's stored answer shape). Scale: radio per fixed 1-5 label. Both A
+ * Choice: radio per option, value = its 0-based index (matches the DB's
+ * stored answer shape). Scale: radio per fixed 0/25/50/75/100 level. Both A
  * (before finalization) and B (before final submission) can change a saved
  * answer at any time — this is a plain upsert either way, so the same
  * component works for both; `action` picks which participant it writes as
  * (`saveAnswerA` or `saveAnswerB` — see app/actions/answers.ts, where
  * `participant` is hardcoded server-side per action, never client-supplied).
+ *
+ * There is no separate "Save"/"Update" button (QA fix §8.1): selecting a
+ * radio immediately submits the form. Whatever was selected last is the
+ * current answer — the visual selection and the persisted value never fall
+ * out of sync, since there's no intermediate unsaved state to desync from.
  */
 export function AnswerControl({
   action,
@@ -32,24 +37,29 @@ export function AnswerControl({
 }) {
   const [state, formAction, pending] = useActionState(action, initialActionState);
 
+  function submitOnChange(event: React.ChangeEvent<HTMLInputElement>) {
+    event.currentTarget.form?.requestSubmit();
+  }
+
   return (
     <form action={formAction}>
       <input type="hidden" name="wavelengthId" value={wavelengthId} />
       <input type="hidden" name="questionId" value={question.id} />
 
-      <fieldset>
+      <fieldset disabled={pending}>
         <legend>Your answer</legend>
         {question.type === "scale"
-          ? ([1, 2, 3, 4, 5] as const).map((n) => (
-              <label key={n}>
+          ? SCALE_VALUES.map((v) => (
+              <label key={v}>
                 <input
                   type="radio"
                   name="value"
-                  value={n}
-                  defaultChecked={currentValue === n}
+                  value={v}
+                  defaultChecked={currentValue === v}
+                  onChange={submitOnChange}
                   required
                 />
-                {SCALE_LABELS[n]}
+                {SCALE_LABELS[v]}
               </label>
             ))
           : question.options?.map((option, index) => (
@@ -59,6 +69,7 @@ export function AnswerControl({
                   name="value"
                   value={index}
                   defaultChecked={currentValue === index}
+                  onChange={submitOnChange}
                   required
                 />
                 {option}
@@ -66,11 +77,9 @@ export function AnswerControl({
             ))}
       </fieldset>
 
-      {state.error && <p role="alert">{state.error}</p>}
+      <p aria-live="polite">{pending ? "Saving…" : currentValue !== undefined ? "Saved" : ""}</p>
 
-      <button type="submit" disabled={pending}>
-        {currentValue === undefined ? "Save answer" : "Update answer"}
-      </button>
+      {state.error && <p role="alert">{state.error}</p>}
     </form>
   );
 }

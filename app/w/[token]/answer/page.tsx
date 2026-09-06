@@ -30,6 +30,25 @@ export default async function AnswerPage({ params }: { params: Promise<{ token: 
     .eq("share_token", token)
     .maybeSingle();
 
+  // QA fix §8.3: B trying to get back into the questions after already
+  // completing (browser back button, a stale tab, a bookmarked /answer URL)
+  // gets a clear, lighthearted "no cheating" message instead of a silent
+  // redirect that could look like the answer might still go through.
+  if (wavelength?.participant_b_id === userId && wavelength.state === "COMPLETED") {
+    return (
+      <main>
+        <h1>Nice try! 😄</h1>
+        <p>
+          You&apos;ve already answered this Wavelength — no going back and changing your mind now,
+          that&apos;s not really the same wavelength anymore.
+        </p>
+        <p>
+          <a href={`/w/${token}/result`}>See your result</a>
+        </p>
+      </main>
+    );
+  }
+
   if (!wavelength || wavelength.participant_b_id !== userId || wavelength.state !== "IN_PROGRESS") {
     redirect(`/w/${token}`);
   }

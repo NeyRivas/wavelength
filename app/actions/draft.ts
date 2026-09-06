@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 
 import { requireUserId } from "@/lib/supabase/identity";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { parseAlias, parseCreateDraftInput } from "@/lib/validation/schemas";
+import { parseAlias } from "@/lib/validation/schemas";
 
 import { GENERIC_ERROR, type ActionState } from "./shared";
 
@@ -17,23 +17,22 @@ import { GENERIC_ERROR, type ActionState } from "./shared";
  * verified session id; the `wavelengths_insert` RLS policy independently
  * requires it to match `auth.uid()` regardless of what this action sends,
  * so there is nothing here for a manipulated client to exploit.
+ *
+ * Takes no input at all: there is no upfront question count or category
+ * selection (progressive creation — resolved decision). Categories are
+ * chosen per-question as A builds the questionnaire; the question count is
+ * just whatever the current row count is, checked against the 5-12 range
+ * only when A finalizes.
  */
 export async function createDraft(
   _prevState: ActionState,
-  formData: FormData,
+  _formData: FormData,
 ): Promise<ActionState> {
-  const parsed = parseCreateDraftInput(formData);
-  if (!parsed.success) {
-    return { error: parsed.error };
-  }
-
   const userId = await requireUserId();
   const supabase = await createSupabaseServerClient();
 
   const { error } = await supabase.from("wavelengths").insert({
     participant_a_id: userId,
-    question_count: parsed.data.questionCount,
-    categories: parsed.data.categories,
   });
 
   if (error) {

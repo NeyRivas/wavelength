@@ -15,14 +15,6 @@ const choiceQ: ScoringQuestion = {
   optionCount: 3,
 };
 
-const situationQ: ScoringQuestion = {
-  id: "q-situation",
-  category: "money",
-  orderIndex: 1,
-  type: "situation",
-  optionCount: 2,
-};
-
 const scaleQ: ScoringQuestion = {
   id: "q-scale",
   category: "future",
@@ -42,39 +34,37 @@ describe("scoreQuestion: choice", () => {
   });
 });
 
-describe("scoreQuestion: situation", () => {
-  it("scores 100 when both picked the same option", () => {
-    expect(scoreQuestion(situationQ, 1, 1)).toBe(100);
-  });
-
-  it("scores 0 when they picked different options", () => {
-    expect(scoreQuestion(situationQ, 0, 1)).toBe(0);
-  });
-});
-
-describe("scoreQuestion: scale — every difference 0 through 4", () => {
+describe("scoreQuestion: scale — every level of the fixed 0/25/50/75/100 domain", () => {
   it.each([
-    [1, 1, 0, 100],
-    [3, 3, 0, 100],
-    [5, 5, 0, 100],
-    [1, 2, 1, 75],
-    [4, 3, 1, 75],
-    [1, 3, 2, 50],
-    [5, 3, 2, 50],
-    [1, 4, 3, 25],
-    [5, 2, 3, 25],
-    [1, 5, 4, 0],
-    [5, 1, 4, 0],
-  ])("|%i - %i| = %i -> %i", (a, b, _diff, expected) => {
+    [0, 0, 100],
+    [50, 50, 100],
+    [100, 100, 100],
+    [0, 25, 75],
+    [75, 50, 75],
+    [0, 50, 50],
+    [100, 50, 50],
+    [0, 75, 25],
+    [100, 25, 25],
+    [0, 100, 0],
+    [100, 0, 0],
+  ])("scoreQuestion(scale, %i, %i) -> %i", (a, b, expected) => {
     expect(scoreQuestion(scaleQ, a, b)).toBe(expected);
   });
 
   it("is symmetric (order of A/B doesn't matter)", () => {
-    expect(scoreQuestion(scaleQ, 2, 5)).toBe(scoreQuestion(scaleQ, 5, 2));
+    expect(scoreQuestion(scaleQ, 25, 100)).toBe(scoreQuestion(scaleQ, 100, 25));
+  });
+
+  it("matches the approved table exactly: same/1/2/3/4 levels apart -> 100/75/50/25/0", () => {
+    expect(scoreQuestion(scaleQ, 50, 50)).toBe(100); // same
+    expect(scoreQuestion(scaleQ, 50, 75)).toBe(75); // 1 level
+    expect(scoreQuestion(scaleQ, 25, 75)).toBe(50); // 2 levels
+    expect(scoreQuestion(scaleQ, 25, 100)).toBe(25); // 3 levels
+    expect(scoreQuestion(scaleQ, 0, 100)).toBe(0); // 4 levels
   });
 });
 
-describe("validateAnswerValue: choice/situation", () => {
+describe("validateAnswerValue: choice", () => {
   it("accepts every valid option index", () => {
     expect(() => validateAnswerValue(choiceQ, 0)).not.toThrow();
     expect(() => validateAnswerValue(choiceQ, 1)).not.toThrow();
@@ -95,19 +85,26 @@ describe("validateAnswerValue: choice/situation", () => {
 });
 
 describe("validateAnswerValue: scale", () => {
-  it("accepts every value 1 through 5", () => {
-    for (const v of [1, 2, 3, 4, 5]) {
+  it("accepts every value in the fixed domain", () => {
+    for (const v of [0, 25, 50, 75, 100]) {
       expect(() => validateAnswerValue(scaleQ, v)).not.toThrow();
     }
   });
 
-  it("rejects 0 and 6 (just outside the 1-5 range)", () => {
-    expect(() => validateAnswerValue(scaleQ, 0)).toThrow(InvalidAnswerValueError);
-    expect(() => validateAnswerValue(scaleQ, 6)).toThrow(InvalidAnswerValueError);
+  it("rejects the old 1-5 index domain — no longer valid", () => {
+    for (const v of [1, 2, 3, 4, 5]) {
+      expect(() => validateAnswerValue(scaleQ, v)).toThrow(InvalidAnswerValueError);
+    }
+  });
+
+  it("rejects values outside the fixed domain, including in-between numbers", () => {
+    expect(() => validateAnswerValue(scaleQ, -1)).toThrow(InvalidAnswerValueError);
+    expect(() => validateAnswerValue(scaleQ, 10)).toThrow(InvalidAnswerValueError);
+    expect(() => validateAnswerValue(scaleQ, 101)).toThrow(InvalidAnswerValueError);
   });
 
   it("rejects a non-integer value", () => {
-    expect(() => validateAnswerValue(scaleQ, 2.5)).toThrow(InvalidAnswerValueError);
+    expect(() => validateAnswerValue(scaleQ, 62.5)).toThrow(InvalidAnswerValueError);
   });
 
   it("rejects NaN", () => {

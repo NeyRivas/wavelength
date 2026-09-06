@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { requireUserId } from "@/lib/supabase/identity";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { MAX_QUESTIONS } from "@/lib/wavelength/categories";
 import {
   isDuplicateQuestionText,
   parseQuestionEditInput,
@@ -14,6 +15,7 @@ import {
 import { GENERIC_ERROR, isUniqueViolation, type ActionState } from "./shared";
 
 const DUPLICATE_QUESTION_ERROR = "You already have a question with this text.";
+const MAX_QUESTIONS_ERROR = `A Wavelength can have at most ${MAX_QUESTIONS} questions.`;
 
 type ServerSupabase = Awaited<ReturnType<typeof createSupabaseServerClient>>;
 
@@ -61,6 +63,12 @@ export async function addQuestion(
     .from("questions")
     .select("id", { count: "exact", head: true })
     .eq("wavelength_id", wavelengthId);
+
+  // Friendly pre-check before the round trip; the DB's own
+  // `questions_enforce_max_count` trigger is the authoritative backstop.
+  if ((count ?? 0) >= MAX_QUESTIONS) {
+    return { error: MAX_QUESTIONS_ERROR };
+  }
 
   const { error } = await supabase.from("questions").insert({
     wavelength_id: wavelengthId,
@@ -127,12 +135,13 @@ export async function updateQuestion(
 }
 
 /**
- * Changes a question's type, preserving its text and replacing options
- * appropriately for the new type (approved rule): cleared when switching to
- * `scale`, preserved unchanged when switching between `choice` and
- * `situation`, and given a minimal fresh placeholder when coming from
- * `scale` (which never had any) — A edits it right away via the normal
- * question form.
+ * Changes a question's type between `choice` and `scale`, preserving its
+ * text and replacing options appropriately for the new type (approved
+ * rule): cleared when switching to `scale`, given a minimal fresh
+ * placeholder when switching to `choice` (from `scale`, which never had
+ * any) — A edits it right away via the normal question form. The type
+ * `<select>` itself is the only UI trigger for this (no separate confirm
+ * button — see TypeChangeControl).
  */
 export async function changeQuestionType(
   _prevState: ActionState,
@@ -157,9 +166,7 @@ export async function changeQuestionType(
     return { error: null };
   }
 
-  const wasChoiceLike = current.type === "choice" || current.type === "situation";
-  const isChoiceLike = newType === "choice" || newType === "situation";
-  const options = !isChoiceLike ? null : wasChoiceLike ? current.options : ["Option 1", "Option 2"];
+  const options = newType === "scale" ? null : (current.options ?? ["Option 1", "Option 2"]);
 
   const { error } = await supabase
     .from("questions")

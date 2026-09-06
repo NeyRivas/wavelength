@@ -21,7 +21,13 @@ import {
   type ScoringAnswer,
   type ScoringQuestion,
 } from "../scoring/score";
-import { SCALE_LABELS, type Category, type QuestionType } from "./categories";
+import {
+  SCALE_LABELS,
+  SCALE_VALUES,
+  type Category,
+  type QuestionType,
+  type ScaleValue,
+} from "./categories";
 
 export interface ResultQuestionRow {
   id: string;
@@ -80,12 +86,13 @@ export interface WavelengthResultView {
   allQuestions: DisplayQuestion[];
 }
 
-/** The 1-5 scale is a fixed, closed set (lib/wavelength/categories.ts) —
- * this narrows an arbitrary DB integer to that literal union, falling back
- * to the raw number only if it's ever somehow out of range (defensive;
- * `validateAnswerValue` already guarantees 1-5 for real data). */
-function isScaleValue(value: number): value is 1 | 2 | 3 | 4 | 5 {
-  return Number.isInteger(value) && value >= 1 && value <= 5;
+/** The scale value domain is a fixed, closed set (lib/wavelength/categories.ts
+ * SCALE_VALUES) — this narrows an arbitrary DB integer to that literal
+ * union, falling back to the raw number only if it's ever somehow out of
+ * range (defensive; `validateAnswerValue` already guarantees this for real
+ * data). */
+function isScaleValue(value: number): value is ScaleValue {
+  return (SCALE_VALUES as readonly number[]).includes(value);
 }
 
 export function formatAnswer(

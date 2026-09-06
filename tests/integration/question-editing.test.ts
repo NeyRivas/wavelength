@@ -98,21 +98,14 @@ describe("question editing: type change replaces options appropriately", () => {
     expect(rows[0]?.options).toEqual(["Option 1", "Option 2"]);
   });
 
-  it("switching choice -> situation preserves existing options unchanged", async () => {
+  it("rejects 'situation' as a question type — removed from the MVP", async () => {
     const { aId, wavelengthId } = await createDraft();
     const [q] = await addQuestions(aId, wavelengthId, 1); // choice, ["Stay in", "Go out"]
 
-    await asRequest(aId, (client) =>
-      client.query("update questions set type = 'situation' where id = $1", [q!.id]),
-    );
-
-    const rows = await asRequest(aId, async (client) => {
-      const { rows } = await client.query("select type, options from questions where id = $1", [
-        q!.id,
-      ]);
-      return rows;
-    });
-    expect(rows[0]?.type).toBe("situation");
-    expect(rows[0]?.options).toEqual(["Stay in", "Go out"]);
+    await expect(
+      asRequest(aId, (client) =>
+        client.query("update questions set type = 'situation' where id = $1", [q!.id]),
+      ),
+    ).rejects.toThrow(/invalid input value for enum/);
   });
 });

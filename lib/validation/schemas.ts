@@ -11,56 +11,14 @@ import { z } from "zod";
 import {
   CATEGORIES,
   MAX_CHOICE_OPTIONS,
-  MAX_QUESTIONS,
   MIN_CHOICE_OPTIONS,
-  MIN_QUESTIONS,
   QUESTION_TYPES,
-  maxSelectableCategories,
+  SCALE_VALUES,
   type Category,
 } from "../wavelength/categories";
 
 export const categorySchema = z.enum(CATEGORIES);
 export const questionTypeSchema = z.enum(QUESTION_TYPES);
-
-export const questionCountSchema = z
-  .number()
-  .int("question count must be a whole number")
-  .min(MIN_QUESTIONS, `choose at least ${MIN_QUESTIONS} questions`)
-  .max(MAX_QUESTIONS, `choose at most ${MAX_QUESTIONS} questions`);
-
-/**
- * Categories: 1-6, deduplicated, and capped at `min(6, questionCount)` —
- * the resolved decision in ARCHITECTURE.md §13.A (every selected category
- * is guaranteed >=1 question). The DB's own check constraint
- * (`array_length(categories,1) <= question_count`) is the authoritative
- * backstop; this just gives a friendlier message before that round trip.
- */
-export function categoriesSchema(questionCount: number) {
-  const max = maxSelectableCategories(questionCount);
-  return z
-    .array(categorySchema)
-    .min(1, "choose at least 1 category")
-    .max(max, `choose at most ${max} categories for ${questionCount} questions`)
-    .refine((cats) => new Set(cats).size === cats.length, {
-      message: "duplicate category",
-    });
-}
-
-export const createDraftInputSchema = z
-  .object({
-    questionCount: questionCountSchema,
-    categories: z.array(categorySchema),
-  })
-  .superRefine((data, ctx) => {
-    const result = categoriesSchema(data.questionCount).safeParse(data.categories);
-    if (!result.success) {
-      for (const issue of result.error.issues) {
-        ctx.addIssue({ ...issue, path: ["categories"] });
-      }
-    }
-  });
-
-export type CreateDraftInput = z.infer<typeof createDraftInputSchema>;
 
 export const questionTextSchema = z
   .string()
@@ -82,16 +40,13 @@ export const optionsSchema = z
     message: "options must be distinct from one another",
   });
 
-/** choice/situation share this shape; only the literal `type` differs. */
-const choiceLikeQuestionSchema = z.object({
-  category: categorySchema,
-  text: questionTextSchema,
-  options: optionsSchema,
-});
-
 export const questionInputSchema = z.discriminatedUnion("type", [
-  choiceLikeQuestionSchema.extend({ type: z.literal("choice") }),
-  choiceLikeQuestionSchema.extend({ type: z.literal("situation") }),
+  z.object({
+    type: z.literal("choice"),
+    category: categorySchema,
+    text: questionTextSchema,
+    options: optionsSchema,
+  }),
   z.object({
     type: z.literal("scale"),
     category: categorySchema,
@@ -102,12 +57,11 @@ export const questionInputSchema = z.discriminatedUnion("type", [
 export type QuestionInput = z.infer<typeof questionInputSchema>;
 
 /** The value a participant can answer a given question with. */
-export function answerValueSchema(question: {
-  type: "choice" | "situation" | "scale";
-  optionCount?: number;
-}) {
+export function answerValueSchema(question: { type: "choice" | "scale"; optionCount?: number }) {
   if (question.type === "scale") {
-    return z.number().int().min(1).max(5);
+    return z.union(
+      SCALE_VALUES.map((v) => z.literal(v)) as [z.ZodLiteral<number>, ...z.ZodLiteral<number>[]],
+    );
   }
   const optionCount = question.optionCount ?? MAX_CHOICE_OPTIONS;
   return z
@@ -137,18 +91,6 @@ export type ParseResult<T> = { success: true; data: T } | { success: false; erro
 
 function firstIssueMessage(error: z.ZodError): string {
   return error.issues[0]?.message ?? "invalid input";
-}
-
-export function parseCreateDraftInput(formData: FormData): ParseResult<CreateDraftInput> {
-  const questionCountRaw = formData.get("questionCount");
-  const questionCount = Number(questionCountRaw);
-  const categories = formData.getAll("categories").map(String);
-
-  const result = createDraftInputSchema.safeParse({ questionCount, categories });
-  if (!result.success) {
-    return { success: false, error: firstIssueMessage(result.error) };
-  }
-  return { success: true, data: result.data };
 }
 
 export function parseQuestionInput(formData: FormData): ParseResult<QuestionInput> {
@@ -187,7 +129,7 @@ export function parseQuestionInput(formData: FormData): ParseResult<QuestionInpu
  */
 export function parseQuestionEditInput(
   formData: FormData,
-  currentType: "choice" | "situation" | "scale",
+  currentType: "choice" | "scale",
 ): ParseResult<{ text: string; options?: string[] }> {
   const text = String(formData.get("text") ?? "");
 
@@ -218,7 +160,7 @@ export function parseQuestionEditInput(
 
 export function parseAnswerValue(
   formData: FormData,
-  question: { type: "choice" | "situation" | "scale"; optionCount?: number },
+  question: { type: "choice" | "scale"; optionCount?: number },
 ): ParseResult<number> {
   const raw = formData.get("value");
   const value = Number(raw);

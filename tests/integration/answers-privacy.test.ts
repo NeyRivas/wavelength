@@ -220,16 +220,17 @@ describe("answers: value validation", () => {
     ).rejects.toThrow();
   });
 
-  it("rejects a scale value outside 1-5", async () => {
+  it("rejects a scale value outside the fixed 0/25/50/75/100 domain", async () => {
     const { aId, wavelengthId } = await createDraft();
     const questions = await addQuestions(aId, wavelengthId, 2); // question #1 is 'scale'
     const scaleQuestion = questions[1]!;
 
+    // The old 1-5 index domain no longer validates at all.
     await expect(
       asRequest(aId, (client) =>
         client.query(
           `insert into answers (wavelength_id, question_id, participant, value)
-           values ($1, $2, 'A', '0'::jsonb)`,
+           values ($1, $2, 'A', '3'::jsonb)`,
           [wavelengthId, scaleQuestion.id],
         ),
       ),
@@ -239,7 +240,7 @@ describe("answers: value validation", () => {
       asRequest(aId, (client) =>
         client.query(
           `insert into answers (wavelength_id, question_id, participant, value)
-           values ($1, $2, 'A', '6'::jsonb)`,
+           values ($1, $2, 'A', '101'::jsonb)`,
           [wavelengthId, scaleQuestion.id],
         ),
       ),

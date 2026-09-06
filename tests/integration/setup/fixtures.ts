@@ -2,7 +2,7 @@ import { asRequest, createTestUser } from "./db";
 
 export interface FixtureQuestion {
   category: string;
-  type: "choice" | "scale" | "situation";
+  type: "choice" | "scale";
   text: string;
   options: string[] | null;
 }
@@ -17,7 +17,7 @@ export const DEFAULT_QUESTIONS: FixtureQuestion[] = [
   { category: "lifestyle", type: "scale", text: "Importance of routine", options: null },
   {
     category: "money",
-    type: "situation",
+    type: "choice",
     text: "Unexpected bonus arrives",
     options: ["Save it", "Spend it", "Invest it"],
   },
@@ -35,25 +35,19 @@ export const DEFAULT_QUESTIONS: FixtureQuestion[] = [
   },
 ];
 
-export async function createDraft(
-  overrides: { questionCount?: number; categories?: string[] } = {},
-): Promise<{ aId: string; wavelengthId: string; shareToken: string }> {
+/** Progressive creation, resolved decision: `wavelengths` no longer carries
+ * an upfront question_count/categories — this is just an ownership row. */
+export async function createDraft(): Promise<{
+  aId: string;
+  wavelengthId: string;
+  shareToken: string;
+}> {
   const aId = await createTestUser();
-  const questionCount = overrides.questionCount ?? DEFAULT_QUESTIONS.length;
-  const categories = overrides.categories ?? [
-    "relationship",
-    "lifestyle",
-    "money",
-    "future",
-    "values_priorities",
-  ];
 
   const row = await asRequest(aId, async (client) => {
     const { rows } = await client.query<{ id: string; share_token: string }>(
-      `insert into wavelengths (participant_a_id, question_count, categories)
-       values ($1, $2, $3::wavelength_category[])
-       returning id, share_token`,
-      [aId, questionCount, categories],
+      `insert into wavelengths (participant_a_id) values ($1) returning id, share_token`,
+      [aId],
     );
     return rows[0]!;
   });
@@ -97,9 +91,10 @@ export async function addQuestions(
 }
 
 /** A deterministically valid answer value for a given question (used when
- * the specific value doesn't matter to the test). */
+ * the specific value doesn't matter to the test). Scale values are one of
+ * the fixed 0/25/50/75/100 domain, not a 1-5 index. */
 export function validAnswerValue(q: CreatedQuestion): number {
-  return q.type === "scale" ? 3 : 0;
+  return q.type === "scale" ? 50 : 0;
 }
 
 export async function answerAll(

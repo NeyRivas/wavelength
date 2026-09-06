@@ -158,7 +158,7 @@ describe("computeCategoryScores", () => {
 
 const baseQuestions: ScoringQuestion[] = [
   { id: "q1", category: "relationship", orderIndex: 0, type: "choice", optionCount: 2 },
-  { id: "q2", category: "money", orderIndex: 1, type: "situation", optionCount: 3 },
+  { id: "q2", category: "money", orderIndex: 1, type: "choice", optionCount: 3 },
   { id: "q3", category: "future", orderIndex: 2, type: "scale" },
 ];
 
@@ -168,8 +168,8 @@ function fullAnswers(): ScoringAnswer[] {
     { questionId: "q1", participant: "B", value: 0 },
     { questionId: "q2", participant: "A", value: 1 },
     { questionId: "q2", participant: "B", value: 2 },
-    { questionId: "q3", participant: "A", value: 1 },
-    { questionId: "q3", participant: "B", value: 5 },
+    { questionId: "q3", participant: "A", value: 0 },
+    { questionId: "q3", participant: "B", value: 100 },
   ];
 }
 

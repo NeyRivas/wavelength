@@ -16,7 +16,7 @@ export default async function CreatePage() {
   // questionnaire, and this keeps the flow simple without a draft-picker UI.
   const { data: draft } = await supabase
     .from("wavelengths")
-    .select("id, share_token, question_count, categories")
+    .select("id, share_token")
     .eq("participant_a_id", userId)
     .eq("state", "DRAFT")
     .order("created_at", { ascending: false })

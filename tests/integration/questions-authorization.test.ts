@@ -89,6 +89,29 @@ describe("questions: A can CRUD only while DRAFT", () => {
   });
 });
 
+describe("questions: max count (§10 — 12 is a hard cap, enforced independently of RLS)", () => {
+  it("allows building up to exactly 12 questions", async () => {
+    const { aId, wavelengthId } = await createDraft();
+    const questions = await addQuestions(aId, wavelengthId, 12);
+    expect(questions).toHaveLength(12);
+  });
+
+  it("rejects adding a 13th question", async () => {
+    const { aId, wavelengthId } = await createDraft();
+    await addQuestions(aId, wavelengthId, 12);
+
+    await expect(
+      asRequest(aId, (client) =>
+        client.query(
+          `insert into questions (wavelength_id, category, type, text, options, order_index)
+           values ($1, 'relationship', 'choice', 'One question too many', '["a","b"]'::jsonb, 12)`,
+          [wavelengthId],
+        ),
+      ),
+    ).rejects.toThrow(/at most 12 questions/);
+  });
+});
+
 describe("questions: duplicate prevention", () => {
   it("rejects two questions with the same normalized text in one questionnaire", async () => {
     const { aId, wavelengthId } = await createDraft();

@@ -19,11 +19,7 @@ describe("wavelengths: creation (RLS insert policy)", () => {
 
     await expect(
       asRequest(aId, (client) =>
-        client.query(
-          `insert into wavelengths (participant_a_id, question_count, categories)
-           values ($1, 5, '{relationship}'::wavelength_category[])`,
-          [someoneElse],
-        ),
+        client.query(`insert into wavelengths (participant_a_id) values ($1)`, [someoneElse]),
       ),
     ).rejects.toThrow();
   });
@@ -31,37 +27,7 @@ describe("wavelengths: creation (RLS insert policy)", () => {
   it("rejects a fully anonymous (unauthenticated) insert attempt", async () => {
     await expect(
       asRequest(null, (client) =>
-        client.query(
-          `insert into wavelengths (participant_a_id, question_count, categories)
-           values ($1, 5, '{relationship}'::wavelength_category[])`,
-          [randomUserId()],
-        ),
-      ),
-    ).rejects.toThrow();
-  });
-
-  it("rejects selecting more categories than the question count allows (resolved decision §13.A)", async () => {
-    const aId = await createTestUser();
-    await expect(
-      asRequest(aId, (client) =>
-        client.query(
-          `insert into wavelengths (participant_a_id, question_count, categories)
-           values ($1, 5, '{relationship,lifestyle,money,future,values_priorities,adventures_travel}'::wavelength_category[])`,
-          [aId],
-        ),
-      ),
-    ).rejects.toThrow(/categories_capped_by_question_count/);
-  });
-
-  it("rejects a question_count outside 5-12", async () => {
-    const aId = await createTestUser();
-    await expect(
-      asRequest(aId, (client) =>
-        client.query(
-          `insert into wavelengths (participant_a_id, question_count, categories)
-           values ($1, 4, '{relationship}'::wavelength_category[])`,
-          [aId],
-        ),
+        client.query(`insert into wavelengths (participant_a_id) values ($1)`, [randomUserId()]),
       ),
     ).rejects.toThrow();
   });

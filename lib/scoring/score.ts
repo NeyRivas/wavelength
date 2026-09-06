@@ -5,9 +5,13 @@
  * and is meant to be re-run on every result view rather than cached
  * anywhere (source of truth stays Questions + Answers + Scoring Rules).
  *
- * Scoring rules (approved, unchanged from ARCHITECTURE.md §8):
- *   - choice / situation: same option = 100, different option = 0
- *   - scale: |difference| 0→100, 1→75, 2→50, 3→25, 4→0
+ * Scoring rules (approved, ARCHITECTURE.md §8 — MVP: `situation` removed,
+ * scale re-based on 0/25/50/75/100 values):
+ *   - choice: same option = 100, different option = 0
+ *   - scale: values are 0/25/50/75/100 (see lib/wavelength/categories.ts
+ *     SCALE_VALUES); score = 100 - |A - B|, which reproduces the approved
+ *     table exactly (same value→100, one level apart→75, two→50, three→25,
+ *     four→0)
  *   - global score: simple average of every question's score, equal weight
  *   - category score: simple average of that category's question scores,
  *     equal weight
@@ -24,7 +28,7 @@
  * order") never has to re-derive it.
  */
 
-import type { Category, QuestionType } from "../wavelength/categories";
+import { SCALE_VALUES, type Category, type QuestionType } from "../wavelength/categories";
 
 export type Participant = "A" | "B";
 
@@ -33,19 +37,19 @@ export type AlignmentLevel = "High Alignment" | "Mixed Alignment" | "Low Alignme
 /**
  * A question as scoring needs to see it — deliberately decoupled from the
  * DB row shape so this module has zero Supabase/DB dependency. `choice`
- * and `situation` carry `optionCount` (their answer values are option
- * indices, 0-based, and need a range to validate against); `scale` doesn't
- * — its range (1-5) is fixed and universal.
+ * carries `optionCount` (its answer values are option indices, 0-based, and
+ * need a range to validate against); `scale` doesn't — its value domain
+ * (SCALE_VALUES: 0/25/50/75/100) is fixed and universal.
  */
 export type ScoringQuestion = { id: string; category: Category; orderIndex: number } & (
-  | { type: Extract<QuestionType, "choice" | "situation">; optionCount: number }
+  | { type: Extract<QuestionType, "choice">; optionCount: number }
   | { type: Extract<QuestionType, "scale"> }
 );
 
 /**
  * One participant's answer to one question.
- *  - choice / situation: 0-based index into that question's options
- *  - scale: integer 1-5
+ *  - choice: 0-based index into that question's options
+ *  - scale: one of SCALE_VALUES (0, 25, 50, 75, 100)
  */
 export interface ScoringAnswer {
   questionId: string;
@@ -130,8 +134,6 @@ export function roundHalfUp(value: number): number {
 
 // ── per-question scoring ───────────────────────────────────────────────
 
-const SCALE_DIFF_TO_SCORE = [100, 75, 50, 25, 0] as const;
-
 /** Validates a single answer value against its question's type/range.
  * Throws `InvalidAnswerValueError` rather than returning a boolean — an
  * out-of-range or non-integer value here always indicates a caller bug
@@ -145,9 +147,9 @@ export function validateAnswerValue(question: ScoringQuestion, value: number): v
   }
 
   if (question.type === "scale") {
-    if (value < 1 || value > 5) {
+    if (!(SCALE_VALUES as readonly number[]).includes(value)) {
       throw new InvalidAnswerValueError(
-        `scale answer for question ${question.id} must be between 1 and 5, got ${value}`,
+        `scale answer for question ${question.id} must be one of ${SCALE_VALUES.join(", ")}, got ${value}`,
       );
     }
     return;
@@ -162,26 +164,19 @@ export function validateAnswerValue(question: ScoringQuestion, value: number): v
 
 /**
  * The score (0-100) for a single question, given both participants'
- * already-validated answer values. Exported directly so every rule
- * (choice/situation equality, each scale difference 0-4) is independently
- * testable without going through the aggregate pipeline.
+ * already-validated answer values. Exported directly so every rule (choice
+ * equality, the scale formula) is independently testable without going
+ * through the aggregate pipeline.
  */
 export function scoreQuestion(question: ScoringQuestion, valueA: number, valueB: number): number {
-  if (question.type === "choice" || question.type === "situation") {
+  if (question.type === "choice") {
     return valueA === valueB ? 100 : 0;
   }
 
-  const diff = Math.abs(valueA - valueB);
-  const score = SCALE_DIFF_TO_SCORE[diff];
-  if (score === undefined) {
-    // Unreachable once values have passed validateAnswerValue (1-5 each
-    // bounds diff to 0-4), but scoreQuestion is a public function that can
-    // be called directly — kept as a defensive, clearly-labeled guard.
-    throw new InvalidAnswerValueError(
-      `scale difference out of range for question ${question.id}: ${diff}`,
-    );
-  }
-  return score;
+  // scale: values are themselves 0/25/50/75/100 (SCALE_VALUES), so the
+  // approved table ("same→100, one level apart→75, …, four levels→0") is
+  // exactly `100 - |A - B|` — no lookup table needed.
+  return 100 - Math.abs(valueA - valueB);
 }
 
 /**

@@ -3,91 +3,15 @@ import { describe, expect, it } from "vitest";
 import {
   aliasSchema,
   answerValueSchema,
-  categoriesSchema,
-  createDraftInputSchema,
   isDuplicateQuestionText,
   normalizeText,
   optionsSchema,
   parseAlias,
   parseAnswerValue,
-  parseCreateDraftInput,
   parseQuestionInput,
-  questionCountSchema,
   questionInputSchema,
   questionTextSchema,
 } from "../../lib/validation/schemas";
-
-describe("questionCountSchema", () => {
-  it("accepts the full 5-12 range", () => {
-    for (const n of [5, 6, 8, 11, 12]) {
-      expect(questionCountSchema.safeParse(n).success).toBe(true);
-    }
-  });
-
-  it("rejects just outside the range", () => {
-    expect(questionCountSchema.safeParse(4).success).toBe(false);
-    expect(questionCountSchema.safeParse(13).success).toBe(false);
-  });
-
-  it("rejects a non-integer", () => {
-    expect(questionCountSchema.safeParse(8.5).success).toBe(false);
-  });
-});
-
-describe("categoriesSchema: capped by question count (resolved decision §13.A)", () => {
-  it("allows up to the full 6 once question count reaches 6", () => {
-    const schema = categoriesSchema(6);
-    expect(
-      schema.safeParse([
-        "relationship",
-        "lifestyle",
-        "money",
-        "adventures_travel",
-        "future",
-        "values_priorities",
-      ]).success,
-    ).toBe(true);
-  });
-
-  it("caps selectable categories at the question count when below 6", () => {
-    const schema = categoriesSchema(3);
-    expect(schema.safeParse(["relationship", "lifestyle", "money"]).success).toBe(true);
-    expect(schema.safeParse(["relationship", "lifestyle", "money", "future"]).success).toBe(false);
-  });
-
-  it("requires at least 1 category", () => {
-    expect(categoriesSchema(8).safeParse([]).success).toBe(false);
-  });
-
-  it("rejects a duplicate category", () => {
-    expect(categoriesSchema(8).safeParse(["relationship", "relationship"]).success).toBe(false);
-  });
-});
-
-describe("createDraftInputSchema", () => {
-  it("accepts a valid combination", () => {
-    const result = createDraftInputSchema.safeParse({
-      questionCount: 5,
-      categories: ["relationship", "lifestyle"],
-    });
-    expect(result.success).toBe(true);
-  });
-
-  it("rejects more categories than the question count allows, even though each field is individually valid", () => {
-    const result = createDraftInputSchema.safeParse({
-      questionCount: 5,
-      categories: [
-        "relationship",
-        "lifestyle",
-        "money",
-        "future",
-        "values_priorities",
-        "adventures_travel",
-      ],
-    });
-    expect(result.success).toBe(false);
-  });
-});
 
 describe("questionTextSchema", () => {
   it("rejects text shorter than 3 characters", () => {
@@ -159,6 +83,16 @@ describe("questionInputSchema", () => {
     expect(result.success).toBe(true);
   });
 
+  it("rejects 'situation' — removed from the MVP", () => {
+    const result = questionInputSchema.safeParse({
+      type: "situation",
+      category: "relationship",
+      text: "Weekend plans?",
+      options: ["Stay in", "Go out"],
+    });
+    expect(result.success).toBe(false);
+  });
+
   it("rejects an unknown type", () => {
     const result = questionInputSchema.safeParse({
       type: "essay",
@@ -179,17 +113,18 @@ describe("questionInputSchema", () => {
 });
 
 describe("answerValueSchema", () => {
-  it("accepts 1-5 for a scale question", () => {
+  it("accepts every value in the fixed 0/25/50/75/100 scale domain", () => {
     const schema = answerValueSchema({ type: "scale" });
-    for (const v of [1, 2, 3, 4, 5]) {
+    for (const v of [0, 25, 50, 75, 100]) {
       expect(schema.safeParse(v).success).toBe(true);
     }
   });
 
-  it("rejects 0 and 6 for a scale question", () => {
+  it("rejects values outside the fixed scale domain, including the old 1-5 index", () => {
     const schema = answerValueSchema({ type: "scale" });
-    expect(schema.safeParse(0).success).toBe(false);
-    expect(schema.safeParse(6).success).toBe(false);
+    for (const v of [1, 2, 3, 4, 5, -1, 10, 99]) {
+      expect(schema.safeParse(v).success).toBe(false);
+    }
   });
 
   it("accepts 0..optionCount-1 for a choice question", () => {
@@ -216,36 +151,6 @@ describe("normalizeText / isDuplicateQuestionText", () => {
 });
 
 describe("FormData parsing helpers", () => {
-  it("parseCreateDraftInput reads a number field and repeated checkbox values", () => {
-    const fd = new FormData();
-    fd.set("questionCount", "5");
-    fd.append("categories", "relationship");
-    fd.append("categories", "lifestyle");
-
-    const result = parseCreateDraftInput(fd);
-    expect(result).toEqual({
-      success: true,
-      data: { questionCount: 5, categories: ["relationship", "lifestyle"] },
-    });
-  });
-
-  it("parseCreateDraftInput returns a friendly error for an invalid combination", () => {
-    const fd = new FormData();
-    fd.set("questionCount", "5");
-    for (const c of [
-      "relationship",
-      "lifestyle",
-      "money",
-      "future",
-      "values_priorities",
-      "adventures_travel",
-    ]) {
-      fd.append("categories", c);
-    }
-    const result = parseCreateDraftInput(fd);
-    expect(result.success).toBe(false);
-  });
-
   it("parseQuestionInput drops blank option rows before validating", () => {
     const fd = new FormData();
     fd.set("type", "choice");
@@ -282,6 +187,13 @@ describe("FormData parsing helpers", () => {
     fd.set("value", "2");
     const result = parseAnswerValue(fd, { type: "choice", optionCount: 3 });
     expect(result).toEqual({ success: true, data: 2 });
+  });
+
+  it("parseAnswerValue reads a scale value from the 0/25/50/75/100 domain", () => {
+    const fd = new FormData();
+    fd.set("value", "75");
+    const result = parseAnswerValue(fd, { type: "scale" });
+    expect(result).toEqual({ success: true, data: 75 });
   });
 
   it("parseAnswerValue rejects an out-of-range value", () => {

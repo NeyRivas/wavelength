@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import { ResultReveal } from "@/components/result/result-reveal";
 import { ResultView } from "@/components/result/result-view";
+import { HomeNav } from "@/components/wavelength/home-nav";
 import { requireUserId } from "@/lib/supabase/identity";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { buildWavelengthResultView, ResultDataError } from "@/lib/wavelength/result";
@@ -25,12 +26,12 @@ import { buildWavelengthResultView, ResultDataError } from "@/lib/wavelength/res
  */
 export default async function ResultPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
-  await requireUserId();
+  const userId = await requireUserId();
   const supabase = await createSupabaseServerClient();
 
   const { data: wavelength } = await supabase
     .from("wavelengths")
-    .select("id, state")
+    .select("id, state, participant_a_id")
     .eq("share_token", token)
     .maybeSingle();
 
@@ -83,8 +84,14 @@ export default async function ResultPage({ params }: { params: Promise<{ token: 
     );
   }
 
+  // QA fix §8.5: the clickable "Wavelength" nav (start a new one) only ever
+  // appears here, and only for A — before A has seen a result, there is no
+  // way to navigate away from the current flow via this element.
+  const isParticipantA = wavelength.participant_a_id === userId;
+
   return (
     <main>
+      {isParticipantA && <HomeNav />}
       <ResultReveal>
         <ResultView view={view} />
       </ResultReveal>

@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 
 import { isValidTransition } from "../../lib/wavelength/state";
-import { maxSelectableCategories } from "../../lib/wavelength/categories";
 
 // Smoke tests for the Phase 0 scaffolding utilities (testing foundations).
 // The authoritative rules live in the database (supabase/migrations) and are
@@ -29,17 +28,5 @@ describe("isValidTransition", () => {
   it("rejects any transition out of COMPLETED", () => {
     expect(isValidTransition("COMPLETED", "WAITING")).toBe(false);
     expect(isValidTransition("COMPLETED", "IN_PROGRESS")).toBe(false);
-  });
-});
-
-describe("maxSelectableCategories", () => {
-  it("caps at the question count when below 6", () => {
-    expect(maxSelectableCategories(5)).toBe(5);
-    expect(maxSelectableCategories(3)).toBe(3);
-  });
-
-  it("caps at 6 once the question count reaches or exceeds it", () => {
-    expect(maxSelectableCategories(6)).toBe(6);
-    expect(maxSelectableCategories(12)).toBe(6);
   });
 });
