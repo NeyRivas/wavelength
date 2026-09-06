@@ -15,6 +15,12 @@ next-env.d.ts
 tests/integration/.tmp-pg/
 *.log
 
+# e2e (Playwright)
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
 # misc
 .DS_Store
 *.tsbuildinfo

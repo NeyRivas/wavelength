@@ -65,7 +65,8 @@ wavelength/
 ├── tests/
 │   ├── unit/                         # scoring + validation (Vitest)
 │   ├── integration/                  # two-anonymous-session RLS behavior tests
-│   └── e2e/                          # Playwright, two browser contexts (A + B)
+│   └── e2e/                          # ✅ Playwright configured; 4 specs reproducing known QA bugs (see below) — full A+B flow coverage still pending
+├── playwright.config.ts              # ✅ real Chromium via /opt/pw-browsers in this sandbox; needs a reachable Supabase project to actually run anywhere
 ├── ARCHITECTURE.md
 ├── .env.example
 └── package.json
@@ -323,7 +324,7 @@ Run server-side inside `getResult`, after fetching questions + both participants
 
 - **Unit (Vitest)** — the scoring module (table-driven: every diff 0–4, both alignment-boundary values 49/50 and 74/75, tie handling) and validation schemas (question count bounds, category count bounds, duplicate detection). Fully offline, no DB.
 - **Integration (RLS-focused)** — spin up Supabase locally (`supabase start`), sign in two distinct anonymous sessions as "A" and "B," and assert the actual privacy rules against the real database: B cannot `SELECT` A's answers pre-completion (empty result, not an error), A cannot write B's answers, no client can force an illegal state transition, locked fields reject writes once `WAITING`/`COMPLETED`, the second claimant of a B slot is rejected. This is the layer that proves the product's privacy guarantees, not just the UI.
-- **E2E (Playwright)** — two browser contexts driving the full `Create → Answer → Share → Compare → Shared Result` flow end-to-end, including "B leaves and resumes on the same browser."
+- **E2E (Playwright)** — ✅ configured (`playwright.config.ts`, `tests/e2e/`), driving a real Chromium against the real Next.js dev server — no mocks, unlike the layers above. Currently 4 specs targeting known QA bugs found by manual testing (edit-after-answer, remove-specific-option, delete-then-create, b-locked-after-submit) rather than the full happy-path flow, which is still pending. **Needs a reachable Supabase project** (real `NEXT_PUBLIC_SUPABASE_URL`/`NEXT_PUBLIC_SUPABASE_ANON_KEY` in `.env.local`) to get past the very first page load — in a sandbox with no network access to Supabase, every test fails immediately at that step (a 500 from the unhandled `signInAnonymously()` rejection in `lib/supabase/proxy.ts`), which is an environment limitation, not a test or app bug. Two browser contexts driving the full `Create → Answer → Share → Compare → Shared Result` flow end-to-end, including "B leaves and resumes on the same browser," remains the eventual goal.
 
 ---
 
