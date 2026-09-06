@@ -163,7 +163,7 @@ create index answers_wavelength_participant_idx on answers (wavelength_id, parti
 
 A `BEFORE INSERT/UPDATE` trigger on `answers` validates that `value` is shape/range-correct for the referenced question's `type`/`options` (can't be expressed as a plain `check` because it must join to `questions`).
 
-**Category balance is intentionally not a DB constraint.** "Reasonably balanced across categories" is resolved as UI guidance only (§13.B) — the question editor shows a live per-category count/indicator while A adds questions, but nothing in the schema or RLS blocks an uneven distribution, and `finalizeDraft` never rejects a draft for being unbalanced. The only hard constraint is the categories-capped-by-question-count rule above.
+**Category balance is intentionally not a DB constraint, and has no UI presence at all (QA update, supersedes §13.B below).** Nothing in the schema or RLS blocks an uneven distribution, `finalizeDraft` never rejects a draft for being unbalanced, and — as of this QA fix — the question editor no longer shows any per-category tally or indicator either. A gets no signal about distribution while building; categories still live entirely on each question and are used wherever results need them.
 
 ---
 
@@ -374,12 +374,11 @@ The category picker only allows selecting up to `min(6, question_count)` categor
 
 </details>
 
-**B. Strength of "reasonably balanced across categories" — RESOLVED: soft guidance only.**
-Balance is advisory, never blocking:
+**B. Strength of "reasonably balanced across categories" — RESOLVED, then further simplified by QA.**
+Originally: advisory-only via a live per-category tally in the question editor (`CategoryBalance`), never blocking. **QA update: that indicator was removed entirely** — A now gets no signal at all about category distribution while building, not even a soft one. What's unchanged from the original resolution:
 
-- While A adds questions, the question editor shows a live per-category tally (e.g., a small count or bar per category) so A can see lopsidedness as it happens.
-- No validation error prevents adding an "unbalanced" set of questions, and `finalizeDraft` never rejects a draft on balance grounds — its only checks remain alias present, all questions answered by A, and question count matches configuration (§5).
-- No DB constraint expresses this rule at all (see the note under §3) — it is pure UI/UX, consistent with "keep the MVP technically simple" and avoids arbitrary tolerance thresholds that the spec never defined.
+- No validation error prevents adding an "unbalanced" set of questions, and `finalizeDraft` never rejects a draft on balance grounds — its only checks remain alias present, all questions answered by A, and the question count being in the 5-12 range (§5, §6).
+- No DB constraint expresses this rule at all (see the note under §3) — it is pure UI/UX (or, now, its deliberate absence), consistent with "keep the MVP technically simple" and avoiding a feature the QA pass decided added no value.
 
 Minor engineering defaults chosen along the way (none change visible product behavior from what's specified, so not raised as decisions needed):
 

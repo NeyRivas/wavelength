@@ -1,4 +1,3 @@
-import { CategoryBalance } from "./category-balance";
 import { FinalizeForm } from "./finalize-form";
 import { QuestionAddForm } from "./question-add-form";
 import { QuestionCard } from "./question-card";
@@ -15,6 +14,12 @@ import {
  * at a time, in any category, until reaching MAX_QUESTIONS; finalizing only
  * requires having reached MIN_QUESTIONS and answered every question so far.
  * RECOMMENDED_QUESTION_COUNT is shown as a soft note only, never enforced.
+ *
+ * QA fix: no "Category balance" indicator of any kind — A gets no signal at
+ * all about how questions are distributed across categories, and nothing
+ * here limits or nudges that distribution. Categories still live entirely
+ * on each question (chosen individually) and are used wherever needed in
+ * results; there's just no UI surfacing a tally of them during creation.
  */
 export function QuestionnaireBuilder({
   wavelength,
@@ -39,8 +44,6 @@ export function QuestionnaireBuilder({
         Minimum {MIN_QUESTIONS}, maximum {MAX_QUESTIONS} — {RECOMMENDED_QUESTION_COUNT} is just a
         friendly recommendation, not a requirement.
       </p>
-
-      <CategoryBalance questions={questions} />
 
       <ol>
         {questions.map((question, index) => (
