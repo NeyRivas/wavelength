@@ -10,13 +10,17 @@ import { defineConfig, devices } from "@playwright/test";
  * page load — see the "Infrastructure" note in the E2E audit for what
  * happens when that's not reachable (as in this sandbox).
  *
- * The preinstalled Chromium at PLAYWRIGHT_BROWSERS_PATH may not match the
- * revision @playwright/test's own version expects, so `executablePath`
- * points at it explicitly instead of letting Playwright try to resolve/
- * download its own copy.
+ * Browser: uses Playwright's normal, managed Chromium — install it once
+ * per machine with `pnpm exec playwright install chromium`. No hardcoded
+ * executablePath, so this works on any machine with that browser installed
+ * the standard way. PLAYWRIGHT_CHROMIUM_PATH is an optional escape hatch
+ * for environments that provide their own Chromium binary at a fixed,
+ * non-standard path (e.g. a locked-down CI sandbox) instead of letting
+ * Playwright manage it; leave it unset for normal local/dev use.
  */
 const PORT = process.env.E2E_PORT ?? "3100";
 const baseURL = `http://127.0.0.1:${PORT}`;
+const chromiumPath = process.env.PLAYWRIGHT_CHROMIUM_PATH;
 
 export default defineConfig({
   testDir: "./tests/e2e",
@@ -31,9 +35,7 @@ export default defineConfig({
     baseURL,
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
-    launchOptions: {
-      executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH ?? "/opt/pw-browsers/chromium",
-    },
+    ...(chromiumPath ? { launchOptions: { executablePath: chromiumPath } } : {}),
   },
   projects: [
     {
