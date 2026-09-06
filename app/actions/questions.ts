@@ -12,10 +12,11 @@ import {
   questionTypeSchema,
 } from "@/lib/validation/schemas";
 
-import { GENERIC_ERROR, isUniqueViolation, type ActionState } from "./shared";
+import { GENERIC_ERROR, isUniqueViolationOn, type ActionState } from "./shared";
 
 const DUPLICATE_QUESTION_ERROR = "You already have a question with this text.";
 const MAX_QUESTIONS_ERROR = `A Wavelength can have at most ${MAX_QUESTIONS} questions.`;
+const TEXT_UNIQUE_CONSTRAINT = "questions_wavelength_text_uidx";
 
 type ServerSupabase = Awaited<ReturnType<typeof createSupabaseServerClient>>;
 
@@ -59,16 +60,30 @@ export async function addQuestion(
     return { error: DUPLICATE_QUESTION_ERROR };
   }
 
-  const { count } = await supabase
+  // Bug fix (QA): this used to be `count(*)`, which collides with an
+  // existing row's order_index once a mid-list question has been deleted
+  // (deleting never renumbers the remaining rows, so counts can land back
+  // on a value still in use). That collision hit `questions_order_unique`
+  // — a *different* unique constraint than the text one — but the old
+  // error mapping below couldn't tell them apart, so it surfaced as the
+  // wildly misleading "You already have a question with this text." Using
+  // the current maximum order_index (not the count) is gap-safe: it's
+  // always strictly greater than every existing row's, regardless of
+  // deletions leaving gaps behind.
+  const { data: existing } = await supabase
     .from("questions")
-    .select("id", { count: "exact", head: true })
+    .select("order_index")
     .eq("wavelength_id", wavelengthId);
+  const existingCount = existing?.length ?? 0;
 
   // Friendly pre-check before the round trip; the DB's own
   // `questions_enforce_max_count` trigger is the authoritative backstop.
-  if ((count ?? 0) >= MAX_QUESTIONS) {
+  if (existingCount >= MAX_QUESTIONS) {
     return { error: MAX_QUESTIONS_ERROR };
   }
+
+  const nextOrderIndex =
+    existing && existing.length > 0 ? Math.max(...existing.map((q) => q.order_index)) + 1 : 0;
 
   const { error } = await supabase.from("questions").insert({
     wavelength_id: wavelengthId,
@@ -76,11 +91,15 @@ export async function addQuestion(
     type: parsed.data.type,
     text: parsed.data.text,
     options: parsed.data.type === "scale" ? null : parsed.data.options,
-    order_index: count ?? 0,
+    order_index: nextOrderIndex,
   });
 
   if (error) {
-    return { error: isUniqueViolation(error) ? DUPLICATE_QUESTION_ERROR : GENERIC_ERROR };
+    return {
+      error: isUniqueViolationOn(error, TEXT_UNIQUE_CONSTRAINT)
+        ? DUPLICATE_QUESTION_ERROR
+        : GENERIC_ERROR,
+    };
   }
 
   revalidatePath("/create");
@@ -127,7 +146,11 @@ export async function updateQuestion(
     .eq("id", questionId);
 
   if (error) {
-    return { error: isUniqueViolation(error) ? DUPLICATE_QUESTION_ERROR : GENERIC_ERROR };
+    return {
+      error: isUniqueViolationOn(error, TEXT_UNIQUE_CONSTRAINT)
+        ? DUPLICATE_QUESTION_ERROR
+        : GENERIC_ERROR,
+    };
   }
 
   revalidatePath("/create");

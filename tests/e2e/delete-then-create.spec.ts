@@ -3,26 +3,20 @@ import { expect, test } from "@playwright/test";
 import { addChoiceQuestion, questionCard, startDraft } from "./utils/wavelength";
 
 /**
- * E2E #3 — QA bug (priority: high): deleting a question and then
- * immediately creating a new one can leave the questionnaire "laggeado" —
- * unable to create the new question, even after a reload.
+ * E2E #5 — QA fix: deleting a question and then immediately creating a new
+ * one used to leave the questionnaire stuck — the new question would be
+ * rejected with "You already have a question with this text.", even with
+ * completely different text, and persisting after reload.
  *
- * Audit finding, for context (not a fix, just why this is worth writing up
- * carefully): `addQuestion` (app/actions/questions.ts) computes the new
- * row's `order_index` from `count(*) of questions for this wavelength`.
- * `deleteQuestion` never renumbers the remaining rows' `order_index`, so a
- * mid-list delete leaves a *gap* rather than shifting things down. The next
- * `count(*)` is one lower than before, but it collides with a
- * `order_index` value that still belongs to an existing row —
- * `questions_order_unique (wavelength_id, order_index)` then rejects the
- * insert, surfacing as the generic "Something went wrong" error and
- * leaving A stuck (a reload doesn't help, because the *data* is in a state
- * that reproduces the same collision every time, not a client-side glitch
- * that would clear on refresh).
- *
- * This test does not assert *why* it fails — only that creating a question
- * right after deleting a middle one must succeed, and must still be
- * correct after a reload. Expected to FAIL today.
+ * Root cause (see app/actions/questions.ts's addQuestion and
+ * tests/integration/questions-authorization.test.ts's "delete then create"
+ * suite for the DB-layer proof): the next question's `order_index` used to
+ * be computed from `count(*)`, which isn't gap-safe once a mid-list delete
+ * leaves a gap (deleting never renumbers survivors) — the resulting
+ * `order_index` collision was mislabeled as a duplicate-text error by the
+ * old, imprecise unique-violation check. Fixed by computing the next index
+ * from `MAX(order_index) + 1` (always gap-safe) and by distinguishing which
+ * unique constraint actually fired before blaming duplicate text.
  */
 test("deleting a middle question, then creating a new one, works — including after reload", async ({
   page,

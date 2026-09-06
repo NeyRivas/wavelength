@@ -3,21 +3,16 @@ import { expect, test } from "@playwright/test";
 import { addChoiceQuestion, answerChoice, questionCard, startDraft } from "./utils/wavelength";
 
 /**
- * E2E #2 — QA bug: "Remove option" always removes the LAST option field,
- * not whichever one the user actually meant to remove. The UI offers no
- * per-option delete affordance today (components/questionnaire/
- * question-edit-form.tsx has a single, blind "Remove option" button that
- * just shrinks the rendered option count by one) — so this test does the
- * only thing a real user can do: fill N options, click the one "Remove
- * option" button once, and check which option actually survived.
- *
- * Asserts the DESIRED outcome (removing a specific, non-last option leaves
- * every other one — including later ones — untouched). Expected to FAIL
- * today: the actual remaining set will be [Alpha, Beta, Gamma] (Delta
- * dropped) instead of the intended [Alpha, Gamma, Delta] (Beta dropped).
- * Do not adjust the assertion to match that — this is the bug to fix later.
+ * E2E #4 — QA fix: "Remove option" now has one control per option (aria-
+ * label "Remove option N"), each targeting exactly that option regardless
+ * of position — the old single, blind "Remove option" button always
+ * dropped whichever field happened to be rendered last, no matter which one
+ * the user meant. Removing also invalidates any existing answer for the
+ * question (same rule as edit-after-answer.spec.ts), verified below too.
  */
-test("removing a non-last option removes that option, not the last one", async ({ page }) => {
+test("removing a specific (non-last) option removes exactly that one, in order", async ({
+  page,
+}) => {
   await startDraft(page);
   await addChoiceQuestion(page, {
     text: "Favorite season?",
@@ -27,22 +22,42 @@ test("removing a non-last option removes that option, not the last one", async (
   const card = questionCard(page, "Favorite season?");
   const optionInputs = card.locator('input[name="options"]');
   await expect(optionInputs).toHaveCount(4);
+  await answerChoice(card, "Beta");
 
-  // The only removal control available: one "Remove option" button, no way
-  // to target which field. The user's intent here is "remove Beta".
-  await card.getByRole("button", { name: "Remove option" }).click();
+  // Target "Beta" specifically (its own button, not the last one).
+  await card.getByRole("button", { name: "Remove option 2" }).click();
 
   await expect(optionInputs).toHaveCount(3);
   const remaining = await optionInputs.evaluateAll((inputs) =>
     inputs.map((el) => (el as HTMLInputElement).value),
   );
-
-  // Desired: Beta specifically is gone, Alpha/Gamma/Delta remain in order.
   expect(remaining).toEqual(["Alpha", "Gamma", "Delta"]);
 
-  // Whatever the surviving set turns out to be, the question must still
-  // work normally afterward — this part is expected to pass regardless of
-  // the bug above.
-  const survivingOptionText = remaining[0]!;
-  await answerChoice(card, survivingOptionText);
+  // Removing an option is a structural change — the prior answer ("Beta",
+  // now gone) must be invalidated, not silently left dangling.
+  await expect(card.getByText("Saved", { exact: true })).not.toBeVisible();
+  await answerChoice(card, "Gamma");
+});
+
+test("removing the first option leaves the rest, in order, and the question stays usable", async ({
+  page,
+}) => {
+  await startDraft(page);
+  await addChoiceQuestion(page, {
+    text: "Favorite drink?",
+    options: ["Coffee", "Tea", "Juice"],
+  });
+
+  const card = questionCard(page, "Favorite drink?");
+  const optionInputs = card.locator('input[name="options"]');
+
+  await card.getByRole("button", { name: "Remove option 1" }).click();
+
+  await expect(optionInputs).toHaveCount(2);
+  const remaining = await optionInputs.evaluateAll((inputs) =>
+    inputs.map((el) => (el as HTMLInputElement).value),
+  );
+  expect(remaining).toEqual(["Tea", "Juice"]);
+
+  await answerChoice(card, "Tea");
 });

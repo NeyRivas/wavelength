@@ -109,3 +109,61 @@ describe("question editing: type change replaces options appropriately", () => {
     ).rejects.toThrow(/invalid input value for enum/);
   });
 });
+
+// Test 8 (QA): "Remove option" must target one specific option, not always
+// the last one. The UI (components/questionnaire/question-edit-form.tsx)
+// now tracks each option as its own slot and submits the full resulting
+// array with exactly the removed one missing — this is what that submitted
+// UPDATE looks like at the DB layer: the other options must survive
+// untouched, in their original relative order.
+describe("question editing: removing one specific option (QA fix)", () => {
+  it("removing the middle of 3 options leaves the first and third, in order", async () => {
+    const { aId, wavelengthId } = await createDraft();
+    const qId = await asRequest(aId, async (client) => {
+      const { rows } = await client.query<{ id: string }>(
+        `insert into questions (wavelength_id, category, type, text, options, order_index)
+         values ($1, 'relationship', 'choice', 'Favorite season?', '["Alpha","Beta","Gamma"]'::jsonb, 0)
+         returning id`,
+        [wavelengthId],
+      );
+      return rows[0]!.id;
+    });
+
+    // Simulates the form submitting every surviving option after "Beta"
+    // (index 1) was removed — Alpha and Gamma, in their original order.
+    await asRequest(aId, (client) =>
+      client.query(`update questions set options = '["Alpha","Gamma"]'::jsonb where id = $1`, [
+        qId,
+      ]),
+    );
+
+    const rows = await asRequest(aId, async (client) => {
+      const { rows } = await client.query("select options from questions where id = $1", [qId]);
+      return rows;
+    });
+    expect(rows[0]?.options).toEqual(["Alpha", "Gamma"]);
+  });
+
+  it("removing the first of 3 options leaves the second and third, in order", async () => {
+    const { aId, wavelengthId } = await createDraft();
+    const qId = await asRequest(aId, async (client) => {
+      const { rows } = await client.query<{ id: string }>(
+        `insert into questions (wavelength_id, category, type, text, options, order_index)
+         values ($1, 'relationship', 'choice', 'Favorite season?', '["Alpha","Beta","Gamma"]'::jsonb, 0)
+         returning id`,
+        [wavelengthId],
+      );
+      return rows[0]!.id;
+    });
+
+    await asRequest(aId, (client) =>
+      client.query(`update questions set options = '["Beta","Gamma"]'::jsonb where id = $1`, [qId]),
+    );
+
+    const rows = await asRequest(aId, async (client) => {
+      const { rows } = await client.query("select options from questions where id = $1", [qId]);
+      return rows;
+    });
+    expect(rows[0]?.options).toEqual(["Beta", "Gamma"]);
+  });
+});

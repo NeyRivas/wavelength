@@ -17,9 +17,24 @@ export const initialActionState: ActionState = { error: null };
  * message — never leaks the raw DB error text to the client. */
 export const GENERIC_ERROR = "Something went wrong. Please try again.";
 
-/** True for a Postgres unique_violation (23505) — used to map the DB's own
- * duplicate-question backstop (questions_wavelength_text_uidx) to the same
- * friendly message as the application-level pre-check, in case of a race. */
-export function isUniqueViolation(error: { code?: string } | null): boolean {
-  return error?.code === "23505";
+/**
+ * True for a Postgres unique_violation (23505) whose message/detail names
+ * the given constraint. `questions` has two independent unique
+ * constraints (`questions_wavelength_text_uidx` for duplicate text,
+ * `questions_order_unique` for `order_index`) — a plain "is this a unique
+ * violation at all" check can't tell them apart, and mapping every 23505
+ * to the same "duplicate text" message mislabels the other one. Used to
+ * map the DB's own duplicate-question backstop to the same friendly
+ * message as the application-level pre-check, in case of a race — and
+ * nothing else, so an unrelated unique violation still surfaces as
+ * GENERIC_ERROR instead of a misleading claim about duplicate text.
+ */
+export function isUniqueViolationOn(
+  error: { code?: string; message?: string; details?: string } | null,
+  constraintName: string,
+): boolean {
+  if (error?.code !== "23505") return false;
+  return Boolean(
+    error.message?.includes(constraintName) || error.details?.includes(constraintName),
+  );
 }

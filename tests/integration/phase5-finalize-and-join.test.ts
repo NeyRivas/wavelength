@@ -146,6 +146,89 @@ describe("locking after finalization: nothing about the questionnaire or A's ans
   });
 });
 
+// Test 10 (QA bug): A previously had no way to see their own
+// questions/answers again once the questionnaire was locked (finalized).
+// app/w/[token]/page.tsx now reads both tables for A in WAITING/IN_PROGRESS
+// and renders them read-only (components/questionnaire/read-only-answers.tsx
+// — no form, no Server Action). This only works because A's own SELECT on
+// `questions`/`answers` was never state-gated by RLS (only INSERT/UPDATE/
+// DELETE are) — this test proves that read access directly, and re-confirms
+// (alongside the existing "locking after finalization" tests above) that
+// none of A's writes are reopened by it.
+describe("Test 10: A can still read (never write) their own questions/answers after finalizing", () => {
+  it("A can SELECT every question and their own answers while WAITING (before B joins)", async () => {
+    const { aId, wavelengthId, questions } = await draftReadyToFinalize({ questionCount: 5 });
+    await finalizeAsA(aId, wavelengthId);
+
+    const rows = await asRequest(aId, async (client) => {
+      const { rows } = await client.query(
+        "select id, text, options, category, type from questions where wavelength_id = $1 order by order_index asc",
+        [wavelengthId],
+      );
+      return rows;
+    });
+    expect(rows).toHaveLength(5);
+    expect(rows.map((r) => r.id).sort()).toEqual(questions.map((q) => q.id).sort());
+
+    const answers = await asRequest(aId, async (client) => {
+      const { rows } = await client.query(
+        "select question_id, value from answers where wavelength_id = $1 and participant = 'A'",
+        [wavelengthId],
+      );
+      return rows;
+    });
+    expect(answers).toHaveLength(5);
+  });
+
+  it("A can still SELECT the same data once B has joined (IN_PROGRESS)", async () => {
+    const { aId, wavelengthId, shareToken, questions } = await draftReadyToFinalize({
+      questionCount: 5,
+    });
+    await finalizeAsA(aId, wavelengthId);
+    const bId = await createTestUser();
+    await claimAsB(bId, shareToken);
+
+    const rows = await asRequest(aId, async (client) => {
+      const { rows } = await client.query("select id from questions where wavelength_id = $1", [
+        wavelengthId,
+      ]);
+      return rows;
+    });
+    expect(rows).toHaveLength(questions.length);
+
+    const answers = await asRequest(aId, async (client) => {
+      const { rows } = await client.query(
+        "select question_id, value from answers where wavelength_id = $1 and participant = 'A'",
+        [wavelengthId],
+      );
+      return rows;
+    });
+    expect(answers).toHaveLength(questions.length);
+  });
+
+  it("this read access still never extends to writing — reading and locking coexist", async () => {
+    const { aId, wavelengthId, questions } = await draftReadyToFinalize();
+    await finalizeAsA(aId, wavelengthId);
+
+    // Can read...
+    const before = await asRequest(aId, async (client) => {
+      const { rows } = await client.query("select text from questions where id = $1", [
+        questions[0]!.id,
+      ]);
+      return rows[0]?.text;
+    });
+    expect(before).toBeDefined();
+
+    // ...but still can't write (same invariant as the "locking after
+    // finalization" tests above — reconfirmed here alongside the new read).
+    await expect(
+      asRequest(aId, (client) =>
+        client.query("update questions set text = 'sneaky edit' where id = $1", [questions[0]!.id]),
+      ),
+    ).rejects.toThrow();
+  });
+});
+
 describe("B atomic claim: genuinely concurrent race, not just sequential", () => {
   it("exactly one of two simultaneous claim attempts succeeds", async () => {
     const { aId, wavelengthId, shareToken } = await draftReadyToFinalize();

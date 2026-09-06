@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 
+import { ReadOnlyAnswers } from "@/components/questionnaire/read-only-answers";
 import { JoinForm } from "@/components/wavelength/join-form";
 import { ShareView } from "@/components/wavelength/share-view";
 import { requireUserId } from "@/lib/supabase/identity";
@@ -37,10 +38,28 @@ export default async function WavelengthPage({ params }: { params: Promise<{ tok
       redirect(`/w/${token}/result`);
     }
     const link = await absoluteUrl(`/w/${token}`);
+    // QA fix: A can no longer see their own questions/answers at all once
+    // the questionnaire is locked (shared). Read-only by construction — no
+    // edit controls, no way to change an answer — and additive only: it
+    // never runs for DRAFT (redirected above) or COMPLETED (redirected
+    // above, straight to the real shared result instead).
+    const [{ data: questions }, { data: answers }] = await Promise.all([
+      supabase
+        .from("questions")
+        .select("id, category, type, text, options, order_index")
+        .eq("wavelength_id", wavelength.id)
+        .order("order_index", { ascending: true }),
+      supabase
+        .from("answers")
+        .select("question_id, value")
+        .eq("wavelength_id", wavelength.id)
+        .eq("participant", "A"),
+    ]);
     return (
       <main>
         <h1>Your Wavelength</h1>
         <ShareView link={link} state={wavelength.state} bAlias={wavelength.participant_b_alias} />
+        <ReadOnlyAnswers questions={questions ?? []} answers={answers ?? []} />
       </main>
     );
   }
