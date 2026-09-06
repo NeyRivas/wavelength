@@ -124,7 +124,7 @@ export async function updateQuestion(
 
   const { data: current } = await supabase
     .from("questions")
-    .select("type")
+    .select("type, text, options")
     .eq("id", questionId)
     .single();
   if (!current) return { error: GENERIC_ERROR };
@@ -137,6 +137,26 @@ export async function updateQuestion(
     return { error: DUPLICATE_QUESTION_ERROR };
   }
 
+  // TEMPORARY DIAGNOSTIC (QA round 4) — remove once the real-browser
+  // invalidation gap is root-caused. Logs the exact before-state and, right
+  // after the UPDATE, whether any `answers` row still exists for this
+  // question — that second check is the one that tells us whether
+  // questions_invalidate_answers_on_edit actually fired in the environment
+  // the browser is pointed at, as opposed to only in the integration tests'
+  // freshly-migrated local Postgres.
+  const { data: answersBefore } = await supabase
+    .from("answers")
+    .select("id, participant, value")
+    .eq("question_id", questionId);
+  console.log("[QA-DIAG updateQuestion] before update", {
+    questionId,
+    oldText: current.text,
+    newText: parsed.data.text,
+    oldOptions: current.options,
+    newOptions: parsed.data.options ?? null,
+    answersBefore,
+  });
+
   const { error } = await supabase
     .from("questions")
     .update({
@@ -146,12 +166,19 @@ export async function updateQuestion(
     .eq("id", questionId);
 
   if (error) {
+    console.log("[QA-DIAG updateQuestion] update failed", { questionId, error });
     return {
       error: isUniqueViolationOn(error, TEXT_UNIQUE_CONSTRAINT)
         ? DUPLICATE_QUESTION_ERROR
         : GENERIC_ERROR,
     };
   }
+
+  const { data: answersAfter } = await supabase
+    .from("answers")
+    .select("id, participant, value")
+    .eq("question_id", questionId);
+  console.log("[QA-DIAG updateQuestion] after update", { questionId, answersAfter });
 
   revalidatePath("/create");
   return { error: null };

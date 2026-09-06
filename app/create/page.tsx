@@ -45,6 +45,16 @@ export default async function CreatePage() {
       .eq("participant", "A"),
   ]);
 
+  // TEMPORARY DIAGNOSTIC (QA round 4) — remove once the real-browser
+  // invalidation gap is root-caused. Logs exactly what this render (the
+  // one router.refresh() asks for) fetched, so it can be compared against
+  // updateQuestion's own before/after logs for the same request cycle.
+  console.log("[QA-DIAG CreatePage]", {
+    draftId: draft.id,
+    questions: (questions ?? []).map((q) => ({ id: q.id, text: q.text, options: q.options })),
+    answers,
+  });
+
   return (
     <main>
       <h1>Build your questionnaire</h1>
