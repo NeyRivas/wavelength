@@ -8,6 +8,7 @@ import {
   optionsSchema,
   parseAlias,
   parseAnswerValue,
+  parseQuestionEditInput,
   parseQuestionInput,
   questionInputSchema,
   questionTextSchema,
@@ -208,6 +209,55 @@ describe("FormData parsing helpers", () => {
     fd.set("value", "not-a-number");
     const result = parseAnswerValue(fd, { type: "scale" });
     expect(result.success).toBe(false);
+  });
+
+  // Tests I/J (QA round 2): this is the exact FormData shape
+  // question-edit-form.tsx submits when a newly-added option's own blur
+  // fires (app/actions/questions.ts's updateQuestion is the only caller of
+  // parseQuestionEditInput on that path) — proving the parsing/validation
+  // layer itself, in isolation, correctly accepts and returns a freshly
+  // typed-in option appended after two pre-existing ones.
+  it("parseQuestionEditInput accepts a newly-added, filled-in option appended to existing ones", () => {
+    const fd = new FormData();
+    fd.set("text", "Ideal weekend?");
+    fd.append("options", "Stay in");
+    fd.append("options", "Go out");
+    fd.append("options", "Stay in and go out"); // the option just added + typed
+
+    const result = parseQuestionEditInput(fd, "choice");
+    expect(result).toEqual({
+      success: true,
+      data: {
+        text: "Ideal weekend?",
+        options: ["Stay in", "Go out", "Stay in and go out"],
+      },
+    });
+  });
+
+  it("parseQuestionEditInput drops a still-blank newly-added option row (matches the browser's own required-field block)", () => {
+    const fd = new FormData();
+    fd.set("text", "Ideal weekend?");
+    fd.append("options", "Stay in");
+    fd.append("options", "Go out");
+    fd.append("options", ""); // added, not yet typed into
+
+    const result = parseQuestionEditInput(fd, "choice");
+    // Blank rows are filtered before validation, same as parseQuestionInput
+    // — this mirrors what would happen if a required-field check were ever
+    // bypassed; the browser's own HTML5 validation is what actually stops
+    // this FormData from being sent in the real form (question-edit-form.tsx).
+    expect(result).toEqual({
+      success: true,
+      data: { text: "Ideal weekend?", options: ["Stay in", "Go out"] },
+    });
+  });
+
+  it("parseQuestionEditInput for a scale question ignores any options fields entirely", () => {
+    const fd = new FormData();
+    fd.set("text", "Importance of routine");
+
+    const result = parseQuestionEditInput(fd, "scale");
+    expect(result).toEqual({ success: true, data: { text: "Importance of routine" } });
   });
 });
 

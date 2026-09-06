@@ -1,6 +1,12 @@
 import { expect, test } from "@playwright/test";
 
-import { addChoiceQuestion, answerChoice, questionCard, startDraft } from "./utils/wavelength";
+import {
+  addChoiceQuestion,
+  answerChoice,
+  answerSavedStatus,
+  questionCard,
+  startDraft,
+} from "./utils/wavelength";
 
 /**
  * E2E #4 — QA fix: "Remove option" now has one control per option (aria-
@@ -35,7 +41,7 @@ test("removing a specific (non-last) option removes exactly that one, in order",
 
   // Removing an option is a structural change — the prior answer ("Beta",
   // now gone) must be invalidated, not silently left dangling.
-  await expect(card.getByText("Saved", { exact: true })).not.toBeVisible();
+  await expect(answerSavedStatus(card)).not.toBeVisible();
   await answerChoice(card, "Gamma");
 });
 

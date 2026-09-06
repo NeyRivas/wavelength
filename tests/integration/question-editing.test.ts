@@ -167,3 +167,42 @@ describe("question editing: removing one specific option (QA fix)", () => {
     expect(rows[0]?.options).toEqual(["Beta", "Gamma"]);
   });
 });
+
+// Tests I/J (QA round 2): adding a new option and filling in its text
+// persists on the same update the browser's blur-triggered submit sends,
+// and a later, independent read (a fresh connection — the same thing a
+// page reload does) sees exactly that persisted value. Root cause of the
+// original "doesn't seem to save" report was missing UI feedback, not a
+// persistence bug — this is the DB-layer half of that proof (the client
+// fix — actual "Saved" feedback — lives in question-edit-form.tsx).
+describe("question editing: adding a new option persists immediately and survives a fresh read (QA fix)", () => {
+  it("appending a new, filled-in option to an existing question persists and is visible on a later read", async () => {
+    const { aId, wavelengthId } = await createDraft();
+    const qId = await asRequest(aId, async (client) => {
+      const { rows } = await client.query<{ id: string }>(
+        `insert into questions (wavelength_id, category, type, text, options, order_index)
+         values ($1, 'relationship', 'choice', 'Ideal weekend?', '["Stay in","Go out"]'::jsonb, 0)
+         returning id`,
+        [wavelengthId],
+      );
+      return rows[0]!.id;
+    });
+
+    // Exactly what the form submits once the new option's own blur fires:
+    // the full array, new option included.
+    await asRequest(aId, (client) =>
+      client.query(
+        `update questions set options = '["Stay in","Go out","Stay in and go out"]'::jsonb where id = $1`,
+        [qId],
+      ),
+    );
+
+    // A separate, later request (its own fresh connection) — the same
+    // thing a page reload does — must see the persisted value.
+    const rows = await asRequest(aId, async (client) => {
+      const { rows } = await client.query("select options from questions where id = $1", [qId]);
+      return rows;
+    });
+    expect(rows[0]?.options).toEqual(["Stay in", "Go out", "Stay in and go out"]);
+  });
+});

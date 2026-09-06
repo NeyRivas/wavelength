@@ -19,11 +19,17 @@ import type { QuestionRow } from "./types";
  *
  * QA fix: no "Save changes" button. Text/option fields save on blur (the
  * natural "I'm done editing this one" moment) — auto-submitting on every
- * keystroke would spam requests and fight the user mid-typing. Adding or
- * removing an option has no blur to hook into, so it submits right away;
- * the submit is deferred to the next tick (setTimeout 0) so it fires after
- * React has actually applied the slot change to the DOM, otherwise a
- * stale value could still be read into the submitted FormData.
+ * keystroke would spam requests and fight the user mid-typing. Removing an
+ * option has no blur to hook into, so it submits right away; that submit is
+ * deferred to the next tick (setTimeout 0) so it fires after React has
+ * actually applied the slot change to the DOM, otherwise a stale value
+ * could still be read into the submitted FormData. Adding an option does
+ * NOT auto-submit on click — the new field starts empty and is `required`,
+ * so an immediate submit would always be silently blocked by the browser's
+ * own HTML5 validation anyway (never reaching the server, occasionally
+ * surfacing a confusing native validation popup right after clicking "Add
+ * option"); the new field's own `onBlur` (same as every other option) is
+ * what actually persists it once the user types something in.
  *
  * QA fix: each option has its own "Remove" button, targeting exactly that
  * option regardless of position (previously a single shared button always
@@ -32,6 +38,12 @@ import type { QuestionRow } from "./types";
  * array index — so removing slot N only ever unmounts that slot's own
  * input; every other slot's DOM node (and any live, not-yet-blurred edit
  * in it) is left completely untouched.
+ *
+ * QA fix: shows "Saved" once a submission completes without error — text
+ * and options always mirror the last successfully-saved state (there's no
+ * separate unsaved draft here, and no Save button), so that's a reliable
+ * signal, the same "derive it from confirmed reality" approach already
+ * used by AnswerControl's own "Saved" indicator.
  */
 
 interface OptionSlot {
@@ -68,12 +80,14 @@ export function QuestionEditForm({
     event.currentTarget.form?.requestSubmit();
   }
 
-  function addOption(event: React.MouseEvent<HTMLButtonElement>) {
-    const form = event.currentTarget.form;
+  function addOption() {
+    // No auto-submit here — the new slot starts empty and `required`, so an
+    // immediate submit would always be blocked by the browser's own
+    // validation before it ever reaches the server. Its own `onBlur` (once
+    // the user actually types something in) is what saves it.
     setSlots((prev) =>
       prev.length >= MAX_CHOICE_OPTIONS ? prev : [...prev, { key: newSlotKey(), initialValue: "" }],
     );
-    setTimeout(() => form?.requestSubmit(), 0);
   }
 
   function removeOption(event: React.MouseEvent<HTMLButtonElement>, key: string) {
@@ -133,7 +147,7 @@ export function QuestionEditForm({
         </fieldset>
       )}
 
-      <p aria-live="polite">{pending ? "Saving…" : ""}</p>
+      <p aria-live="polite">{pending ? "Saving…" : state.error ? "" : "Saved"}</p>
 
       {state.error && <p role="alert">{state.error}</p>}
     </form>

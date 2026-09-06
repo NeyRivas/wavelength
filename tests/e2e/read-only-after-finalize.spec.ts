@@ -1,6 +1,12 @@
 import { expect, test } from "@playwright/test";
 
-import { addChoiceQuestion, answerChoice, finalizeDraft, questionCard, startDraft } from "./utils/wavelength";
+import {
+  addChoiceQuestion,
+  answerChoice,
+  finalizeDraft,
+  questionCard,
+  startDraft,
+} from "./utils/wavelength";
 
 /**
  * E2E #6 — QA fix: A previously had no way to see their own

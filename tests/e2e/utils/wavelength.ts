@@ -89,18 +89,32 @@ export function answerFieldset(card: Locator): Locator {
   return card.getByRole("group", { name: "Your answer" });
 }
 
+/** AnswerControl's own <form> (the one wrapping the "Your answer" fieldset)
+ * — scoped this precisely because QuestionEditForm, right above it in the
+ * same card, now shows its own "Saved" text too (QA fix), so looking up
+ * "Saved" anywhere in the whole card would match two elements. */
+function answerControlForm(card: Locator): Locator {
+  return answerFieldset(card).locator("xpath=ancestor::form[1]");
+}
+
 /** Selects a choice option by its visible option text and waits for the
  * auto-save "Saved" status (QA fix: no Save/Update button anywhere here). */
 export async function answerChoice(card: Locator, optionText: string): Promise<void> {
   await answerFieldset(card).getByRole("radio", { name: optionText }).check();
-  await expect(card.getByText("Saved", { exact: true })).toBeVisible();
+  await expect(answerControlForm(card).getByText("Saved", { exact: true })).toBeVisible();
 }
 
 /** Selects a scale level by its exact fixed label (Nada/Poco/Moderadamente/
  * Muy importante, Extremadamente importante) and waits for auto-save. */
 export async function answerScale(card: Locator, levelLabel: string): Promise<void> {
   await answerFieldset(card).getByRole("radio", { name: levelLabel }).check();
-  await expect(card.getByText("Saved", { exact: true })).toBeVisible();
+  await expect(answerControlForm(card).getByText("Saved", { exact: true })).toBeVisible();
+}
+
+/** The answer's own "Saved"/"" status text, scoped away from
+ * QuestionEditForm's identically-worded one in the same card. */
+export function answerSavedStatus(card: Locator): Locator {
+  return answerControlForm(card).getByText("Saved", { exact: true });
 }
 
 export const SCALE_LABELS = [

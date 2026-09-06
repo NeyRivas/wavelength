@@ -175,6 +175,30 @@ describe("Test 6: removing an option invalidates A's answer", () => {
   });
 });
 
+// ── Test G (QA round 2) ────────────────────────────────────────────────
+// Distinct from Test 6 above (which removes a *different* option and keeps
+// the selected one) — this removes the exact option A had selected. This
+// was already the one case that visibly "worked" in the browser before the
+// round-2 UI fix (because the selected radio's own DOM node disappears when
+// its option is removed) — confirming the DB layer invalidates it too,
+// for the right reason, not just by coincidence of the node vanishing.
+describe("Test G: removing the SELECTED option itself invalidates A's answer", () => {
+  it("removes the existing answer", async () => {
+    const { aId, wavelengthId } = await createDraft();
+    const qId = await insertChoiceQuestion(aId, wavelengthId, ["Option 1", "Option 2", "Option 3"]);
+    await answerChoice(aId, wavelengthId, qId, 0); // picked "Option 1"
+
+    await asRequest(aId, (client) =>
+      client.query(
+        `update questions set options = '["Option 2","Option 3"]'::jsonb where id = $1`,
+        [qId],
+      ),
+    );
+
+    expect(await getAnswer(aId, wavelengthId, qId)).toBeUndefined();
+  });
+});
+
 // ── Test 7 ──────────────────────────────────────────────────────────────
 describe("Test 7: simply changing the answer does NOT invalidate anything", () => {
   it("a plain answer upsert (no question/option edit involved) just replaces the value", async () => {

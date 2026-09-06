@@ -57,7 +57,19 @@ export function QuestionCard({
 
       <TypeChangeControl questionId={question.id} currentType={question.type} />
       <QuestionEditForm wavelengthId={wavelengthId} question={question} />
+      {/* QA fix: AnswerControl's radios are uncontrolled (`defaultChecked`),
+          which React only applies once, at mount — re-rendering the same
+          instance with a fresh `currentValue` (e.g. after the invalidation
+          trigger clears the answer server-side) never touches an
+          already-mounted radio's checked state. Keying it by the exact
+          fields the DB trigger watches (`text`/`options`) forces a full
+          remount — fresh `defaultChecked` values from the just-revalidated
+          `currentValue` — precisely when, and only when, the question was
+          actually edited. A plain re-answer never changes this key (it
+          doesn't touch text/options), so the existing select-and-auto-save
+          flow is untouched. */}
       <AnswerControl
+        key={JSON.stringify([question.text, question.options])}
         action={saveAnswerA}
         wavelengthId={wavelengthId}
         question={question}
