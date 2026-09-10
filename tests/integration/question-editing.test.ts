@@ -59,6 +59,56 @@ describe("question editing: category can be changed before sharing, locked after
     ).resolves.not.toThrow();
   });
 
+  // Regression test for the reported bug: changing category in the real
+  // /create UI surfaced "Something went wrong" (root cause: enforce_
+  // question_category_immutable's cross-table wavelengths lookup wasn't
+  // security definer, so it was needlessly subject to RLS — fixed in
+  // 20260910130000_category_immutable_check_is_security_definer.sql).
+  // This drives the exact UPDATE shape app/actions/questions.ts's
+  // updateQuestion issues — text, category, and options together in one
+  // statement, category the only thing actually changing — rather than a
+  // category-only UPDATE, to match the real code path precisely.
+  it("persists a changed category via the same full-row UPDATE shape updateQuestion issues, without clearing a valid answer", async () => {
+    const { aId, wavelengthId } = await createDraft();
+    const [q] = await addQuestions(aId, wavelengthId, 1); // choice, category: relationship
+    await answerAll(aId, wavelengthId, [q!], "A");
+
+    await expect(
+      asRequest(aId, (client) =>
+        client.query(
+          `update questions
+             set text = $2, category = $3, options = $4::jsonb
+           where id = $1`,
+          [q!.id, "Ideal weekend #0", "money", JSON.stringify(["Stay in", "Go out"])],
+        ),
+      ),
+    ).resolves.not.toThrow();
+
+    const rows = await asRequest(aId, async (client) => {
+      const { rows } = await client.query("select category from questions where id = $1", [q!.id]);
+      return rows;
+    });
+    expect(rows[0]?.category).toBe("money");
+
+    // A valid answer survives — text/options are unchanged in this update,
+    // so questions_invalidate_answers_on_edit has nothing to clear.
+    const answers = await asRequest(aId, async (client) => {
+      const { rows } = await client.query(
+        "select value from answers where question_id = $1 and participant = 'A'",
+        [q!.id],
+      );
+      return rows;
+    });
+    expect(answers).toHaveLength(1);
+
+    // Persists across a fresh, later read (a page reload).
+    const reread = await asRequest(aId, async (client) => {
+      const { rows } = await client.query("select category from questions where id = $1", [q!.id]);
+      return rows;
+    });
+    expect(reread[0]?.category).toBe("money");
+  });
+
   it("changing only the category does not touch an existing answer", async () => {
     const { aId, wavelengthId } = await createDraft();
     const [q] = await addQuestions(aId, wavelengthId, 1);
