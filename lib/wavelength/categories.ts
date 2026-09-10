@@ -66,9 +66,9 @@ export const SCALE_VALUES = [0, 25, 50, 75, 100] as const;
 export type ScaleValue = (typeof SCALE_VALUES)[number];
 
 export const SCALE_LABELS: Record<ScaleValue, string> = {
-  0: "Nada importante",
-  25: "Poco importante",
-  50: "Moderadamente importante",
-  75: "Muy importante",
-  100: "Extremadamente importante",
+  0: "Not important",
+  25: "Slightly important",
+  50: "Moderately important",
+  75: "Very important",
+  100: "Extremely important",
 };

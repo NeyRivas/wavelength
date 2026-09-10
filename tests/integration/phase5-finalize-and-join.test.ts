@@ -266,6 +266,133 @@ describe("B atomic claim: genuinely concurrent race, not just sequential", () =>
   });
 });
 
+// Bug-fix pass: the confirmed report was sequential, not just a race window
+// — B1 claims and is still mid-answering (not a simultaneous claim attempt)
+// when B2 shows up. Reviewed claim_participant_b, answers_insert/select RLS,
+// and /answer's own guard: the atomic `UPDATE ... WHERE participant_b_id IS
+// NULL AND state = 'WAITING'` already makes a second claim impossible once
+// B1 has succeeded (state is IN_PROGRESS and participant_b_id is no longer
+// null), and every downstream check (RLS insert/select) is scoped to
+// `participant_b_id = auth.uid()`, not merely "state = IN_PROGRESS" — so a
+// second, genuinely different identity can't slip in underneath a
+// successful claim either. These tests exercise that exact sequential
+// scenario end to end (smallest necessary change: none was needed at the
+// RPC/RLS layer beyond what's already here; this locks the guarantee in).
+describe("second B cannot join, access, or submit once B1 has already claimed (sequential)", () => {
+  it("1. the first B can claim/join", async () => {
+    const { aId, wavelengthId, shareToken } = await draftReadyToFinalize();
+    await finalizeAsA(aId, wavelengthId);
+
+    const b1 = await createTestUser();
+    const claimedId = await claimAsB(b1, shareToken, "B1");
+    expect(claimedId).toBe(wavelengthId);
+  });
+
+  it("2. a second B cannot claim while B1 is still answering (state is IN_PROGRESS, not WAITING)", async () => {
+    const { aId, wavelengthId, shareToken, questions } = await draftReadyToFinalize();
+    await finalizeAsA(aId, wavelengthId);
+
+    const b1 = await createTestUser();
+    await claimAsB(b1, shareToken, "B1");
+    await answerAll(b1, wavelengthId, questions.slice(0, 1), "B"); // B1 mid-answering, not done
+
+    const b2 = await createTestUser();
+    await expect(claimAsB(b2, shareToken, "B2")).rejects.toThrow();
+
+    // The slot is still B1's — unchanged by the failed attempt.
+    const row = await asRequest(aId, async (client) => {
+      const { rows } = await client.query(
+        "select participant_b_id, participant_b_alias, state from wavelengths where id = $1",
+        [wavelengthId],
+      );
+      return rows[0];
+    });
+    expect(row.participant_b_id).toBe(b1);
+    expect(row.participant_b_alias).toBe("B1");
+    expect(row.state).toBe("IN_PROGRESS");
+  });
+
+  it("3. a second B cannot submit an answer, even bypassing the join RPC entirely", async () => {
+    const { aId, wavelengthId, shareToken, questions } = await draftReadyToFinalize();
+    await finalizeAsA(aId, wavelengthId);
+    const b1 = await createTestUser();
+    await claimAsB(b1, shareToken, "B1");
+
+    const b2 = await createTestUser();
+    // Never claimed — attempts a raw INSERT as 'B' directly (what a
+    // manipulated client bypassing the UI/RPC would try).
+    await expect(
+      asRequest(b2, (client) =>
+        client.query(
+          `insert into answers (wavelength_id, question_id, participant, value)
+           values ($1, $2, 'B', '0'::jsonb)`,
+          [wavelengthId, questions[0]!.id],
+        ),
+      ),
+    ).rejects.toThrow();
+  });
+
+  it("4/5. B1 can leave and return, and keep answering, using the same identity", async () => {
+    const { aId, wavelengthId, shareToken, questions } = await draftReadyToFinalize({
+      questionCount: 5,
+    });
+    await finalizeAsA(aId, wavelengthId);
+    const b1 = await createTestUser();
+    await claimAsB(b1, shareToken, "B1");
+
+    // "Leaves" — answers one, then this asRequest's connection closes
+    // (exactly what closing the tab looks like from the DB's perspective).
+    await answerAll(b1, wavelengthId, questions.slice(0, 1), "B");
+
+    // "Returns" — same identity, a brand new request/connection.
+    const stillB = await asRequest(aId, async (client) => {
+      const { rows } = await client.query(
+        "select participant_b_id, state from wavelengths where id = $1",
+        [wavelengthId],
+      );
+      return rows[0];
+    });
+    expect(stillB.participant_b_id).toBe(b1);
+    expect(stillB.state).toBe("IN_PROGRESS");
+
+    // Continues answering normally after returning.
+    await answerAll(b1, wavelengthId, questions.slice(1, 3), "B");
+    const answeredCount = await asRequest(b1, async (client) => {
+      const { rows } = await client.query(
+        "select count(*)::int as n from answers where wavelength_id = $1 and participant = 'B'",
+        [wavelengthId],
+      );
+      return rows[0]!.n;
+    });
+    expect(answeredCount).toBe(3);
+  });
+
+  it("6. concurrent claim attempts (3-way) still result in exactly one successful B", async () => {
+    const { aId, wavelengthId, shareToken } = await draftReadyToFinalize();
+    await finalizeAsA(aId, wavelengthId);
+
+    const [b1, b2, b3] = await Promise.all([createTestUser(), createTestUser(), createTestUser()]);
+    const results = await Promise.allSettled([
+      claimAsB(b1, shareToken, "One"),
+      claimAsB(b2, shareToken, "Two"),
+      claimAsB(b3, shareToken, "Three"),
+    ]);
+
+    expect(results.filter((r) => r.status === "fulfilled")).toHaveLength(1);
+    expect(results.filter((r) => r.status === "rejected")).toHaveLength(2);
+
+    const row = await asRequest(aId, async (client) => {
+      const { rows } = await client.query(
+        "select participant_b_id, state from wavelengths where id = $1",
+        [wavelengthId],
+      );
+      return rows[0];
+    });
+    expect([b1, b2, b3]).toContain(row.participant_b_id);
+    expect(row.state).toBe("IN_PROGRESS");
+  });
+});
+
 describe("B answer persistence and resume across separate requests/sessions", () => {
   it("partial progress survives 'leaving and returning' (each save is its own request)", async () => {
     const { aId, wavelengthId, shareToken, questions } = await draftReadyToFinalize({

@@ -8,7 +8,15 @@ import { QuestionCompare } from "./question-compare";
  * sorted highest-alignment-first with ties preserving original question
  * order) that CategorySummary renders a summary of — no separate grouping
  * logic here. */
-export function AllQuestionsSection({ categories }: { categories: CategoryResult[] }) {
+export function AllQuestionsSection({
+  categories,
+  aliasA,
+  aliasB,
+}: {
+  categories: CategoryResult[];
+  aliasA: string;
+  aliasB: string;
+}) {
   return (
     <section className="result-section" aria-labelledby="all-questions-heading">
       <h2 id="all-questions-heading">All Questions</h2>
@@ -18,7 +26,7 @@ export function AllQuestionsSection({ categories }: { categories: CategoryResult
             {CATEGORY_LABELS[c.category]} <AlignmentBadge level={c.level} />
           </h3>
           {c.questions.map((q) => (
-            <QuestionCompare key={q.id} question={q} />
+            <QuestionCompare key={q.id} question={q} aliasA={aliasA} aliasB={aliasB} />
           ))}
         </div>
       ))}

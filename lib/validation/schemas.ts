@@ -119,26 +119,32 @@ export function parseQuestionInput(formData: FormData): ParseResult<QuestionInpu
 }
 
 /**
- * For editing an existing question's text/options — unlike
+ * For editing an existing question's text/options/category — unlike
  * `parseQuestionInput` (used for creating a question, or for the type-change
- * action), this never accepts `category` or `type`: category is immutable
- * after creation (DB-enforced, `enforce_question_category_immutable`), and
- * type changes go through `changeQuestionType` instead, which needs its own
- * options-replacement logic. `currentType` decides whether options are
- * expected at all.
+ * action), this never accepts `type`: type changes go through
+ * `changeQuestionType` instead, which needs its own options-replacement
+ * logic. Category IS editable here (bug-fix pass: category editing before
+ * sharing is an intentional product requirement — it was previously
+ * DB-immutable unconditionally; now only locked once the wavelength is no
+ * longer DRAFT, enforced by `enforce_question_category_immutable`).
+ * `currentType` decides whether options are expected at all.
  */
 export function parseQuestionEditInput(
   formData: FormData,
   currentType: "choice" | "scale",
-): ParseResult<{ text: string; options?: string[] }> {
+): ParseResult<{ text: string; category: Category; options?: string[] }> {
   const text = String(formData.get("text") ?? "");
+  const categoryResult = categorySchema.safeParse(formData.get("category"));
+  if (!categoryResult.success) {
+    return { success: false, error: firstIssueMessage(categoryResult.error) };
+  }
 
   if (currentType === "scale") {
     const result = questionTextSchema.safeParse(text);
     if (!result.success) {
       return { success: false, error: firstIssueMessage(result.error) };
     }
-    return { success: true, data: { text: result.data } };
+    return { success: true, data: { text: result.data, category: categoryResult.data } };
   }
 
   const textResult = questionTextSchema.safeParse(text);
@@ -155,7 +161,10 @@ export function parseQuestionEditInput(
     return { success: false, error: firstIssueMessage(optionsResult.error) };
   }
 
-  return { success: true, data: { text: textResult.data, options: optionsResult.data } };
+  return {
+    success: true,
+    data: { text: textResult.data, category: categoryResult.data, options: optionsResult.data },
+  };
 }
 
 export function parseAnswerValue(

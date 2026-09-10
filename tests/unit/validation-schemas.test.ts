@@ -220,6 +220,7 @@ describe("FormData parsing helpers", () => {
   it("parseQuestionEditInput accepts a newly-added, filled-in option appended to existing ones", () => {
     const fd = new FormData();
     fd.set("text", "Ideal weekend?");
+    fd.set("category", "relationship");
     fd.append("options", "Stay in");
     fd.append("options", "Go out");
     fd.append("options", "Stay in and go out"); // the option just added + typed
@@ -229,6 +230,7 @@ describe("FormData parsing helpers", () => {
       success: true,
       data: {
         text: "Ideal weekend?",
+        category: "relationship",
         options: ["Stay in", "Go out", "Stay in and go out"],
       },
     });
@@ -237,6 +239,7 @@ describe("FormData parsing helpers", () => {
   it("parseQuestionEditInput drops a still-blank newly-added option row (matches the browser's own required-field block)", () => {
     const fd = new FormData();
     fd.set("text", "Ideal weekend?");
+    fd.set("category", "relationship");
     fd.append("options", "Stay in");
     fd.append("options", "Go out");
     fd.append("options", ""); // added, not yet typed into
@@ -248,16 +251,48 @@ describe("FormData parsing helpers", () => {
     // this FormData from being sent in the real form (question-edit-form.tsx).
     expect(result).toEqual({
       success: true,
-      data: { text: "Ideal weekend?", options: ["Stay in", "Go out"] },
+      data: { text: "Ideal weekend?", category: "relationship", options: ["Stay in", "Go out"] },
     });
   });
 
   it("parseQuestionEditInput for a scale question ignores any options fields entirely", () => {
     const fd = new FormData();
     fd.set("text", "Importance of routine");
+    fd.set("category", "lifestyle");
 
     const result = parseQuestionEditInput(fd, "scale");
-    expect(result).toEqual({ success: true, data: { text: "Importance of routine" } });
+    expect(result).toEqual({
+      success: true,
+      data: { text: "Importance of routine", category: "lifestyle" },
+    });
+  });
+
+  // Bug-fix pass: category editing before sharing is now accepted by this
+  // parser (previously it never read `category` from the form at all).
+  it("parseQuestionEditInput accepts a changed category alongside the text", () => {
+    const fd = new FormData();
+    fd.set("text", "Ideal weekend?");
+    fd.set("category", "money");
+    fd.append("options", "Stay in");
+    fd.append("options", "Go out");
+
+    const result = parseQuestionEditInput(fd, "choice");
+    expect(result.success).toBe(true);
+    expect(result.success && result.data.category).toBe("money");
+  });
+
+  it("parseQuestionEditInput rejects a missing or invalid category", () => {
+    const fd = new FormData();
+    fd.set("text", "Ideal weekend?");
+    fd.append("options", "Stay in");
+    fd.append("options", "Go out");
+    // no "category" field at all
+
+    const result = parseQuestionEditInput(fd, "choice");
+    expect(result.success).toBe(false);
+
+    fd.set("category", "not-a-real-category");
+    expect(parseQuestionEditInput(fd, "choice").success).toBe(false);
   });
 });
 

@@ -5,18 +5,27 @@ import { useActionState, useEffect, useRef, useState } from "react";
 
 import { updateQuestion } from "@/app/actions/questions";
 import { initialActionState } from "@/app/actions/shared";
-import { MAX_CHOICE_OPTIONS, MIN_CHOICE_OPTIONS } from "@/lib/wavelength/categories";
+import {
+  CATEGORIES,
+  CATEGORY_LABELS,
+  MAX_CHOICE_OPTIONS,
+  MIN_CHOICE_OPTIONS,
+} from "@/lib/wavelength/categories";
 
 import type { QuestionRow } from "./types";
 
 /**
- * Text and options are always-editable inline fields (no separate
- * view/edit-mode toggle) — simpler than syncing local "am I editing" state
- * against the page re-rendering after every save. Category is never
- * editable here (immutable after creation, DB-enforced); type changes are
+ * Text, category, and options are always-editable inline fields (no
+ * separate view/edit-mode toggle) — simpler than syncing local "am I
+ * editing" state against the page re-rendering after every save. Category
+ * editing before sharing is an intentional product requirement (bug-fix
+ * pass) — it's freely editable here and locked, same as everything else,
+ * once the wavelength is no longer DRAFT (`enforce_question_category_
+ * immutable`, DB-enforced independently of this form). Type changes are
  * TypeChangeControl's job. Editing text or any option here invalidates an
  * existing answer for this question — enforced by a DB trigger
- * (`questions_invalidate_answers_on_edit`), not duplicated here.
+ * (`questions_invalidate_answers_on_edit`), not duplicated here; a category
+ * change alone never does (the trigger only watches `text`/`options`).
  *
  * QA fix: no "Save changes" button. Text/option fields save on blur (the
  * natural "I'm done editing this one" moment) — auto-submitting on every
@@ -109,6 +118,10 @@ export function QuestionEditForm({
     event.currentTarget.form?.requestSubmit();
   }
 
+  function submitOnChange(event: React.ChangeEvent<HTMLSelectElement>) {
+    event.currentTarget.form?.requestSubmit();
+  }
+
   function addOption() {
     // No auto-submit here — the new slot starts empty and `required`, so an
     // immediate submit would always be blocked by the browser's own
@@ -144,6 +157,21 @@ export function QuestionEditForm({
         maxLength={300}
         disabled={pending}
       />
+
+      <label htmlFor={`category-${question.id}`}>Category</label>
+      <select
+        id={`category-${question.id}`}
+        name="category"
+        defaultValue={question.category}
+        onChange={submitOnChange}
+        disabled={pending}
+      >
+        {CATEGORIES.map((c) => (
+          <option key={c} value={c}>
+            {CATEGORY_LABELS[c]}
+          </option>
+        ))}
+      </select>
 
       {question.type !== "scale" && (
         <fieldset disabled={pending}>

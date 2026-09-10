@@ -23,6 +23,15 @@ import { buildWavelengthResultView, ResultDataError } from "@/lib/wavelength/res
  * (before COMPLETED, that same query would silently return only the
  * caller's own rows — this page just never runs for a non-COMPLETED
  * wavelength in the first place, see below).
+ *
+ * Bug-fix pass: the participant check below is an explicit, app-level
+ * defense-in-depth check on top of that RLS scoping — this route returns
+ * both participants' individual answers and question-level comparisons,
+ * the most sensitive private data in the whole app, so it must not rely
+ * on RLS being correctly configured as its *only* line of defense. If
+ * `wavelength` were ever readable by a non-participant (a future RLS
+ * regression), this still refuses before any question/answer data is
+ * fetched at all.
  */
 export default async function ResultPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
@@ -31,11 +40,16 @@ export default async function ResultPage({ params }: { params: Promise<{ token: 
 
   const { data: wavelength } = await supabase
     .from("wavelengths")
-    .select("id, state, participant_a_id")
+    .select(
+      "id, state, participant_a_id, participant_b_id, participant_a_alias, participant_b_alias",
+    )
     .eq("share_token", token)
     .maybeSingle();
 
-  if (!wavelength) {
+  if (
+    !wavelength ||
+    (wavelength.participant_a_id !== userId && wavelength.participant_b_id !== userId)
+  ) {
     return (
       <main>
         <h1>Result not available</h1>
@@ -89,11 +103,19 @@ export default async function ResultPage({ params }: { params: Promise<{ token: 
   // way to navigate away from the current flow via this element.
   const isParticipantA = wavelength.participant_a_id === userId;
 
+  // Bug-fix pass: real participant aliases everywhere the UI shows identity
+  // — never the bare "A"/"B" internal labels. Both are guaranteed non-null
+  // by the time a wavelength reaches COMPLETED (finalize_draft requires
+  // participant_a_alias, claim_participant_b requires participant_b_alias)
+  // — the fallback strings are just defensive, never expected to render.
+  const aliasA = wavelength.participant_a_alias ?? "Participant A";
+  const aliasB = wavelength.participant_b_alias ?? "Participant B";
+
   return (
     <main>
       {isParticipantA && <HomeNav />}
       <ResultReveal>
-        <ResultView view={view} />
+        <ResultView view={view} aliasA={aliasA} aliasB={aliasB} />
       </ResultReveal>
     </main>
   );

@@ -106,18 +106,16 @@ test("editing a Scale question's text invalidates A's existing answer", async ({
   await addScaleQuestion(page, { text: "Importance of routine" });
 
   const card = questionCard(page, "Importance of routine");
-  await answerScale(card, "Moderadamente importante");
+  await answerScale(card, "Moderately important");
 
   await card.getByLabel("Question text").fill("Importance of daily routine");
   await card.getByLabel("Question text").press("Tab");
 
   const editedCard = questionCard(page, "Importance of daily routine");
-  await expect(
-    editedCard.getByRole("radio", { name: "Moderadamente importante" }),
-  ).not.toBeChecked();
+  await expect(editedCard.getByRole("radio", { name: "Moderately important" })).not.toBeChecked();
   await expect(answerSavedStatus(editedCard)).not.toBeVisible();
 
-  await answerScale(editedCard, "Muy importante");
+  await answerScale(editedCard, "Very important");
 });
 
 test("Test H: changing the answer directly (no question/option edit) never triggers invalidation", async ({

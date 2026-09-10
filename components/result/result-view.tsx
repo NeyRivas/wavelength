@@ -9,15 +9,32 @@ import { GlobalSummary } from "./global-summary";
 /** Composes the approved section order: Global → Categories → Where
  * You're Aligned → Different Wavelengths → Questions. Purely
  * presentational — `view` already carries every number and every
- * sort/selection decision (lib/wavelength/result.ts). */
-export function ResultView({ view }: { view: WavelengthResultView }) {
+ * sort/selection decision (lib/wavelength/result.ts). `aliasA`/`aliasB` are
+ * presentation-only too (bug-fix pass: real names everywhere, never the
+ * bare "A"/"B" internal labels) — threaded straight through to every
+ * section that displays individual answers or identity, nothing here
+ * recomputes or reshapes `view` itself. */
+export function ResultView({
+  view,
+  aliasA,
+  aliasB,
+}: {
+  view: WavelengthResultView;
+  aliasA: string;
+  aliasB: string;
+}) {
   return (
     <>
-      <GlobalSummary score={view.global.score} level={view.global.level} />
+      <GlobalSummary
+        score={view.global.score}
+        level={view.global.level}
+        aliasA={aliasA}
+        aliasB={aliasB}
+      />
       <CategorySummary categories={view.categories} />
-      <AlignedSection questions={view.whereAligned} />
-      <DifferentSection questions={view.differentWavelengths} />
-      <AllQuestionsSection categories={view.categories} />
+      <AlignedSection questions={view.whereAligned} aliasA={aliasA} aliasB={aliasB} />
+      <DifferentSection questions={view.differentWavelengths} aliasA={aliasA} aliasB={aliasB} />
+      <AllQuestionsSection categories={view.categories} aliasA={aliasA} aliasB={aliasB} />
     </>
   );
 }

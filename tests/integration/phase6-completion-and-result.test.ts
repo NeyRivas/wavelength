@@ -183,6 +183,68 @@ describe("result access: privacy and authorization", () => {
     expect(answerRows).toHaveLength(0);
   });
 
+  // Bug-fix pass: "question-level comparison data" is built from
+  // Questions + Answers together (lib/wavelength/result.ts) — a stranger
+  // must be unable to read *either* half of that join, not just answers.
+  // Also confirms a raw SQL attempt (bypassing the app's UI/Server Actions
+  // entirely, straight against the RLS-scoped connection) gets nothing,
+  // not just that the UI never renders a link to it.
+  it("a third party cannot retrieve question-level comparison data (neither questions nor answers)", async () => {
+    const { wavelengthId } = await createCompletedWavelength();
+    const stranger = await createTestUser();
+
+    const questionRows = await asRequest(stranger, async (client) => {
+      const { rows } = await client.query("select * from questions where wavelength_id = $1", [
+        wavelengthId,
+      ]);
+      return rows;
+    });
+    expect(questionRows).toHaveLength(0);
+
+    const answerRows = await asRequest(stranger, async (client) => {
+      const { rows } = await client.query(
+        "select * from answers where wavelength_id = $1 and participant = 'A'",
+        [wavelengthId],
+      );
+      return rows;
+    });
+    expect(answerRows).toHaveLength(0);
+  });
+
+  // Bug-fix pass: "refresh" and "re-entry" are just independent later
+  // requests with the same identity — each asRequest call here is its own
+  // fresh connection, exactly like a real page reload. Confirms neither
+  // side's access degrades or becomes inconsistent across repeated reads.
+  it("A's result access is stable across repeated reads (refresh/re-entry)", async () => {
+    const { aId, wavelengthId, questions } = await createCompletedWavelength();
+
+    for (let i = 0; i < 3; i++) {
+      const rows = await asRequest(aId, async (client) => {
+        const { rows } = await client.query(
+          "select participant from answers where wavelength_id = $1",
+          [wavelengthId],
+        );
+        return rows;
+      });
+      expect(rows).toHaveLength(questions.length * 2);
+    }
+  });
+
+  it("B's result access is stable across repeated reads (refresh/re-entry)", async () => {
+    const { bId, wavelengthId, questions } = await createCompletedWavelength();
+
+    for (let i = 0; i < 3; i++) {
+      const rows = await asRequest(bId, async (client) => {
+        const { rows } = await client.query(
+          "select participant from answers where wavelength_id = $1",
+          [wavelengthId],
+        );
+        return rows;
+      });
+      expect(rows).toHaveLength(questions.length * 2);
+    }
+  });
+
   it("the share token's own preview function never exposes participant ids or answers, even once COMPLETED", async () => {
     const { shareToken } = await createCompletedWavelength();
     const stranger = await createTestUser();
@@ -278,8 +340,8 @@ describe("end-to-end result computation from real Postgres data", () => {
 
     // Scale answers render their label, not the raw stored integer.
     const q4Display = view.allQuestions.find((q) => q.id === q4!.id)!;
-    expect(q4Display.answerA).toBe("Poco importante");
-    expect(q4Display.answerB).toBe("Muy importante");
+    expect(q4Display.answerA).toBe("Slightly important");
+    expect(q4Display.answerB).toBe("Very important");
 
     // Choice answers render the option text, not the raw index.
     const q0Display = view.allQuestions.find((q) => q.id === q0!.id)!;

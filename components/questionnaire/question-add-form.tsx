@@ -61,8 +61,8 @@ export function QuestionAddForm({ wavelengthId }: { wavelengthId: string }) {
 
       {type === "scale" ? (
         <p>
-          Answered on a fixed 5-level scale (Nada importante → Extremadamente importante) — no
-          options to set up.
+          Answered on a fixed 5-level scale (Not important → Extremely important) — no options to
+          set up.
         </p>
       ) : (
         <fieldset>

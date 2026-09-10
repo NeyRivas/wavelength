@@ -1,6 +1,5 @@
 import { saveAnswerA } from "@/app/actions/answers";
 import { deleteQuestion, moveQuestion } from "@/app/actions/questions";
-import { CATEGORY_LABELS } from "@/lib/wavelength/categories";
 
 import { AnswerControl } from "./answer-control";
 import { QuestionEditForm } from "./question-edit-form";
@@ -9,7 +8,7 @@ import type { QuestionRow } from "./types";
 
 /**
  * One question's full editing surface: move/delete, type change, the
- * always-editable text/options form, and A's answer control. A Server
+ * always-editable text/category/options form, and A's answer control. A Server
  * Component itself (move/delete are plain server-action-bound forms, no
  * client JS needed for those) that composes the smaller Client Components
  * that do need local state (type selection, dynamic option rows).
@@ -30,8 +29,6 @@ export function QuestionCard({
   return (
     <article aria-label={`Question: ${question.text}`}>
       <header>
-        <span>{CATEGORY_LABELS[question.category]}</span>
-
         <form action={moveQuestion} style={{ display: "inline" }}>
           <input type="hidden" name="wavelengthId" value={wavelengthId} />
           <input type="hidden" name="questionId" value={question.id} />

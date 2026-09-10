@@ -1,22 +1,36 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { asRequest, resetDatabase } from "./setup/db";
-import { addQuestions, createDraft } from "./setup/fixtures";
+import { addQuestions, answerAll, createDraft, finalizeAsA } from "./setup/fixtures";
 
 beforeEach(async () => {
   await resetDatabase();
 });
 
-describe("question editing: category is immutable after creation", () => {
-  it("rejects changing a question's category", async () => {
+// Bug-fix pass: category editing before sharing is an intentional product
+// requirement — this used to be unconditionally DB-immutable (even during
+// DRAFT), which was wrong. It's now freely editable up to the moment A
+// shares, and locked from then on (enforce_question_category_immutable,
+// 20260910120100_category_editable_before_share.sql), same as every other
+// question field. `questions_update`'s RLS policy is itself already
+// DRAFT-only, so the WAITING/IN_PROGRESS/COMPLETED case below is blocked by
+// RLS before this trigger even runs — the trigger is deliberately still
+// checked (defense-in-depth, this project's standing pattern), so its own
+// exception message is what a caller sees if RLS were ever misconfigured.
+describe("question editing: category can be changed before sharing, locked after", () => {
+  it("allows changing a question's category while DRAFT", async () => {
     const { aId, wavelengthId } = await createDraft();
-    const [q] = await addQuestions(aId, wavelengthId, 1);
+    const [q] = await addQuestions(aId, wavelengthId, 1); // category: relationship
 
-    await expect(
-      asRequest(aId, (client) =>
-        client.query("update questions set category = 'money' where id = $1", [q!.id]),
-      ),
-    ).rejects.toThrow(/category cannot be changed/);
+    await asRequest(aId, (client) =>
+      client.query("update questions set category = 'money' where id = $1", [q!.id]),
+    );
+
+    const rows = await asRequest(aId, async (client) => {
+      const { rows } = await client.query("select category from questions where id = $1", [q!.id]);
+      return rows;
+    });
+    expect(rows[0]?.category).toBe("money");
   });
 
   it("still allows updating other fields (text, options) on the same row", async () => {
@@ -43,6 +57,49 @@ describe("question editing: category is immutable after creation", () => {
         client.query("update questions set category = 'relationship' where id = $1", [q!.id]),
       ),
     ).resolves.not.toThrow();
+  });
+
+  it("changing only the category does not touch an existing answer", async () => {
+    const { aId, wavelengthId } = await createDraft();
+    const [q] = await addQuestions(aId, wavelengthId, 1);
+    await answerAll(aId, wavelengthId, [q!], "A");
+
+    await asRequest(aId, (client) =>
+      client.query("update questions set category = 'money' where id = $1", [q!.id]),
+    );
+
+    const rows = await asRequest(aId, async (client) => {
+      const { rows } = await client.query(
+        "select value from answers where question_id = $1 and participant = 'A'",
+        [q!.id],
+      );
+      return rows;
+    });
+    expect(rows).toHaveLength(1);
+  });
+
+  it("rejects changing category once the wavelength is no longer DRAFT (shared)", async () => {
+    const { aId, wavelengthId } = await createDraft();
+    const questions = await addQuestions(aId, wavelengthId, 5);
+    await answerAll(aId, wavelengthId, questions, "A");
+    await finalizeAsA(aId, wavelengthId);
+
+    // RLS's own questions_update policy is DRAFT-only, so this is already
+    // blocked there — asserting on the effect either way (the trigger's
+    // own message if it's ever reached, an empty update otherwise).
+    await expect(
+      asRequest(aId, (client) =>
+        client.query("update questions set category = 'money' where id = $1", [questions[0]!.id]),
+      ),
+    ).rejects.toThrow();
+
+    const rows = await asRequest(aId, async (client) => {
+      const { rows } = await client.query("select category from questions where id = $1", [
+        questions[0]!.id,
+      ]);
+      return rows;
+    });
+    expect(rows[0]?.category).not.toBe("money");
   });
 });
 

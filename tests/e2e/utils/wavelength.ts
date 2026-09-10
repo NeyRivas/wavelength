@@ -104,8 +104,8 @@ export async function answerChoice(card: Locator, optionText: string): Promise<v
   await expect(answerControlForm(card).getByText("Saved", { exact: true })).toBeVisible();
 }
 
-/** Selects a scale level by its exact fixed label (Nada/Poco/Moderadamente/
- * Muy importante, Extremadamente importante) and waits for auto-save. */
+/** Selects a scale level by its exact fixed label (Not/Slightly/Moderately/
+ * Very/Extremely important) and waits for auto-save. */
 export async function answerScale(card: Locator, levelLabel: string): Promise<void> {
   await answerFieldset(card).getByRole("radio", { name: levelLabel }).check();
   await expect(answerControlForm(card).getByText("Saved", { exact: true })).toBeVisible();
@@ -118,11 +118,11 @@ export function answerSavedStatus(card: Locator): Locator {
 }
 
 export const SCALE_LABELS = [
-  "Nada importante",
-  "Poco importante",
-  "Moderadamente importante",
-  "Muy importante",
-  "Extremadamente importante",
+  "Not important",
+  "Slightly important",
+  "Moderately important",
+  "Very important",
+  "Extremely important",
 ] as const;
 
 /** Finalizes A's draft (alias + "Create my Wavelength") and returns the
@@ -135,9 +135,12 @@ export async function finalizeDraft(page: Page, alias = "Alex"): Promise<string>
 }
 
 /** Waits out the "Finding your wavelength…" reveal delay and confirms the
- * result screen actually rendered (components/result/result-reveal.tsx). */
+ * result screen actually rendered (components/result/result-reveal.tsx).
+ * Matches by the stable part of the heading only — bug-fix pass: it now
+ * names both participants' actual aliases ("Are Alex and Bailey on the
+ * same wavelength?"), which vary per test. */
 export async function expectResultVisible(page: Page): Promise<void> {
-  await expect(page.getByRole("heading", { name: "Are you on the same wavelength?" })).toBeVisible({
+  await expect(page.getByRole("heading", { name: /on the same wavelength\?/ })).toBeVisible({
     timeout: 10_000,
   });
 }

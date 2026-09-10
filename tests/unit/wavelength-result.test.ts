@@ -203,11 +203,11 @@ describe("formatAnswer: human-readable text for every question type", () => {
 
   it("scale: the fixed 0/25/50/75/100 label, not the raw number alone", () => {
     const q = { type: "scale" as const, options: null };
-    expect(formatAnswer(q, 0)).toBe("Nada importante");
-    expect(formatAnswer(q, 25)).toBe("Poco importante");
-    expect(formatAnswer(q, 50)).toBe("Moderadamente importante");
-    expect(formatAnswer(q, 75)).toBe("Muy importante");
-    expect(formatAnswer(q, 100)).toBe("Extremadamente importante");
+    expect(formatAnswer(q, 0)).toBe("Not important");
+    expect(formatAnswer(q, 25)).toBe("Slightly important");
+    expect(formatAnswer(q, 50)).toBe("Moderately important");
+    expect(formatAnswer(q, 75)).toBe("Very important");
+    expect(formatAnswer(q, 100)).toBe("Extremely important");
   });
 });
 
