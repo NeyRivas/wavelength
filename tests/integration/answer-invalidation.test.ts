@@ -92,6 +92,32 @@ describe("Test 1: editing a Choice question's text invalidates A's answer", () =
 
     expect(await getAnswer(aId, wavelengthId, qId)).toBeUndefined();
   });
+
+  // Reproduction attempt for a follow-up bug report ("text change doesn't
+  // clear the answer in the real app"): drives the exact bundled UPDATE
+  // shape app/actions/questions.ts's updateQuestion actually issues (text
+  // + category + options together in ONE statement, category included
+  // even though unchanged — the form always submits it now), rather than
+  // a bare `SET text = ...`, to rule out any interaction between the
+  // category-immutability trigger and the invalidation trigger firing on
+  // the same statement.
+  it("still invalidates when text changes via the exact bundled UPDATE shape updateQuestion issues (text+category+options together)", async () => {
+    const { aId, wavelengthId } = await createDraft();
+    const qId = await insertChoiceQuestion(aId, wavelengthId, ["Stay in", "Go out"]);
+    await answerChoice(aId, wavelengthId, qId, 0);
+    expect(await getAnswer(aId, wavelengthId, qId)).toBe(0);
+
+    await asRequest(aId, (client) =>
+      client.query(
+        `update questions
+           set text = $2, category = $3, options = $4::jsonb
+         where id = $1`,
+        [qId, "Ideal weekend plans?", "relationship", JSON.stringify(["Stay in", "Go out"])],
+      ),
+    );
+
+    expect(await getAnswer(aId, wavelengthId, qId)).toBeUndefined();
+  });
 });
 
 // ── Test 2 ──────────────────────────────────────────────────────────────

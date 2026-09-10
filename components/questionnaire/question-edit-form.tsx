@@ -69,6 +69,21 @@ import type { QuestionRow } from "./types";
  * invalidation `key` (see question-card.tsx) with the now-current
  * `question`/`currentValue` — the key alone cannot help if the props
  * feeding it never change.
+ *
+ * QA fix: the refresh (and the category field's own remount) now happen
+ * after EVERY completed submission, not just successful ones. The
+ * category `<select>` is uncontrolled (`defaultValue`) — if a category
+ * change is ever rejected (e.g. the wavelength stopped being DRAFT between
+ * render and submit), the browser's own select still visually shows
+ * whatever the user picked, since nothing tells it otherwise. Left alone,
+ * that rejected value rides along on the FormData of the next, unrelated
+ * edit (e.g. a text blur) — which resubmits the same bad category and gets
+ * rejected again, silently blocking that edit too, since one `<form>` = one
+ * bundled UPDATE. Keying the select on `attempt` (incremented once per
+ * completed submission) forces it to remount and re-read `defaultValue`
+ * from the just-refreshed, server-confirmed `question.category` — reverting
+ * a rejected pick back to reality, or confirming an accepted one — either
+ * way never leaving a stale value to sabotage the next, separate edit.
  */
 
 interface OptionSlot {
@@ -101,18 +116,24 @@ export function QuestionEditForm({
   const router = useRouter();
   const [state, formAction, pending] = useActionState(updateQuestion, initialActionState);
   const [slots, setSlots] = useState<OptionSlot[]>(() => initialSlots(question.options));
+  // Bumped once per completed submission (success or failure) — see the
+  // category <select>'s key below for why the failure case matters too.
+  const [attempt, setAttempt] = useState(0);
 
   // Fires exactly once per completed submission, on the pending -> !pending
   // transition (never on mount, where pending starts false) — see the QA
   // round 3 doc comment above for why this is needed on top of
-  // updateQuestion's own revalidatePath.
+  // updateQuestion's own revalidatePath. Now fires on failure too (not just
+  // success) — see the doc comment above for why a rejected submission
+  // still needs the category field to resync.
   const wasPending = useRef(false);
   useEffect(() => {
-    if (wasPending.current && !pending && !state.error) {
+    if (wasPending.current && !pending) {
       router.refresh();
+      setAttempt((n) => n + 1);
     }
     wasPending.current = pending;
-  }, [pending, state.error, router]);
+  }, [pending, router]);
 
   function submitOnBlur(event: React.FocusEvent<HTMLInputElement>) {
     event.currentTarget.form?.requestSubmit();
@@ -160,6 +181,7 @@ export function QuestionEditForm({
 
       <label htmlFor={`category-${question.id}`}>Category</label>
       <select
+        key={attempt}
         id={`category-${question.id}`}
         name="category"
         defaultValue={question.category}
