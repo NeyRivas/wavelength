@@ -151,6 +151,21 @@ export async function updateQuestion(
     .eq("id", questionId);
 
   if (error) {
+    // TEMPORARY DIAGNOSTIC (category-change investigation) — remove once
+    // the real cause of the local "Something went wrong" is confirmed.
+    // Logs the exact Postgres/PostgREST error (code/message/details/hint)
+    // instead of just mapping it to the generic message, so the actual
+    // failure (e.g. a specific migration's trigger not existing yet, an
+    // RLS denial, or something else entirely) is visible in the dev
+    // server's own console rather than guessed at.
+    console.error("[QA-DIAG updateQuestion] questions update failed", {
+      questionId,
+      submittedCategory: parsed.data.category,
+      code: error.code,
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+    });
     return {
       error: isUniqueViolationOn(error, TEXT_UNIQUE_CONSTRAINT)
         ? DUPLICATE_QUESTION_ERROR
