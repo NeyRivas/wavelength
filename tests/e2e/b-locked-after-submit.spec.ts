@@ -84,3 +84,50 @@ test("B cannot modify an answer after submitting — no going back and no raw er
 
   await bContext.close();
 });
+
+/**
+ * QA fix (routing/navigation pass): the sibling test above covers B editing
+ * an answer from the stale, back-navigated form. This one covers the other
+ * live control that same stale snapshot leaves wired up — the "See our
+ * results" submit button itself — which used to call submitFinalB()
+ * unconditionally and surface its raw RPC rejection ("...not in IN_PROGRESS
+ * state") instead of the locked "Nice try!" state. Also confirms Back no
+ * longer even shows the editable form in the first place (app/actions/
+ * join.ts now revalidates /answer on completion, so the Router Cache can't
+ * hand back the pre-completion snapshot), and that both of the locked
+ * page's actions are present.
+ */
+test("B resubmitting from the stale answer form lands on the locked state, not a raw error", async ({
+  page,
+  browser,
+}) => {
+  await startDraft(page);
+  for (const q of QUESTIONS) {
+    await addChoiceQuestion(page, q);
+    await answerChoice(questionCard(page, q.text), q.options[0]!);
+  }
+  const shareLink = await finalizeDraft(page, "Alex");
+
+  const bContext = await browser.newContext();
+  const bPage = await bContext.newPage();
+  await joinAsB(bPage, shareLink, "Bailey");
+
+  for (const q of QUESTIONS) {
+    await answerChoice(answerRow(bPage, q.text), q.options[0]!);
+  }
+  await submitFinal(bPage);
+  await expectResultVisible(bPage);
+
+  await bPage.goBack();
+
+  // The fix: Back must not restore the live, submittable form at all.
+  await expect(bPage.getByRole("heading", { name: "Answer the questions" })).not.toBeVisible();
+  await expect(bPage.getByRole("heading", { name: "Nice try! 😄" })).toBeVisible();
+  await expect(bPage.getByRole("link", { name: "See your result" })).toBeVisible();
+  await expect(bPage.getByRole("link", { name: "Create your own Wavelength" })).toBeVisible();
+
+  await expect(bPage.getByText("not in IN_PROGRESS state")).not.toBeVisible();
+  await expect(bPage.getByText("Something went wrong. Please try again.")).not.toBeVisible();
+
+  await bContext.close();
+});

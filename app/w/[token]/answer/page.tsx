@@ -34,6 +34,15 @@ export default async function AnswerPage({ params }: { params: Promise<{ token: 
   // completing (browser back button, a stale tab, a bookmarked /answer URL)
   // gets a clear, lighthearted "no cheating" message instead of a silent
   // redirect that could look like the answer might still go through.
+  //
+  // Bug-fix pass: this is also now the page submitFinalB's own guard sends B
+  // to (see app/actions/join.ts), so it's the one, reused destination for
+  // every "B, already completed" path rather than a parallel message living
+  // in the action. "Create your own Wavelength" is a plain link to /create —
+  // it starts an entirely separate draft scoped to this user's own id
+  // (createDraft in app/actions/draft.ts), never touching this completed,
+  // immutable wavelength, so no confirmation is needed the way HomeNav's
+  // "start a new one" needs one for an A still mid-flow.
   if (wavelength?.participant_b_id === userId && wavelength.state === "COMPLETED") {
     return (
       <main>
@@ -44,6 +53,9 @@ export default async function AnswerPage({ params }: { params: Promise<{ token: 
         </p>
         <p>
           <a href={`/w/${token}/result`}>See your result</a>
+        </p>
+        <p>
+          <a href="/create">Create your own Wavelength</a>
         </p>
       </main>
     );

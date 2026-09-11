@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { requireUserId } from "@/lib/supabase/identity";
@@ -61,6 +62,24 @@ export async function claimParticipantB(
  * already locked by RLS (no INSERT/UPDATE policy on `answers` matches
  * outside DRAFT/IN_PROGRESS) — there is nothing else for this action to do
  * beyond redirecting to the result.
+ *
+ * Bug-fix pass (stale post-completion resubmission): Next.js's client-side
+ * Router Cache reuses whatever was last rendered for a route on the
+ * browser's own Back/Forward buttons regardless of staleness (unlike
+ * ordinary Link navigation) — so after B completes and lands on /result,
+ * pressing Back can restore the pre-completion snapshot of /answer (the
+ * live, fully-answered form with this very Submit button still wired up),
+ * without AnswerPage's own "already completed" guard ever re-running
+ * server-side. Hitting Submit from that stale snapshot used to call the RPC
+ * unconditionally and surface its raw rejection ("...not in IN_PROGRESS
+ * state") verbatim. This now checks the wavelength's actual current state
+ * first — same pattern as saveAnswer() in app/actions/answers.ts — and for
+ * exactly that case (this caller is B, already COMPLETED) skips the RPC
+ * entirely and sends B to /answer, which re-renders as the existing locked
+ * "Nice try!" state instead of a raw error. `revalidatePath` on both exits
+ * below additionally drops the Router Cache's stale /answer entry so a
+ * *subsequent* Back navigation is forced to hit the server fresh too,
+ * rather than only being caught reactively on the next submit attempt.
  */
 export async function submitFinalB(
   _prevState: ActionState,
@@ -70,8 +89,19 @@ export async function submitFinalB(
   const shareToken = String(formData.get("shareToken") ?? "");
   if (!wavelengthId || !shareToken) return { error: GENERIC_ERROR };
 
-  await requireUserId();
+  const userId = await requireUserId();
   const supabase = await createSupabaseServerClient();
+
+  const { data: wavelength } = await supabase
+    .from("wavelengths")
+    .select("state, participant_b_id")
+    .eq("id", wavelengthId)
+    .maybeSingle();
+
+  if (wavelength?.participant_b_id === userId && wavelength.state === "COMPLETED") {
+    revalidatePath("/w/[token]/answer", "page");
+    redirect(`/w/${shareToken}/answer`);
+  }
 
   const { error } = await supabase.rpc("submit_final_b", { p_id: wavelengthId });
 
@@ -82,5 +112,6 @@ export async function submitFinalB(
     return { error: error.message };
   }
 
+  revalidatePath("/w/[token]/answer", "page");
   redirect(`/w/${shareToken}/result`);
 }
