@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import { saveAnswerB } from "@/app/actions/answers";
 import { AnswerControl } from "@/components/questionnaire/answer-control";
+import { CreateNewWavelengthAction } from "@/components/wavelength/create-new-wavelength-action";
 import { SubmitFinalForm } from "@/components/wavelength/submit-final-form";
 import { requireUserId } from "@/lib/supabase/identity";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -38,11 +39,13 @@ export default async function AnswerPage({ params }: { params: Promise<{ token: 
   // Bug-fix pass: this is also now the page submitFinalB's own guard sends B
   // to (see app/actions/join.ts), so it's the one, reused destination for
   // every "B, already completed" path rather than a parallel message living
-  // in the action. "Create your own Wavelength" is a plain link to /create —
-  // it starts an entirely separate draft scoped to this user's own id
-  // (createDraft in app/actions/draft.ts), never touching this completed,
-  // immutable wavelength, so no confirmation is needed the way HomeNav's
-  // "start a new one" needs one for an A still mid-flow.
+  // in the action.
+  //
+  // Product decision: "Create your own Wavelength" is the same shared,
+  // confirm-before-navigating action rendered on the completed Result page
+  // for both participants (components/wavelength/create-new-wavelength-
+  // action.tsx) — one implementation, reused here rather than a plain link
+  // with its own separate behavior.
   if (wavelength?.participant_b_id === userId && wavelength.state === "COMPLETED") {
     return (
       <main>
@@ -54,9 +57,7 @@ export default async function AnswerPage({ params }: { params: Promise<{ token: 
         <p>
           <a href={`/w/${token}/result`}>See your result</a>
         </p>
-        <p>
-          <a href="/create">Create your own Wavelength</a>
-        </p>
+        <CreateNewWavelengthAction />
       </main>
     );
   }
