@@ -30,3 +30,6 @@ tests/integration/.tmp-pg/
 # uncommitted deliberately, not tracked as project instructions.
 /AGENTS.md
 /CLAUDE.md
+
+# Local Supabase CLI metadata
+supabase/.temp/
