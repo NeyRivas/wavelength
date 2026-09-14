@@ -240,3 +240,256 @@ dialog::backdrop {
     opacity: 0.6;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Landing page ("/", app/page.tsx) ONLY — every rule below is scoped
+   under .landing (or a descendant of it) and touches no bare element
+   selector, so no other route/page is affected. --font-fraunces and
+   --font-nunito are defined by next/font in app/page.tsx itself (not the
+   root layout) as CSS variables on this same .landing wrapper — they
+   don't exist anywhere else in the app.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.landing {
+  /* Brand palette — namespaced (wl- = "wavelength landing") so these never
+     collide with the app-wide --color-* tokens above, and stay scoped to
+     this page instead of living on :root. */
+  --wl-ink: #292624;
+  --wl-cream: #f7f2ea;
+  --wl-coral: #e8755f;
+  --wl-blush: #f2c7bc;
+  --wl-sage: #a8b5a0;
+  --wl-sand: #e8ddd0;
+
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 100vh;
+  background: #ffffff;
+  color: var(--wl-ink);
+  font-family: var(--font-nunito), system-ui, sans-serif;
+}
+
+/* ── atmospheric center gradient — soft, off-center-safe, fades to white ── */
+
+.landing-gradient {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  /* Sized and anchored to the viewport, not the full (tall, footer-
+     inclusive) scroll height of .landing — otherwise "centered behind the
+     content column" would drift down the page as the footer's whitespace
+     grows. Comfortably covers the content column's own area (see
+     .landing-content) and fades out well before it. */
+  height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      16rem 12rem at 50% 30%,
+      color-mix(in srgb, var(--wl-coral) 12%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      20rem 15rem at 51% 33%,
+      color-mix(in srgb, var(--wl-blush) 26%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      18rem 14rem at 46% 30%,
+      color-mix(in srgb, var(--wl-sage) 10%, transparent),
+      transparent 68%
+    ),
+    radial-gradient(
+      22rem 17rem at 55% 35%,
+      color-mix(in srgb, var(--wl-sand) 18%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      26rem 20rem at 50% 32%,
+      color-mix(in srgb, var(--wl-cream) 40%, transparent),
+      transparent 72%
+    );
+}
+
+/* ── scattered soft-white decoration — spread across the whole canvas,
+   not clustered around the gradient; deliberately organic/imprecise
+   ellipses, never a repeating pattern.
+
+   Pure white (rgba(255,255,255,x)) is invisible on the equally-white page
+   background, so each blob's core fades to a whisper of cream rather than
+   to fully transparent white — just enough to read as a soft light bloom
+   against the white canvas while still overwhelmingly reading as "white."
+
+   Positioned with a mix of top/bottom anchors (some fixed rem distance
+   from the top near the hero, one from the bottom near the footer, two at
+   a vh-based offset that lands in the quiet middle space) rather than
+   percentages of .landing's own height — that height varies a lot with
+   viewport (the gap before the footer), and percentages of it would drift
+   these away from where they're actually meant to sit. ── */
+
+.landing-blob {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 35% 35%,
+    rgba(255, 255, 255, 0.95),
+    color-mix(in srgb, var(--wl-cream) 55%, transparent) 55%,
+    transparent 75%
+  );
+  filter: blur(6px);
+}
+
+/* upper-left, close to the hero */
+.landing-blob--1 {
+  top: 3rem;
+  left: 6%;
+  width: 12rem;
+  height: 9rem;
+  transform: rotate(-8deg);
+}
+
+/* upper-right, close to the hero */
+.landing-blob--2 {
+  top: 7rem;
+  right: 9%;
+  width: 8rem;
+  height: 6rem;
+  transform: rotate(-18deg);
+}
+
+/* mid-left, out in the quiet space below the hero */
+.landing-blob--3 {
+  top: 58vh;
+  left: 7%;
+  width: 15rem;
+  height: 11rem;
+  transform: rotate(10deg);
+}
+
+/* mid-right, further down still, out in the quiet space */
+.landing-blob--4 {
+  top: 72vh;
+  right: 5%;
+  width: 10rem;
+  height: 14rem;
+  border-radius: 50% / 35%;
+  transform: rotate(-14deg);
+}
+
+/* near the footer, off to one side of the giant wordmark */
+.landing-blob--5 {
+  bottom: 13rem;
+  left: 3%;
+  width: 11rem;
+  height: 11rem;
+}
+
+/* ── layout: [ ad ] [ centered content ] [ ad ] ── */
+
+.landing-grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 38rem) minmax(0, 1fr);
+  gap: 1.5rem;
+  max-width: 90rem;
+  margin: 0 auto;
+  padding: 4rem 1.5rem 8rem;
+}
+
+/* Reserved for future ad placements — deliberately empty and unstyled
+   (no border/background) so the side columns read as plain white space
+   until a real placement exists. */
+.landing-ad {
+  min-height: 20rem;
+}
+
+.landing-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  text-align: center;
+  padding-block: 3rem;
+}
+
+.landing-brand {
+  margin: 0;
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  color: var(--wl-ink);
+}
+
+.landing-description {
+  margin: 0;
+  max-width: 32rem;
+  font-family: var(--font-nunito), system-ui, sans-serif;
+  font-size: 1.0625rem;
+  color: var(--color-muted);
+}
+
+.landing-cta {
+  display: inline-block;
+  margin-top: 0.5rem;
+  padding: 0.75rem 1.75rem;
+  border-radius: 999px;
+  background: var(--wl-coral);
+  color: #ffffff;
+  font-family: var(--font-nunito), system-ui, sans-serif;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+@media (max-width: 56rem) {
+  .landing-grid {
+    /* Side columns shrink to a small margin rather than disappearing
+       outright, so the [ ad ] [ content ] [ ad ] structure still exists
+       conceptually on mobile — just without room for real content. */
+    grid-template-columns: minmax(0, 1.25rem) minmax(0, 1fr) minmax(0, 1.25rem);
+    padding: 3rem 1rem 6rem;
+  }
+
+  .landing-ad {
+    min-height: 0;
+  }
+}
+
+/* ── giant footer wordmark — full-bleed, never causes horizontal overflow ── */
+
+.landing-footer {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  overflow: hidden;
+  line-height: 1;
+  padding-bottom: 0.5rem;
+}
+
+.landing-wordmark {
+  margin: 0;
+  width: 100%;
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-weight: 400;
+  /* Scales with viewport width so it always spans edge-to-edge; clamped so
+     it can never force the page wider than the viewport (no horizontal
+     scroll — the parent's overflow: hidden is the second safety net). */
+  font-size: clamp(3rem, 17vw, 18rem);
+  line-height: 0.85;
+  text-align: center;
+  white-space: nowrap;
+  user-select: none;
+  /* "Translucent white, blended with the background" isn't literally
+     achievable on a pure-white canvas (white-on-white is invisible), so
+     this uses cream — visually reads as barely-there off-white — plus a
+     whisper-thin ink stroke for just enough letterform definition to read
+     as a huge, quiet signature rather than a logo. */
+  color: rgba(247, 242, 234, 0.9);
+  -webkit-text-stroke: 1px rgba(41, 38, 36, 0.07);
+}
