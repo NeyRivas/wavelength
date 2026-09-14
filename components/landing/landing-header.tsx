@@ -7,12 +7,13 @@ import { LogoMark } from "./logo-mark";
  * the top of every section screenshot, i.e. it's a persistent header, not
  * a one-off hero element).
  *
- * "How it works" is a real in-page anchor to the section below (#how-it-
- * works) — both live on this same route, so this is normal same-page
- * navigation, not an invented destination. "For couples" and "FAQ" are
- * shown in the reference but have no corresponding section anywhere in
- * the supplied screenshots or in the rest of the app; per the brief's own
- * "do not invent navigation/content" rule, these are rendered as plain
+ * "How it works" links to the dedicated /how-it-works route (bug fix —
+ * it used to be an in-page anchor to the 3-card section further down "/"
+ * itself; now that /how-it-works exists as its own page, this always
+ * navigates there instead). "For couples" and "FAQ" are shown in the
+ * reference but have no corresponding section anywhere in the supplied
+ * screenshots or in the rest of the app; per the brief's own "do not
+ * invent navigation/content" rule, these are rendered as plain
  * (non-interactive) labels — same visual position/styling as the
  * reference — rather than dead links to a page that doesn't exist.
  * "Start playing" is the same single real CTA the whole app has: /create.
@@ -27,7 +28,7 @@ export function LandingHeader() {
         </Link>
 
         <nav className="landing-nav" aria-label="Landing sections">
-          <a href="#how-it-works">How it works</a>
+          <Link href="/how-it-works">How it works</Link>
           <span className="landing-nav__inert">For couples</span>
           <span className="landing-nav__inert">FAQ</span>
         </nav>
