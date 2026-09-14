@@ -269,7 +269,6 @@ dialog::backdrop {
   --wl-muted: var(--color-muted);
 
   position: relative;
-  overflow-x: hidden;
   background: #ffffff;
   color: var(--wl-ink);
   font-family: var(--font-nunito), system-ui, sans-serif;
@@ -282,11 +281,23 @@ dialog::backdrop {
    would be computed against that already-640px-wide box instead of the
    full viewport, collapsing the whole two-column layout. Scoped to
    `.landing main` only: the shared `main` rule itself is untouched, so
-   every other route's layout is unaffected. */
+   every other route's layout is unaffected.
+
+   `overflow-x: hidden` (horizontal-bleed containment for the hero/
+   experience decorative shapes) lives here instead of on `.landing`
+   itself: setting overflow-x on `.landing` forces its computed
+   overflow-y to `auto` too (a CSS spec quirk — a non-visible value on
+   one axis makes `visible` on the other compute as `auto`), which turns
+   `.landing` into a scroll container and silently breaks the header's
+   `position: sticky` below (its nearest "scrolling ancestor" becomes
+   `.landing` instead of the real document). `<main>` never contains the
+   header, so clipping here contains the exact same content without that
+   side effect. */
 .landing main {
   max-width: none;
   margin: 0;
   padding: 0;
+  overflow-x: hidden;
 }
 
 .landing-container {
