@@ -242,399 +242,832 @@ dialog::backdrop {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   Landing page ("/", app/page.tsx) ONLY — every rule below is scoped
-   under .landing (or a descendant of it) and touches no bare element
-   selector, so no other route/page is affected. --font-fraunces and
-   --font-nunito are defined by next/font in app/page.tsx itself (not the
-   root layout) as CSS variables on this same .landing wrapper — they
-   don't exist anywhere else in the app.
+   Landing page ("/", app/page.tsx + components/landing/*) ONLY — every
+   rule below is scoped under .landing (or a descendant of it) and touches
+   no bare element selector, so no other route/page is affected.
+   --font-fraunces and --font-nunito are defined by next/font in
+   app/page.tsx itself (not the root layout) as CSS variables on this same
+   .landing wrapper — they don't exist anywhere else in the app.
+
+   Visual source of truth: the approved Figma Make screenshots (Hero / How
+   it works / The experience / dark closing CTA + footer). This replaces
+   the two earlier landing iterations' palette and composition entirely —
+   nothing here reuses the previous --wl-coral/blush/sage/sand/cream
+   tokens or the giant-footer-wordmark treatment.
    ═══════════════════════════════════════════════════════════════════════ */
 
 .landing {
-  /* Brand palette — namespaced (wl- = "wavelength landing") so these never
-     collide with the app-wide --color-* tokens above, and stay scoped to
-     this page instead of living on :root. */
-  --wl-ink: #292624;
-  --wl-cream: #f7f2ea;
-  --wl-coral: #e8755f;
-  --wl-blush: #f2c7bc;
-  --wl-sage: #a8b5a0;
-  --wl-sand: #e8ddd0;
+  /* Approved brand palette (product-supplied hex values) — namespaced
+     (wl- = "wavelength landing") so these stay scoped to this page
+     instead of living on the app-wide :root. */
+  --wl-ink: #181820;
+  --wl-lavender: #c9c3f4;
+  --wl-blue: #b9ddf4;
+  --wl-pink: #f3c7dd;
+  --wl-peach: #f7d0b5;
+  --wl-mint: #c5e8dd;
+  --wl-muted: var(--color-muted);
 
   position: relative;
-  isolation: isolate;
-  overflow: hidden;
-  /* Flex column + .landing-footer's margin-top: auto below (visual v2) is
-     what actually pins the footer to the true bottom of the document
-     regardless of content height — plain block flow would leave the
-     footer wherever the content happens to end, with dead space below it
-     whenever min-height: 100vh is taller than that content. */
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
+  overflow-x: hidden;
   background: #ffffff;
   color: var(--wl-ink);
   font-family: var(--font-nunito), system-ui, sans-serif;
 }
 
-/* ── atmospheric center gradient (visual v2: distinct, visible color
-   zones — coral/blush, cream/sand, a sage whisper — rather than one
-   indistinct beige halo, per explicit feedback that the v1 gradient
-   "apenas se nota." Still anchored to viewport height (not .landing's
-   full, variable scroll height) and still fades out to white well before
-   the edges. ── */
-
-.landing-gradient {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 100vh;
-  z-index: 0;
-  pointer-events: none;
-  background:
-    /* sage whisper, its own distinct corner — kept small and off to the
-       side so it reads as an accent, not a third of the whole blend */
-    radial-gradient(
-      13rem 10rem at 68% 18%,
-      color-mix(in srgb, var(--wl-sage) 48%, transparent),
-      transparent 68%
-    ),
-    /* coral core, upper-left of center — the strongest single note */
-    radial-gradient(
-        15rem 12rem at 39% 24%,
-        color-mix(in srgb, var(--wl-coral) 55%, transparent),
-        transparent 66%
-      ),
-    /* blush halo wrapping the coral core */
-    radial-gradient(
-        24rem 19rem at 43% 29%,
-        color-mix(in srgb, var(--wl-blush) 68%, transparent),
-        transparent 70%
-      ),
-    /* warm sand zone, clearly separate — lower-right, further out than
-       the coral/blush cluster so it doesn't just merge into it */
-    radial-gradient(
-        22rem 18rem at 67% 46%,
-        color-mix(in srgb, var(--wl-sand) 65%, transparent),
-        transparent 70%
-      ),
-    /* cream binder — broad and soft, holds the separate zones together
-       and is what actually fades the whole thing out to white */
-    radial-gradient(
-        34rem 27rem at 51% 33%,
-        color-mix(in srgb, var(--wl-cream) 50%, transparent),
-        transparent 78%
-      );
-}
-
-/* ── soft organic "light bloom" shapes — spread across the whole canvas,
-   not clustered around the gradient; deliberately organic/imprecise
-   ellipses, never a repeating pattern.
-
-   Pure white (rgba(255,255,255,x)) is invisible on the equally-white page
-   background, so each blob's core fades to a whisper of cream rather than
-   to fully transparent white — just enough to read as a soft light bloom
-   against the white canvas while still overwhelmingly reading as "white."
-
-   Positioned with a mix of top/bottom anchors (some fixed rem distance
-   from the top near the hero, one at a vh-based offset that lands in the
-   quiet middle space) rather than percentages of .landing's own height —
-   that height varies with viewport, and percentages of it would drift
-   these away from where they're actually meant to sit. ── */
-
-.landing-blob {
-  position: absolute;
-  z-index: 0;
-  pointer-events: none;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle at 35% 35%,
-    rgba(255, 255, 255, 0.95),
-    color-mix(in srgb, var(--wl-cream) 55%, transparent) 55%,
-    transparent 75%
-  );
-  filter: blur(6px);
-}
-
-/* upper-left, close to the hero */
-.landing-blob--1 {
-  top: 3rem;
-  left: 6%;
-  width: 12rem;
-  height: 9rem;
-  transform: rotate(-8deg);
-}
-
-/* upper-right, close to the hero */
-.landing-blob--2 {
-  top: 7rem;
-  right: 9%;
-  width: 8rem;
-  height: 6rem;
-  transform: rotate(-18deg);
-}
-
-/* mid-left, out in the quiet space below the hero */
-.landing-blob--3 {
-  top: 58vh;
-  left: 7%;
-  width: 15rem;
-  height: 11rem;
-  transform: rotate(10deg);
-}
-
-/* ── small scattered abstract shapes (visual v2: sparkles, rings, waves,
-   one heart) — the shared base is deliberately tiny and quiet; each
-   instance below only sets position, size, tint and a touch of rotation.
-
-   A plain white shape would be invisible on the equally-white canvas, so
-   every instance carries a soft `drop-shadow` glow (cream by default, or
-   a whisper of the gradient's own coral/blush/sage for the handful that
-   should feel "gradient-influenced") — this doubles as the "pequeños
-   glows" the brief itself asks for, rather than a separate element. ── */
-
-.landing-deco {
-  position: absolute;
-  z-index: 0;
-  pointer-events: none;
-  width: 1.1rem;
-  height: 1.1rem;
-  color: rgba(255, 255, 255, 0.95);
-  filter: drop-shadow(0 0 7px rgba(232, 221, 208, 0.95));
-}
-
-/* far corner, well away from the gradient — "algunos más alejados" */
-.landing-deco--1 {
-  top: 5%;
-  left: 3%;
-  width: 0.9rem;
-  height: 0.9rem;
-  opacity: 0.8;
-}
-
-/* close to the hero, upper-right */
-.landing-deco--2 {
-  top: 4.5rem;
-  right: 18%;
-  width: 0.85rem;
-  height: 0.85rem;
-  color: color-mix(in srgb, var(--wl-coral) 55%, white);
-  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--wl-blush) 70%, transparent));
-}
-
-/* left ad column, mid-height */
-.landing-deco--3 {
-  top: 40%;
-  left: 9%;
-  width: 2.2rem;
-  height: 2.2rem;
-  opacity: 0.85;
-  filter: drop-shadow(0 0 8px rgba(232, 221, 208, 1));
-}
-
-/* right ad column, a little lower */
-.landing-deco--4 {
-  top: 52%;
-  right: 7%;
-  width: 1.3rem;
-  height: 1.3rem;
-  color: color-mix(in srgb, var(--wl-sage) 65%, white);
-  opacity: 0.85;
-  filter: drop-shadow(0 0 7px color-mix(in srgb, var(--wl-sage) 40%, white));
-}
-
-/* right side, gentle wave suggesting "wavelength" */
-.landing-deco--5 {
-  top: 46%;
-  right: 13%;
-  width: 3.4rem;
-  height: 1.2rem;
-  opacity: 0.8;
-  filter: drop-shadow(0 0 6px rgba(232, 221, 208, 1));
-}
-
-/* lower-left, further from center */
-.landing-deco--6 {
-  bottom: 22%;
-  left: 12%;
-  width: 3rem;
-  height: 1rem;
-  transform: rotate(6deg);
-  opacity: 0.75;
-  filter: drop-shadow(0 0 6px rgba(232, 221, 208, 1));
-}
-
-/* near the footer, right side */
-.landing-deco--7 {
-  bottom: 12%;
-  right: 10%;
-  width: 0.8rem;
-  height: 0.8rem;
-  opacity: 0.7;
-}
-
-/* the one heart — small, quiet, tucked near the footer */
-.landing-deco--8 {
-  bottom: 9%;
-  left: 16%;
-  width: 0.8rem;
-  height: 0.8rem;
-  color: color-mix(in srgb, var(--wl-blush) 70%, white);
-  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--wl-blush) 60%, transparent));
-  opacity: 0.7;
-}
-
-/* far corner, bottom-right — balances .landing-deco--1 */
-.landing-deco--9 {
-  bottom: 6%;
-  right: 4%;
-  width: 0.9rem;
-  height: 0.9rem;
-  opacity: 0.6;
-}
-
-/* ── layout: [ ad ] [ centered content ] [ ad ] ── */
-
-.landing-grid {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 38rem) minmax(0, 1fr);
-  gap: 1.5rem;
-  max-width: 90rem;
-  width: 100%;
-  margin: 0 auto;
-  padding: 4rem 1.5rem 3rem;
-}
-
-/* Reserved for future ad placements — deliberately empty and unstyled
-   (no border/background) so the side columns read as plain white space
-   until a real placement exists. */
-.landing-ad {
-  min-height: 20rem;
-}
-
-.landing-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1.5rem;
-  text-align: center;
-  padding-block: 3rem;
-}
-
-.landing-brand {
+/* The app-wide base reset (top of this file) caps every bare <main> at
+   max-width: 40rem for the other, unstyled routes — this page's own
+   <main> wraps every section below the header, so without this scoped
+   override every .landing-section/.landing-hero max-width and padding
+   would be computed against that already-640px-wide box instead of the
+   full viewport, collapsing the whole two-column layout. Scoped to
+   `.landing main` only: the shared `main` rule itself is untouched, so
+   every other route's layout is unaffected. */
+.landing main {
+  max-width: none;
   margin: 0;
+  padding: 0;
+}
+
+.landing-container {
+  max-width: 80rem;
+  margin: 0 auto;
+  padding-inline: clamp(1.5rem, 4vw, 4rem);
+}
+
+/* ── shared eyebrow / heading / body / button / pill primitives ──────── */
+
+.landing-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin: 0 0 1.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--wl-muted);
+}
+
+.landing-eyebrow__dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+}
+
+.landing-eyebrow__dot--pink {
+  background: var(--wl-pink);
+}
+
+.landing-eyebrow__dot--blue {
+  background: var(--wl-blue);
+  margin-right: 0.125rem;
+}
+
+.landing-section__heading {
+  margin: 0 0 1.5rem;
   font-family: var(--font-fraunces), serif;
   font-style: italic;
   font-weight: 500;
-  font-size: clamp(2.75rem, 6.5vw, 4.5rem);
+  font-size: clamp(2.25rem, 4.5vw, 3.25rem);
+  line-height: 1.1;
   color: var(--wl-ink);
 }
 
-.landing-description {
+.landing-section__text {
   margin: 0;
-  max-width: 32rem;
-  font-family: var(--font-nunito), system-ui, sans-serif;
+  max-width: 34rem;
   font-size: 1.0625rem;
-  color: var(--color-muted);
+  line-height: 1.6;
+  color: var(--wl-muted);
 }
 
-/* ── CTA — subtle glassmorphism (visual v2), replacing the v1 solid coral
-   pill. No gradient inside the button itself: the "glass" quality comes
-   entirely from backdrop-filter picking up whatever gradient/decoration
-   sits behind it, plus a soft shadow and a hairline translucent border. */
-
-.landing-cta {
-  display: inline-block;
-  margin-top: 0.5rem;
-  padding: 0.85rem 2rem;
+.landing-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.9rem 1.75rem;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(20px) saturate(140%);
-  -webkit-backdrop-filter: blur(20px) saturate(140%);
-  border: 1px solid rgba(255, 255, 255, 0.85);
-  box-shadow:
-    0 8px 30px rgba(41, 38, 36, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
-  color: var(--wl-ink);
   font-family: var(--font-nunito), system-ui, sans-serif;
   font-weight: 700;
+  font-size: 1rem;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.landing-button--primary {
+  background: var(--wl-ink);
+  color: #ffffff;
+}
+
+.landing-button--light {
+  background: var(--wl-lavender);
+  color: var(--wl-ink);
+}
+
+.landing-pill {
+  display: inline-block;
+  padding: 0.5rem 1.125rem;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--wl-ink);
+}
+
+.landing-pill--lavender {
+  background: var(--wl-lavender);
+}
+
+.landing-pill--mint {
+  background: var(--wl-mint);
+}
+
+.landing-pill--peach {
+  background: var(--wl-peach);
+}
+
+.landing-pill--pink {
+  background: var(--wl-pink);
+}
+
+/* ── header ────────────────────────────────────────────────────────────
+   Sticky, white, thin bottom border — repeats identically across every
+   section screenshot in the reference. */
+
+.landing-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: #ffffff;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.landing-header__inner {
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 1rem clamp(1.5rem, 4vw, 4rem);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.landing-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-weight: 600;
+  font-size: 1.25rem;
+  color: var(--wl-ink);
   text-decoration: none;
 }
 
+.landing-logo__mark {
+  width: 1.5rem;
+  height: 1.5rem;
+  flex-shrink: 0;
+}
+
+.landing-nav {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  font-size: 0.9375rem;
+  color: var(--wl-muted);
+}
+
+.landing-nav a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.landing-nav a:hover {
+  color: var(--wl-ink);
+}
+
+/* "For couples" / "FAQ" / footer legal links — shown in the reference but
+   with no corresponding page anywhere in the app (see landing-header.tsx
+   / landing-footer.tsx doc comments). Styled identically to the real
+   links so the header/footer still matches the screenshot visually,
+   without pretending they lead anywhere. */
+.landing-nav__inert {
+  color: var(--wl-muted);
+  cursor: default;
+}
+
+.landing-header__cta {
+  background: var(--wl-ink);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.9375rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: 999px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+/* ── hero ──────────────────────────────────────────────────────────── */
+
+.landing-hero {
+  position: relative;
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: clamp(3rem, 8vw, 6rem) clamp(1.5rem, 4vw, 4rem) clamp(4rem, 9vw, 6rem);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 3rem;
+  align-items: center;
+}
+
+.landing-hero__content {
+  position: relative;
+  z-index: 1;
+}
+
+.landing-hero__heading {
+  margin: 0 0 1.5rem;
+  max-width: 22ch;
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(2.5rem, 4.5vw, 3.75rem);
+  line-height: 1.1;
+  color: var(--wl-ink);
+}
+
+.landing-hero__description {
+  margin: 0 0 2rem;
+  max-width: 30rem;
+  font-size: 1.125rem;
+  line-height: 1.6;
+  color: var(--wl-muted);
+}
+
+.landing-hero__actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+}
+
+.landing-hero__note {
+  font-size: 0.875rem;
+  color: var(--wl-muted);
+}
+
+.landing-social-proof {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  color: var(--wl-muted);
+}
+
+.landing-avatars {
+  display: flex;
+}
+
+.landing-avatar {
+  width: 2rem;
+  height: 2rem;
+  margin-left: -0.5rem;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--wl-ink);
+}
+
+.landing-avatar:first-child {
+  margin-left: 0;
+}
+
+.landing-avatar--pink {
+  background: var(--wl-pink);
+}
+
+.landing-avatar--lavender {
+  background: var(--wl-lavender);
+}
+
+.landing-avatar--blue {
+  background: var(--wl-blue);
+}
+
+.landing-avatar--mint {
+  background: var(--wl-mint);
+}
+
+/* ── hero illustration ────────────────────────────────────────────────
+   Two flat, off-canvas pastel circles (CSS) behind one inline SVG that
+   draws the "orbit" circle, its bullseye, three colored arcs, the dashed
+   trajectory between two ringed dots, and a handful of scattered dots.
+   A hand-reproduced approximation of the reference composition — see the
+   implementation report for why an exact vector match isn't possible
+   from a flat screenshot. */
+
+.landing-hero__illustration {
+  position: relative;
+  min-height: 26rem;
+  /* No height: 100% here — with align-items: center on .landing-hero,
+     that would stretch this box to match the (taller) text column's
+     height instead of just centering a min-height: 26rem box within it,
+     which is what was dragging .hero-shape--mint far down the page. */
+}
+
+.hero-shape {
+  position: absolute;
+  border-radius: 50%;
+}
+
+.hero-shape--lavender {
+  width: 22rem;
+  height: 22rem;
+  top: -7rem;
+  right: -6rem;
+  background: var(--wl-lavender);
+  opacity: 0.55;
+}
+
+.hero-shape--mint {
+  width: 20rem;
+  height: 20rem;
+  bottom: -9rem;
+  left: -7rem;
+  background: var(--wl-mint);
+  opacity: 0.35;
+}
+
+.hero-shape__svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.hero-orbit-circle {
+  filter: drop-shadow(0 20px 45px rgba(24, 24, 32, 0.08));
+}
+
+/* ── "How it works" ──────────────────────────────────────────────────── */
+
+.landing-section {
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: clamp(3rem, 7vw, 5rem) clamp(1.5rem, 4vw, 4rem);
+}
+
+.landing-eyebrow--plain {
+  gap: 0;
+}
+
+.landing-card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.5rem;
+}
+
+.landing-card {
+  position: relative;
+  overflow: hidden;
+  padding: 1.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+  background: #ffffff;
+}
+
+.landing-card__blob {
+  position: absolute;
+  top: -1.5rem;
+  right: -1.5rem;
+  width: 6rem;
+  height: 6rem;
+  border-radius: 50%;
+  opacity: 0.6;
+}
+
+.landing-card__blob--pink {
+  background: var(--wl-pink);
+}
+
+.landing-card__blob--blue {
+  background: transparent;
+  border: 10px solid var(--wl-blue);
+}
+
+.landing-card__blob--mint {
+  background: var(--wl-mint);
+  border-radius: 50% / 40%;
+}
+
+.landing-card__number {
+  position: relative;
+  margin: 0 0 1.5rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--wl-muted);
+}
+
+.landing-card__title {
+  position: relative;
+  margin: 0 0 0.5rem;
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-weight: 600;
+  font-size: 1.5rem;
+  color: var(--wl-ink);
+}
+
+.landing-card__text {
+  position: relative;
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--wl-muted);
+}
+
+/* ── "The experience" ────────────────────────────────────────────────── */
+
+.landing-experience {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 3rem;
+  align-items: center;
+}
+
+.landing-pill-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.75rem;
+}
+
+.landing-experience__demo {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.landing-experience__halo {
+  position: absolute;
+  inset: -3rem;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--wl-lavender) 35%, transparent),
+    color-mix(in srgb, var(--wl-blue) 20%, transparent) 60%,
+    transparent 78%
+  );
+}
+
+.landing-demo {
+  position: relative;
+  width: 100%;
+  max-width: 26rem;
+  text-align: center;
+}
+
+.landing-demo__card {
+  padding: 1.75rem;
+  border-radius: 1.25rem;
+  background: var(--wl-pink);
+  box-shadow: 0 30px 60px rgba(24, 24, 32, 0.12);
+  text-align: left;
+}
+
+.landing-demo__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.landing-demo__tag {
+  display: inline-block;
+  padding: 0.375rem 0.875rem;
+  border-radius: 999px;
+  background: var(--wl-ink);
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.landing-demo__dots {
+  display: flex;
+  gap: 0.375rem;
+}
+
+.landing-demo__dots span {
+  width: 0.4375rem;
+  height: 0.4375rem;
+  border-radius: 50%;
+  background: rgba(24, 24, 32, 0.25);
+}
+
+.landing-demo__dots span.is-active {
+  background: var(--wl-ink);
+}
+
+.landing-demo__question {
+  margin: 0 0 1.25rem;
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 1.5rem;
+  color: var(--wl-ink);
+}
+
+.landing-demo__options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.landing-demo__option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.9rem 1.125rem;
+  border: none;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  font-family: var(--font-nunito), system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--wl-ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.landing-demo__option--selected {
+  background: var(--wl-peach);
+}
+
+.landing-demo__option-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background: rgba(24, 24, 32, 0.08);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.landing-demo__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.8125rem;
+  color: rgba(24, 24, 32, 0.6);
+}
+
+.landing-demo__progress {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.landing-demo__progress span {
+  width: 1rem;
+  height: 0.25rem;
+  border-radius: 999px;
+  background: rgba(24, 24, 32, 0.15);
+}
+
+.landing-demo__progress span.is-filled {
+  background: var(--wl-ink);
+}
+
+.landing-demo__hint {
+  margin: 1rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--wl-muted);
+}
+
+/* ── dark closing CTA ─────────────────────────────────────────────────── */
+
+.landing-dark-cta {
+  position: relative;
+  overflow: hidden;
+  margin: 0 clamp(0px, 2vw, 1.5rem);
+  border-radius: 1.5rem;
+  background: var(--wl-ink);
+  padding: clamp(4rem, 10vw, 7rem) clamp(1.5rem, 4vw, 4rem);
+  text-align: center;
+}
+
+.landing-dark-cta__shapes {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.dark-shape {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.5;
+}
+
+.dark-shape--1 {
+  width: 20rem;
+  height: 20rem;
+  top: -6rem;
+  left: -6rem;
+  background: #38384a;
+}
+
+.dark-shape--2 {
+  width: 16rem;
+  height: 16rem;
+  top: 2rem;
+  right: 12%;
+  background: #26262f;
+}
+
+.dark-shape--3 {
+  width: 18rem;
+  height: 18rem;
+  bottom: -7rem;
+  right: -5rem;
+  background: #3a2e35;
+}
+
+.landing-dark-cta__content {
+  position: relative;
+  z-index: 1;
+  max-width: 34rem;
+  margin: 0 auto;
+}
+
+.landing-dark-cta__heading {
+  margin: 0 0 1rem;
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(2.25rem, 5vw, 3.5rem);
+  color: #ffffff;
+}
+
+.landing-dark-cta__description {
+  margin: 0 0 2rem;
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.landing-dot-row {
+  display: flex;
+  justify-content: center;
+  gap: 0.625rem;
+  margin-top: 2rem;
+}
+
+.landing-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+}
+
+.landing-dot--lavender {
+  background: var(--wl-lavender);
+}
+
+.landing-dot--blue {
+  background: var(--wl-blue);
+}
+
+.landing-dot--pink {
+  background: var(--wl-pink);
+}
+
+.landing-dot--mint {
+  background: var(--wl-mint);
+}
+
+.landing-dot--peach {
+  background: var(--wl-peach);
+}
+
+/* ── footer ───────────────────────────────────────────────────────────── */
+
+.landing-footer {
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 2rem clamp(1.5rem, 4vw, 4rem);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.landing-logo--footer {
+  font-size: 1.0625rem;
+}
+
+.landing-footer__links {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 0.875rem;
+}
+
+.landing-footer__copy {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--wl-muted);
+}
+
+/* ── responsive ───────────────────────────────────────────────────────── */
+
 @media (max-width: 56rem) {
-  .landing-grid {
-    /* Side columns shrink to a small margin rather than disappearing
-       outright, so the [ ad ] [ content ] [ ad ] structure still exists
-       conceptually on mobile — just without room for real content. */
-    grid-template-columns: minmax(0, 1.25rem) minmax(0, 1fr) minmax(0, 1.25rem);
-    padding: 3rem 1rem 2rem;
-  }
-
-  .landing-ad {
-    min-height: 0;
-  }
-
-  /* Fewer, smaller, quieter decorative shapes on mobile — content stays
-     the protagonist and nothing crowds the narrower column. */
-  .landing-deco--3,
-  .landing-deco--5,
-  .landing-deco--6,
-  .landing-deco--9 {
+  .landing-nav {
     display: none;
   }
 
-  .landing-deco {
-    width: 0.8rem;
-    height: 0.8rem;
-    opacity: 0.55;
+  .landing-hero {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+
+  .landing-hero__content {
+    max-width: none;
+    margin: 0 auto;
+  }
+
+  .landing-hero__description {
+    margin-inline: auto;
+  }
+
+  .landing-hero__actions {
+    justify-content: center;
+  }
+
+  .landing-social-proof {
+    justify-content: center;
+  }
+
+  .landing-hero__illustration {
+    min-height: 20rem;
+    order: -1;
+  }
+
+  .landing-card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .landing-experience {
+    grid-template-columns: 1fr;
+  }
+
+  .landing-experience__content {
+    text-align: center;
+  }
+
+  .landing-section__text {
+    margin-inline: auto;
+  }
+
+  .landing-pill-row {
+    justify-content: center;
+  }
+
+  .landing-experience__demo {
+    order: -1;
+    margin-bottom: 1rem;
+  }
+
+  .landing-footer {
+    justify-content: center;
+    text-align: center;
   }
 }
 
-/* ── giant footer wordmark — full-bleed, pinned to the true bottom of the
-   document, never causes horizontal overflow ── */
+@media (max-width: 30rem) {
+  .landing-header__inner {
+    gap: 0.75rem;
+  }
 
-.landing-footer {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  /* No overflow: hidden here — .landing's own overflow: hidden is already
-     the horizontal-scroll safety net (it clips at the page level
-     regardless of which descendant causes it), and clipping vertically
-     here as well was cutting into the wordmark's own glyphs. */
-  /* Pins this to the bottom of the .landing flex column: any leftover
-     vertical space (short content on a tall viewport) collects here,
-     above the wordmark, instead of appearing as dead space below it. */
-  margin-top: auto;
-}
+  /* Scoped to the header only — the footer's logo isn't crowded, so it
+     keeps its "Wavelength" text at every width. */
+  .landing-header .landing-logo span {
+    display: none;
+  }
 
-.landing-wordmark {
-  margin: 0;
-  width: 100%;
-  font-family: var(--font-nunito), system-ui, sans-serif;
-  font-style: normal;
-  font-weight: 800;
-  text-transform: uppercase;
-  /* Scales with viewport width so it always spans edge-to-edge; clamped so
-     it can never force the page wider than the viewport (no horizontal
-     scroll — the parent's overflow: hidden is the second safety net).
-     Nunito Sans is wider per character than the v1 italic serif, hence
-     the smaller vw factor for the same edge-to-edge coverage. */
-  font-size: clamp(2.75rem, 12.5vw, 13rem);
-  letter-spacing: -0.01em;
-  /* 1.05, not the tighter line-height a script/italic wordmark could use —
-     an all-caps sans has no descenders to "absorb" into, and a tighter
-     box was visibly clipping the glyphs themselves against
-     .landing-footer's overflow: hidden. */
-  line-height: 1.05;
-  text-align: center;
-  white-space: nowrap;
-  user-select: none;
-  /* Milk-white, not literal white-on-white (would vanish) and no dark
-     ink anywhere (product requirement) — definition comes from a soft
-     warm-toned glow instead of a stroke/outline. */
-  color: rgba(247, 242, 234, 0.96);
-  text-shadow: 0 2px 28px rgba(232, 221, 208, 0.7);
+  .landing-card-grid {
+    gap: 1rem;
+  }
+
+  .landing-demo__card {
+    padding: 1.25rem;
+  }
 }
