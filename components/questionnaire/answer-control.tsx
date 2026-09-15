@@ -23,6 +23,13 @@ type SaveAnswerAction = (prevState: ActionState, formData: FormData) => Promise<
  * radio immediately submits the form. Whatever was selected last is the
  * current answer — the visual selection and the persisted value never fall
  * out of sync, since there's no intermediate unsaved state to desync from.
+ * The pill itself updates the instant it's clicked regardless (native
+ * `:checked` + a sibling CSS selector, not tied to any render cycle) —
+ * `onSelect` exists only so *other* parts of the same question card
+ * (QuestionCard's "Ready" banner, QuestionEditForm's decorative per-option
+ * indicator) can mirror that same click immediately too, instead of
+ * waiting for the server round trip this form's own submit still kicks
+ * off unchanged.
  *
  * Presentation (Figma reference): each option/level is a tappable pill —
  * a visually-hidden radio plus a styled <span>, filled solid when checked —
@@ -36,15 +43,23 @@ export function AnswerControl({
   wavelengthId,
   question,
   currentValue,
+  onSelect,
 }: {
   action: SaveAnswerAction;
   wavelengthId: string;
   question: QuestionRow;
   currentValue: number | undefined;
+  /** Optional: called with the clicked value the instant a pill is
+   * selected, before the save request is even sent — purely so a parent
+   * can mirror the selection elsewhere in the same card right away. Never
+   * a substitute for the real save; `formAction`/`action` below is still
+   * what actually persists the answer. */
+  onSelect?: (value: number) => void;
 }) {
   const [state, formAction, pending] = useActionState(action, initialActionState);
 
   function submitOnChange(event: React.ChangeEvent<HTMLInputElement>) {
+    onSelect?.(Number(event.currentTarget.value));
     event.currentTarget.form?.requestSubmit();
   }
 

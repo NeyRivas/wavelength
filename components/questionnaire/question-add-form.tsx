@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 
 import { addQuestion } from "@/app/actions/questions";
 import { initialActionState } from "@/app/actions/shared";
@@ -8,6 +8,7 @@ import {
   CATEGORIES,
   CATEGORY_LABELS,
   MAX_CHOICE_OPTIONS,
+  MAX_QUESTIONS,
   MIN_CHOICE_OPTIONS,
   QUESTION_TYPE_LABELS,
   QUESTION_TYPES,
@@ -53,6 +54,15 @@ const TEXT_PLACEHOLDER = "e.g. What does your ideal weekend look like?";
  * preview can reflect what's actually been typed; the submitted FormData
  * is unaffected — still one `options` field per non-empty row, read by
  * `addQuestion` exactly as before.
+ *
+ * Presentation (reference): collapsed by default — a dashed, secondary
+ * "+ Add question (N/12)" bar sitting below the question-card list,
+ * clearly discoverable but not competing with the cards themselves —
+ * rather than the full form being permanently visible. Clicking it
+ * reveals the exact same card/form described above; a successful add
+ * collapses it back and resets these local fields, ready for the next
+ * one. Purely a local `expanded` toggle — `addQuestion` and everything
+ * it validates is unaffected either way.
  */
 export function QuestionAddForm({
   wavelengthId,
@@ -62,11 +72,26 @@ export function QuestionAddForm({
   nextIndex: number;
 }) {
   const [state, formAction, pending] = useActionState(addQuestion, initialActionState);
+  const [expanded, setExpanded] = useState(false);
   const [type, setType] = useState<QuestionType | null>(null);
   const [options, setOptions] = useState<string[]>(["", ""]);
 
   const tint = tintForIndex(nextIndex);
   const validOptions = options.map((o) => o.trim()).filter(Boolean);
+
+  // Collapse back to the trigger and clear the form once a submission
+  // completes without error — same "pending -> !pending" pattern used
+  // elsewhere in this flow (see question-edit-form.tsx) to fire exactly
+  // once per completed submission, never on mount.
+  const wasPending = useRef(false);
+  useEffect(() => {
+    if (wasPending.current && !pending && !state.error) {
+      setExpanded(false);
+      setType(null);
+      setOptions(["", ""]);
+    }
+    wasPending.current = pending;
+  }, [pending, state.error]);
 
   function updateOption(index: number, value: string) {
     setOptions((prev) => prev.map((o, i) => (i === index ? value : o)));
@@ -79,6 +104,21 @@ export function QuestionAddForm({
   function removeOption(index: number) {
     setOptions((prev) =>
       prev.length <= MIN_CHOICE_OPTIONS ? prev : prev.filter((_, i) => i !== index),
+    );
+  }
+
+  if (!expanded) {
+    return (
+      <button
+        type="button"
+        className="create-add-question-trigger"
+        onClick={() => setExpanded(true)}
+      >
+        <span className="create-add-question-trigger__label">+ Add question</span>
+        <span className="create-add-question-trigger__count">
+          ({nextIndex}/{MAX_QUESTIONS})
+        </span>
+      </button>
     );
   }
 
