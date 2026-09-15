@@ -92,7 +92,26 @@ import type { QuestionRow } from "./types";
  * each option row gets a small round remove button instead of a text
  * "Remove" button — same underlying <input type="radio"/"text"> elements,
  * same names, same submitOnChange/submitOnBlur wiring, so none of the
- * behavior documented above changed, only the markup/classes.
+ * behavior documented above changed, only the markup/classes. Category
+ * now renders above the question text (the reference's order) instead of
+ * below it — a pure reorder of this form's own two field groups, nothing
+ * about which form owns which field changed, so it's still one bundled
+ * `updateQuestion` submission either way. Question Type stays a sibling
+ * form rendered by QuestionCard (TypeChangeControl) rather than living
+ * here, same as before — reordering fields *within* this form can't move
+ * it between Category and Question without splitting category into its
+ * own separate action call, which would be a real behavior change, not
+ * just a reorder.
+ *
+ * `answerValue` is new and purely decorative: each option row shows a
+ * small filled/empty circle next to it (create-option-indicator) mirroring
+ * whichever option is currently A's saved answer, so the "this is your
+ * answer" state reads as part of the options list itself, closer to the
+ * reference — exactly like the reference's own answered card. It is never
+ * submitted, read by any action, or used for validation; the real,
+ * interactive answer selection is still entirely AnswerControl's job
+ * (rendered by QuestionCard as its own separate form/action, unchanged).
+ * Undefined (unanswered) simply renders every indicator empty.
  */
 
 interface OptionSlot {
@@ -118,9 +137,11 @@ function initialSlots(options: string[] | null): OptionSlot[] {
 export function QuestionEditForm({
   wavelengthId,
   question,
+  answerValue,
 }: {
   wavelengthId: string;
   question: QuestionRow;
+  answerValue?: number;
 }) {
   const router = useRouter();
   const [state, formAction, pending] = useActionState(updateQuestion, initialActionState);
@@ -175,24 +196,6 @@ export function QuestionEditForm({
       <input type="hidden" name="wavelengthId" value={wavelengthId} />
       <input type="hidden" name="questionId" value={question.id} />
 
-      <div className="create-field">
-        <label className="create-field__label" htmlFor={`text-${question.id}`}>
-          Question
-        </label>
-        <input
-          id={`text-${question.id}`}
-          className="create-input"
-          type="text"
-          name="text"
-          defaultValue={question.text}
-          onBlur={submitOnBlur}
-          required
-          minLength={3}
-          maxLength={300}
-          disabled={pending}
-        />
-      </div>
-
       <div className="create-field" key={attempt}>
         <span className="create-field__label">Category</span>
         <div className="create-pill-group" role="radiogroup" aria-label="Category">
@@ -215,6 +218,24 @@ export function QuestionEditForm({
         </div>
       </div>
 
+      <div className="create-field">
+        <label className="create-field__label" htmlFor={`text-${question.id}`}>
+          Question
+        </label>
+        <input
+          id={`text-${question.id}`}
+          className="create-input"
+          type="text"
+          name="text"
+          defaultValue={question.text}
+          onBlur={submitOnBlur}
+          required
+          minLength={3}
+          maxLength={300}
+          disabled={pending}
+        />
+      </div>
+
       {question.type !== "scale" && (
         <fieldset className="create-field" disabled={pending}>
           <legend className="create-field__label">
@@ -223,6 +244,12 @@ export function QuestionEditForm({
           <div className="create-options">
             {slots.map((slot, i) => (
               <div className="create-option-row" key={slot.key}>
+                <span
+                  className={`create-option-indicator${answerValue === i ? " create-option-indicator--selected" : ""}`}
+                  aria-hidden="true"
+                >
+                  <span className="create-option-indicator__dot" />
+                </span>
                 <input
                   type="text"
                   name="options"

@@ -2100,14 +2100,18 @@ dialog::backdrop {
 /* ── question card ─────────────────────────────────────────────────────── */
 
 .create-card {
+  overflow: hidden;
   border: 1px solid var(--color-border);
   border-radius: 1.25rem;
-  padding: 1.5rem;
   background: #ffffff;
 }
 
-.create-card--add {
-  border-style: dashed;
+/* Answered ("Ready ✓") — a stronger, mint-derived border. color-mix of two
+   approved tokens (mint + ink), not a new base color, same technique
+   already used elsewhere in this file (e.g. .hiw-step__panel--*). */
+.create-card--ready {
+  border-color: color-mix(in srgb, var(--wl-mint) 65%, var(--wl-ink));
+  border-width: 1.5px;
 }
 
 .create-card__head {
@@ -2115,8 +2119,33 @@ dialog::backdrop {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  margin-bottom: 1.25rem;
   flex-wrap: wrap;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.create-card__head--lavender {
+  background: color-mix(in srgb, var(--wl-lavender) 30%, white);
+}
+
+.create-card__head--blue {
+  background: color-mix(in srgb, var(--wl-blue) 30%, white);
+}
+
+.create-card__head--mint {
+  background: color-mix(in srgb, var(--wl-mint) 30%, white);
+}
+
+.create-card__head--pink {
+  background: color-mix(in srgb, var(--wl-pink) 30%, white);
+}
+
+.create-card__head--peach {
+  background: color-mix(in srgb, var(--wl-peach) 30%, white);
+}
+
+.create-card__body {
+  padding: 1.5rem;
 }
 
 .create-card__badge {
@@ -2162,6 +2191,10 @@ dialog::backdrop {
   font-weight: 700;
   font-size: 0.9375rem;
   color: var(--wl-ink);
+}
+
+.create-card__title--ready {
+  color: color-mix(in srgb, var(--wl-mint) 55%, var(--wl-ink));
 }
 
 .create-card__actions {
@@ -2377,6 +2410,35 @@ dialog::backdrop {
 
 .create-option-row .create-input {
   flex: 1;
+}
+
+/* Decorative only — reflects whichever option is currently A's saved
+   answer (see question-edit-form.tsx's `answerValue` prop); the real,
+   interactive answer control is the separate "Your answer" pill row
+   below, unchanged. Empty ring by default; filled when selected. */
+.create-option-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+  border: 1.5px solid var(--color-border);
+  border-radius: 50%;
+}
+
+.create-option-indicator__dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+}
+
+.create-option-indicator--selected {
+  border-color: var(--wl-ink);
+}
+
+.create-option-indicator--selected .create-option-indicator__dot {
+  background: var(--wl-ink);
 }
 
 .create-option-remove {

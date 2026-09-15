@@ -16,11 +16,15 @@ import type { QuestionRow } from "./types";
  *
  * Presentation only (Figma reference): everything below is the same
  * composition as before — TypeChangeControl, QuestionEditForm, and
- * AnswerControl, unmodified in logic — now inside one bordered card with
- * a colored numbered badge ("index" picks the tint, cycling the same 5
- * pastel tones used across the site) instead of a bare <article>, and the
- * move/delete controls restyled as small icon buttons instead of raw
- * "↑"/"↓"/"Delete" text.
+ * AnswerControl, unmodified in logic — now inside one card with a
+ * full-bleed colored head band (its own tint, cycling the same 5 pastel
+ * tones every card badge already used) instead of a plain bordered
+ * <article>. Once A has answered ("isReady"), the head band's title
+ * switches to "Ready ✓" and the card gets a stronger mint-tinted border,
+ * matching the reference's completed-question treatment — purely a
+ * derived-from-existing-props visual state (`answerValue !== undefined`),
+ * not a new completeness rule (finalize eligibility is still computed
+ * exactly as before, in questionnaire-builder.tsx).
  */
 export function QuestionCard({
   wavelengthId,
@@ -38,13 +42,19 @@ export function QuestionCard({
   isLast: boolean;
 }) {
   const tint = tintForIndex(index);
+  const isReady = answerValue !== undefined;
 
   return (
-    <article className="create-card" aria-label={`Question: ${question.text}`}>
-      <header className="create-card__head">
+    <article
+      className={`create-card${isReady ? " create-card--ready" : ""}`}
+      aria-label={`Question: ${question.text}`}
+    >
+      <header className={`create-card__head create-card__head--${tint}`}>
         <div className="create-card__badge">
           <span className={`create-card__number create-card__number--${tint}`}>{index + 1}</span>
-          <span className="create-card__title">Question {index + 1}</span>
+          <span className={`create-card__title${isReady ? " create-card__title--ready" : ""}`}>
+            {isReady ? "Ready ✓" : `Question ${index + 1}`}
+          </span>
         </div>
 
         <div className="create-card__actions">
@@ -83,26 +93,32 @@ export function QuestionCard({
         </div>
       </header>
 
-      <TypeChangeControl questionId={question.id} currentType={question.type} />
-      <QuestionEditForm wavelengthId={wavelengthId} question={question} />
-      {/* QA fix: AnswerControl's radios are uncontrolled (`defaultChecked`),
-          which React only applies once, at mount — re-rendering the same
-          instance with a fresh `currentValue` (e.g. after the invalidation
-          trigger clears the answer server-side) never touches an
-          already-mounted radio's checked state. Keying it by the exact
-          fields the DB trigger watches (`text`/`options`) forces a full
-          remount — fresh `defaultChecked` values from the just-revalidated
-          `currentValue` — precisely when, and only when, the question was
-          actually edited. A plain re-answer never changes this key (it
-          doesn't touch text/options), so the existing select-and-auto-save
-          flow is untouched. */}
-      <AnswerControl
-        key={JSON.stringify([question.text, question.options])}
-        action={saveAnswerA}
-        wavelengthId={wavelengthId}
-        question={question}
-        currentValue={answerValue}
-      />
+      <div className="create-card__body">
+        <TypeChangeControl questionId={question.id} currentType={question.type} />
+        <QuestionEditForm
+          wavelengthId={wavelengthId}
+          question={question}
+          answerValue={answerValue}
+        />
+        {/* QA fix: AnswerControl's radios are uncontrolled (`defaultChecked`),
+            which React only applies once, at mount — re-rendering the same
+            instance with a fresh `currentValue` (e.g. after the invalidation
+            trigger clears the answer server-side) never touches an
+            already-mounted radio's checked state. Keying it by the exact
+            fields the DB trigger watches (`text`/`options`) forces a full
+            remount — fresh `defaultChecked` values from the just-revalidated
+            `currentValue` — precisely when, and only when, the question was
+            actually edited. A plain re-answer never changes this key (it
+            doesn't touch text/options), so the existing select-and-auto-save
+            flow is untouched. */}
+        <AnswerControl
+          key={JSON.stringify([question.text, question.options])}
+          action={saveAnswerA}
+          wavelengthId={wavelengthId}
+          question={question}
+          currentValue={answerValue}
+        />
+      </div>
     </article>
   );
 }
