@@ -1550,3 +1550,288 @@ dialog::backdrop {
     margin: 0 auto;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   /faq page additions ONLY — this route reuses .landing itself plus every
+   rule above (header, footer, dark CTA, eyebrow/heading/button
+   primitives, the --wl-* palette) completely unchanged. Everything below
+   is new and additive; nothing above this line was altered for this
+   page, so "/", "/how-it-works", and "/for-couples" are unaffected by it.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── hero ─────────────────────────────────────────────────────────────── */
+
+.faq-hero {
+  position: relative;
+  text-align: center;
+  padding-bottom: 2rem;
+}
+
+.faq-hero__shapes {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.faq-hero__shape {
+  position: absolute;
+  border-radius: 50%;
+}
+
+.faq-hero__shape--lavender {
+  width: 14rem;
+  height: 14rem;
+  top: -3rem;
+  left: 6%;
+  background: var(--wl-lavender);
+  opacity: 0.4;
+}
+
+.faq-hero__shape--mint {
+  width: 12rem;
+  height: 12rem;
+  top: -2rem;
+  right: 4%;
+  background: var(--wl-mint);
+  opacity: 0.35;
+}
+
+.faq-hero__wave {
+  position: absolute;
+  top: -1.25rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(30rem, 85%);
+  height: auto;
+  opacity: 0.7;
+}
+
+.faq-hero__dot {
+  position: absolute;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+}
+
+.faq-hero__dot--pink {
+  top: -3.5rem;
+  left: 30%;
+  background: var(--wl-pink);
+}
+
+.faq-hero__dot--blue {
+  top: -2.25rem;
+  right: 28%;
+  background: var(--wl-blue);
+}
+
+.faq-hero__content {
+  position: relative;
+  z-index: 1;
+  max-width: 36rem;
+  margin: 0 auto;
+}
+
+.faq-hero__eyebrow {
+  justify-content: center;
+}
+
+.faq-hero__heading {
+  margin-inline: auto;
+}
+
+.faq-hero__text {
+  margin-inline: auto;
+  text-align: center;
+}
+
+/* ── category tabs ────────────────────────────────────────────────────── */
+
+.faq-categories {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin: 0 auto;
+  max-width: 46rem;
+}
+
+.faq-category {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0.5rem 1.25rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: #ffffff;
+  color: var(--wl-muted);
+  font-family: var(--font-nunito), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 0.875rem;
+}
+
+.faq-category--active {
+  border-color: transparent;
+  color: var(--wl-ink);
+}
+
+.faq-category--active.faq-category--lavender {
+  background: var(--wl-lavender);
+}
+
+.faq-category--active.faq-category--mint {
+  background: var(--wl-mint);
+}
+
+.faq-category--active.faq-category--blue {
+  background: var(--wl-blue);
+}
+
+.faq-category--active.faq-category--peach {
+  background: var(--wl-peach);
+}
+
+/* ── question groups + accordion ──────────────────────────────────────── */
+
+.faq-section__group {
+  max-width: 42rem;
+  margin: 3rem auto 0;
+}
+
+.faq-section__group-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 1rem;
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-weight: 600;
+  font-size: 1.125rem;
+  color: var(--wl-ink);
+}
+
+.faq-section__group-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  flex-shrink: 0;
+  border-radius: 50%;
+}
+
+.faq-section__group-dot--lavender {
+  background: var(--wl-lavender);
+}
+
+.faq-section__group-dot--mint {
+  background: var(--wl-mint);
+}
+
+.faq-section__group-dot--blue {
+  background: var(--wl-blue);
+}
+
+.faq-section__group-dot--peach {
+  background: var(--wl-peach);
+}
+
+.faq-accordion {
+  display: flex;
+  flex-direction: column;
+}
+
+.faq-item {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.faq-item__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  padding: 1.125rem 0;
+  background: none;
+  border: none;
+  text-align: left;
+  font-family: var(--font-nunito), system-ui, sans-serif;
+}
+
+.faq-item__question {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--wl-ink);
+}
+
+.faq-item__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  background: var(--color-surface);
+  color: var(--wl-muted);
+  font-size: 1.125rem;
+  line-height: 1;
+  transition:
+    transform 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.faq-item__toggle--open {
+  transform: rotate(45deg);
+  color: var(--wl-ink);
+}
+
+.faq-item__toggle--open.faq-item__toggle--lavender {
+  background: var(--wl-lavender);
+}
+
+.faq-item__toggle--open.faq-item__toggle--mint {
+  background: var(--wl-mint);
+}
+
+.faq-item__toggle--open.faq-item__toggle--blue {
+  background: var(--wl-blue);
+}
+
+.faq-item__toggle--open.faq-item__toggle--peach {
+  background: var(--wl-peach);
+}
+
+.faq-item__answer {
+  margin: -0.25rem 0 1.25rem;
+  padding: 1rem 1.25rem;
+  border-radius: 1rem;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--wl-ink);
+}
+
+.faq-item__answer--lavender {
+  background: color-mix(in srgb, var(--wl-lavender) 40%, white);
+}
+
+.faq-item__answer--mint {
+  background: color-mix(in srgb, var(--wl-mint) 40%, white);
+}
+
+.faq-item__answer--blue {
+  background: color-mix(in srgb, var(--wl-blue) 35%, white);
+}
+
+.faq-item__answer--peach {
+  background: color-mix(in srgb, var(--wl-peach) 40%, white);
+}
+
+@media (max-width: 30rem) {
+  .faq-category {
+    padding: 0.5rem 1rem;
+    font-size: 0.8125rem;
+  }
+
+  .faq-item__question {
+    font-size: 0.9375rem;
+  }
+}
