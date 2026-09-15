@@ -18,22 +18,16 @@ import { MAX_QUESTIONS, MIN_QUESTIONS } from "@/lib/wavelength/categories";
  * here limits or nudges that distribution. Categories still live entirely
  * on each question (chosen individually) and are used wherever needed in
  * results; there's just no UI surfacing a tally of them during creation.
+ *
+ * Presentation (Figma reference): the old narrative "N questions added so
+ * far…" paragraph is gone — app/create/page.tsx's shared CreateProgress
+ * readout now covers that same information as one bar + count, so this
+ * component only surfaces the two states that readout can't: "you're at
+ * the max" (which also hides the add-question card) and "you still need
+ * to answer everything" (shown once MIN_QUESTIONS is reached but not
+ * every question has A's answer yet). All of the underlying logic
+ * (`answeredCount`, `atMax`, `canFinalize`) is unchanged.
  */
-
-/** QA fix: replaces the old "N of N answered" framing (meaningless at 0
- * questions) with progress-of-creation copy, adapted to where A actually is
- * in the 5-12 range — never mentioning a specific target count. */
-function creationStatus(questionCount: number): string {
-  if (questionCount < MIN_QUESTIONS) {
-    const remaining = MIN_QUESTIONS - questionCount;
-    return `${questionCount} question${questionCount === 1 ? "" : "s"} added so far — add ${remaining} more to be able to finalize.`;
-  }
-  if (questionCount < MAX_QUESTIONS) {
-    return `${questionCount} questions added — you can finalize once they're all answered, or keep adding up to ${MAX_QUESTIONS}.`;
-  }
-  return `${questionCount} questions added — you've reached the maximum.`;
-}
-
 export function QuestionnaireBuilder({
   wavelength,
   questions,
@@ -49,36 +43,39 @@ export function QuestionnaireBuilder({
   const canFinalize = questions.length >= MIN_QUESTIONS && answeredCount === questions.length;
 
   return (
-    <div>
-      <p>{creationStatus(questions.length)}</p>
-
-      <ol>
-        {questions.map((question, index) => (
-          <li key={question.id}>
-            <QuestionCard
-              wavelengthId={wavelength.id}
-              question={question}
-              answerValue={answerByQuestion.get(question.id)}
-              isFirst={index === 0}
-              isLast={index === questions.length - 1}
-            />
-          </li>
-        ))}
-      </ol>
+    <div className="create-builder">
+      {questions.length > 0 && (
+        <ol className="create-card-list">
+          {questions.map((question, index) => (
+            <li key={question.id}>
+              <QuestionCard
+                wavelengthId={wavelength.id}
+                question={question}
+                index={index}
+                answerValue={answerByQuestion.get(question.id)}
+                isFirst={index === 0}
+                isLast={index === questions.length - 1}
+              />
+            </li>
+          ))}
+        </ol>
+      )}
 
       {atMax ? (
-        <p>
+        <p className="create-helper-note">
           You&apos;ve reached the maximum of {MAX_QUESTIONS} questions. Delete one first if you want
           to add a different one.
         </p>
       ) : (
-        <QuestionAddForm wavelengthId={wavelength.id} />
+        <QuestionAddForm wavelengthId={wavelength.id} nextIndex={questions.length} />
       )}
 
       {canFinalize ? (
         <FinalizeForm wavelengthId={wavelength.id} shareToken={wavelength.share_token} />
       ) : (
-        questions.length >= MIN_QUESTIONS && <p>Answer every question to create your Wavelength.</p>
+        questions.length >= MIN_QUESTIONS && (
+          <p className="create-helper-note">Answer every question to create your Wavelength.</p>
+        )
       )}
     </div>
   );

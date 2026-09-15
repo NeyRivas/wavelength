@@ -11,89 +11,222 @@ import {
   MIN_CHOICE_OPTIONS,
   QUESTION_TYPE_LABELS,
   QUESTION_TYPES,
+  SCALE_LABELS,
+  SCALE_VALUES,
   type QuestionType,
 } from "@/lib/wavelength/categories";
 
-export function QuestionAddForm({ wavelengthId }: { wavelengthId: string }) {
+import { CATEGORY_TINTS, tintForIndex } from "./category-visuals";
+
+const TYPE_HINTS: Record<QuestionType, string> = {
+  choice: "Pick one answer",
+  scale: "Choose where you land",
+};
+
+const TEXT_PLACEHOLDER: Record<QuestionType, string> = {
+  choice: "e.g. What does your ideal weekend look like?",
+  scale: "e.g. How important is financial freedom to you?",
+};
+
+/**
+ * Adds a question to A's draft. `addQuestion` (unchanged) still requires a
+ * valid category/type/text/options up front — this form still collects
+ * all of that before submitting, exactly as before; nothing about
+ * `addQuestion`'s contract or validation changed.
+ *
+ * Presentation (Figma reference): styled as the next numbered card in the
+ * list (index/tint come from `nextIndex`, the same 5-tint cycle every
+ * other card badge uses) rather than a plain "Add a question" form, with
+ * category/type as pill selectors and a live "Your answer" preview below
+ * the options editor. That preview is purely client-side and answers
+ * nothing for real — there's no question row to attach a real answer to
+ * until this form is actually submitted — it just mirrors the same pill
+ * language AnswerControl uses on an already-saved question, so filling
+ * this form in already feels like "answering," not just administering a
+ * form, per the brief. `options` is now tracked as real text (not just a
+ * count) purely so that preview can reflect what's actually been typed;
+ * the submitted FormData is unaffected — still one `options` field per
+ * non-empty row, read by `addQuestion` exactly as before.
+ */
+export function QuestionAddForm({
+  wavelengthId,
+  nextIndex,
+}: {
+  wavelengthId: string;
+  nextIndex: number;
+}) {
   const [state, formAction, pending] = useActionState(addQuestion, initialActionState);
   const [type, setType] = useState<QuestionType>("choice");
-  const [optionCount, setOptionCount] = useState(MIN_CHOICE_OPTIONS);
+  const [options, setOptions] = useState<string[]>(["", ""]);
+
+  const tint = tintForIndex(nextIndex);
+  const validOptions = options.map((o) => o.trim()).filter(Boolean);
+
+  function updateOption(index: number, value: string) {
+    setOptions((prev) => prev.map((o, i) => (i === index ? value : o)));
+  }
+
+  function addOption() {
+    setOptions((prev) => (prev.length >= MAX_CHOICE_OPTIONS ? prev : [...prev, ""]));
+  }
+
+  function removeOption(index: number) {
+    setOptions((prev) =>
+      prev.length <= MIN_CHOICE_OPTIONS ? prev : prev.filter((_, i) => i !== index),
+    );
+  }
 
   return (
-    <form action={formAction}>
-      <h3>Add a question</h3>
-      <input type="hidden" name="wavelengthId" value={wavelengthId} />
+    <article className="create-card create-card--add">
+      <header className="create-card__head">
+        <div className="create-card__badge">
+          <span className={`create-card__number create-card__number--${tint}`}>
+            {nextIndex + 1}
+          </span>
+          <span className="create-card__title">Add a question</span>
+        </div>
+      </header>
 
-      <label htmlFor="add-question-category">Category</label>
-      {/* All 6 fixed categories are always offered — there is no upfront
-          category selection to cap this list against (progressive creation). */}
-      <select id="add-question-category" name="category" defaultValue={CATEGORIES[0]}>
-        {CATEGORIES.map((c) => (
-          <option key={c} value={c}>
-            {CATEGORY_LABELS[c]}
-          </option>
-        ))}
-      </select>
+      <form action={formAction} className="create-field-group">
+        <input type="hidden" name="wavelengthId" value={wavelengthId} />
 
-      <label htmlFor="add-question-type">Type</label>
-      <select
-        id="add-question-type"
-        name="type"
-        value={type}
-        onChange={(e) => setType(e.target.value as QuestionType)}
-      >
-        {QUESTION_TYPES.map((t) => (
-          <option key={t} value={t}>
-            {QUESTION_TYPE_LABELS[t]}
-          </option>
-        ))}
-      </select>
+        <div className="create-field">
+          <span className="create-field__label">Category</span>
+          <div className="create-pill-group" role="radiogroup" aria-label="Category">
+            {CATEGORIES.map((c, i) => (
+              <label key={c} className="create-pill-option">
+                <input
+                  type="radio"
+                  name="category"
+                  value={c}
+                  className="create-pill-input"
+                  defaultChecked={i === 0}
+                />
+                <span className={`create-pill create-pill--${CATEGORY_TINTS[c]}`}>
+                  {CATEGORY_LABELS[c]}
+                </span>
+              </label>
+            ))}
+          </div>
+        </div>
 
-      <label htmlFor="add-question-text">Question text</label>
-      <input
-        id="add-question-text"
-        type="text"
-        name="text"
-        required
-        minLength={3}
-        maxLength={300}
-      />
+        <div className="create-field">
+          <span className="create-field__label">Question type</span>
+          <div className="create-type-group" role="radiogroup" aria-label="Question type">
+            {QUESTION_TYPES.map((t) => (
+              <label key={t} className="create-type-option">
+                <input
+                  type="radio"
+                  name="type"
+                  value={t}
+                  className="create-type-input"
+                  checked={type === t}
+                  onChange={() => setType(t)}
+                />
+                <span className="create-type-option__title">{QUESTION_TYPE_LABELS[t]}</span>
+                <span className="create-type-option__sub">{TYPE_HINTS[t]}</span>
+              </label>
+            ))}
+          </div>
+        </div>
 
-      {type === "scale" ? (
-        <p>
-          Answered on a fixed 5-level scale (Not important → Extremely important) — no options to
-          set up.
-        </p>
-      ) : (
-        <fieldset>
-          <legend>
-            Options ({MIN_CHOICE_OPTIONS}–{MAX_CHOICE_OPTIONS})
-          </legend>
-          {Array.from({ length: optionCount }, (_, i) => (
-            <input key={i} type="text" name="options" placeholder={`Option ${i + 1}`} required />
-          ))}
-          <button
-            type="button"
-            onClick={() => setOptionCount((n) => Math.min(MAX_CHOICE_OPTIONS, n + 1))}
-            disabled={optionCount >= MAX_CHOICE_OPTIONS}
-          >
-            Add option
-          </button>
-          <button
-            type="button"
-            onClick={() => setOptionCount((n) => Math.max(MIN_CHOICE_OPTIONS, n - 1))}
-            disabled={optionCount <= MIN_CHOICE_OPTIONS}
-          >
-            Remove option
-          </button>
-        </fieldset>
-      )}
+        <div className="create-field">
+          <label className="create-field__label" htmlFor="add-question-text">
+            Question
+          </label>
+          <input
+            id="add-question-text"
+            className="create-input"
+            type="text"
+            name="text"
+            placeholder={TEXT_PLACEHOLDER[type]}
+            required
+            minLength={3}
+            maxLength={300}
+          />
+        </div>
 
-      {state.error && <p role="alert">{state.error}</p>}
+        {type === "choice" && (
+          <fieldset className="create-field">
+            <legend className="create-field__label">
+              Answer options ({MIN_CHOICE_OPTIONS}–{MAX_CHOICE_OPTIONS})
+            </legend>
+            <div className="create-options">
+              {options.map((value, i) => (
+                <div className="create-option-row" key={i}>
+                  <input
+                    type="text"
+                    name="options"
+                    className="create-input"
+                    value={value}
+                    onChange={(e) => updateOption(i, e.target.value)}
+                    placeholder={`Option ${i + 1}`}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="create-option-remove"
+                    onClick={() => removeOption(i)}
+                    disabled={options.length <= MIN_CHOICE_OPTIONS}
+                    aria-label={`Remove option ${i + 1}`}
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+            <button
+              type="button"
+              className="create-add-option"
+              onClick={addOption}
+              disabled={options.length >= MAX_CHOICE_OPTIONS}
+            >
+              + Add option
+            </button>
+          </fieldset>
+        )}
 
-      <button type="submit" disabled={pending}>
-        {pending ? "Adding…" : "Add question"}
-      </button>
-    </form>
+        <div className="create-answer">
+          <span className="create-field__label">Your answer</span>
+          {type === "scale" ? (
+            <>
+              <p className="create-answer__hint">Answer once this question is added.</p>
+              <div className="create-answer-options" aria-hidden="true">
+                {SCALE_VALUES.map((v) => (
+                  <span key={v} className="create-answer-pill create-answer-pill--preview">
+                    {SCALE_LABELS[v]}
+                  </span>
+                ))}
+              </div>
+            </>
+          ) : validOptions.length < MIN_CHOICE_OPTIONS ? (
+            <p className="create-answer__hint">Add your options above first.</p>
+          ) : (
+            <>
+              <p className="create-answer__hint">
+                You&apos;ll pick your answer once this question is added.
+              </p>
+              <div className="create-answer-options" aria-hidden="true">
+                {validOptions.map((option) => (
+                  <span key={option} className="create-answer-pill create-answer-pill--preview">
+                    {option}
+                  </span>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+
+        {state.error && (
+          <p role="alert" className="create-form-error">
+            {state.error}
+          </p>
+        )}
+
+        <button type="submit" className="create-button create-button--primary" disabled={pending}>
+          {pending ? "Adding…" : "+ Add question"}
+        </button>
+      </form>
+    </article>
   );
 }

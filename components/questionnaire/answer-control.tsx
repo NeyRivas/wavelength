@@ -23,6 +23,13 @@ type SaveAnswerAction = (prevState: ActionState, formData: FormData) => Promise<
  * radio immediately submits the form. Whatever was selected last is the
  * current answer — the visual selection and the persisted value never fall
  * out of sync, since there's no intermediate unsaved state to desync from.
+ *
+ * Presentation (Figma reference): each option/level is a tappable pill —
+ * a visually-hidden radio plus a styled <span>, filled solid when checked —
+ * instead of a plain radio+text-label row. Same inputs, same names/values,
+ * same submitOnChange-triggers-immediate-submit behavior. Scale labels are
+ * the existing SCALE_LABELS text (unchanged) — this reskins their
+ * presentation, not their wording.
  */
 export function AnswerControl({
   action,
@@ -42,44 +49,54 @@ export function AnswerControl({
   }
 
   return (
-    <form action={formAction}>
+    <form action={formAction} className="create-answer">
       <input type="hidden" name="wavelengthId" value={wavelengthId} />
       <input type="hidden" name="questionId" value={question.id} />
 
-      <fieldset disabled={pending}>
-        <legend>Your answer</legend>
-        {question.type === "scale"
-          ? SCALE_VALUES.map((v) => (
-              <label key={v}>
-                <input
-                  type="radio"
-                  name="value"
-                  value={v}
-                  defaultChecked={currentValue === v}
-                  onChange={submitOnChange}
-                  required
-                />
-                {SCALE_LABELS[v]}
-              </label>
-            ))
-          : question.options?.map((option, index) => (
-              <label key={option}>
-                <input
-                  type="radio"
-                  name="value"
-                  value={index}
-                  defaultChecked={currentValue === index}
-                  onChange={submitOnChange}
-                  required
-                />
-                {option}
-              </label>
-            ))}
+      <fieldset className="create-answer__fieldset" disabled={pending}>
+        <legend className="create-field__label">Your answer</legend>
+        <div className="create-answer-options">
+          {question.type === "scale"
+            ? SCALE_VALUES.map((v) => (
+                <label key={v} className="create-answer-pill-option">
+                  <input
+                    type="radio"
+                    name="value"
+                    value={v}
+                    className="create-answer-pill-input"
+                    defaultChecked={currentValue === v}
+                    onChange={submitOnChange}
+                    required
+                  />
+                  <span className="create-answer-pill">{SCALE_LABELS[v]}</span>
+                </label>
+              ))
+            : question.options?.map((option, index) => (
+                <label key={option} className="create-answer-pill-option">
+                  <input
+                    type="radio"
+                    name="value"
+                    value={index}
+                    className="create-answer-pill-input"
+                    defaultChecked={currentValue === index}
+                    onChange={submitOnChange}
+                    required
+                  />
+                  <span className="create-answer-pill">{option}</span>
+                </label>
+              ))}
+        </div>
       </fieldset>
 
-      <p aria-live="polite">{pending ? "Saving…" : currentValue !== undefined ? "Saved" : ""}</p>
+      <p className="create-save-status" aria-live="polite">
+        {pending ? "Saving…" : currentValue !== undefined ? "Saved" : ""}
+      </p>
 
-      {state.error && <p role="alert">{state.error}</p>}
+      {state.error && (
+        <p role="alert" className="create-form-error">
+          {state.error}
+        </p>
+      )}
     </form>
   );
 }

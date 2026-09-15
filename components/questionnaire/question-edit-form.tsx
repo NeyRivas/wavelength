@@ -12,6 +12,7 @@ import {
   MIN_CHOICE_OPTIONS,
 } from "@/lib/wavelength/categories";
 
+import { CATEGORY_TINTS } from "./category-visuals";
 import type { QuestionRow } from "./types";
 
 /**
@@ -72,18 +73,26 @@ import type { QuestionRow } from "./types";
  *
  * QA fix: the refresh (and the category field's own remount) now happen
  * after EVERY completed submission, not just successful ones. The
- * category `<select>` is uncontrolled (`defaultValue`) — if a category
- * change is ever rejected (e.g. the wavelength stopped being DRAFT between
- * render and submit), the browser's own select still visually shows
+ * category selector is uncontrolled (each pill's `defaultChecked`) — if a
+ * category change is ever rejected (e.g. the wavelength stopped being
+ * DRAFT between render and submit), the browser still visually shows
  * whatever the user picked, since nothing tells it otherwise. Left alone,
  * that rejected value rides along on the FormData of the next, unrelated
  * edit (e.g. a text blur) — which resubmits the same bad category and gets
  * rejected again, silently blocking that edit too, since one `<form>` = one
- * bundled UPDATE. Keying the select on `attempt` (incremented once per
- * completed submission) forces it to remount and re-read `defaultValue`
- * from the just-refreshed, server-confirmed `question.category` — reverting
- * a rejected pick back to reality, or confirming an accepted one — either
- * way never leaving a stale value to sabotage the next, separate edit.
+ * bundled UPDATE. Keying the category group on `attempt` (incremented once
+ * per completed submission) forces it to remount and re-read
+ * `defaultChecked` from the just-refreshed, server-confirmed
+ * `question.category` — reverting a rejected pick back to reality, or
+ * confirming an accepted one — either way never leaving a stale value to
+ * sabotage the next, separate edit.
+ *
+ * Presentation (Figma reference): the category `<select>` is now a row of
+ * pill radios (one per CATEGORIES entry, tinted via CATEGORY_TINTS) and
+ * each option row gets a small round remove button instead of a text
+ * "Remove" button — same underlying <input type="radio"/"text"> elements,
+ * same names, same submitOnChange/submitOnBlur wiring, so none of the
+ * behavior documented above changed, only the markup/classes.
  */
 
 interface OptionSlot {
@@ -117,7 +126,7 @@ export function QuestionEditForm({
   const [state, formAction, pending] = useActionState(updateQuestion, initialActionState);
   const [slots, setSlots] = useState<OptionSlot[]>(() => initialSlots(question.options));
   // Bumped once per completed submission (success or failure) — see the
-  // category <select>'s key below for why the failure case matters too.
+  // category pill group's key below for why the failure case matters too.
   const [attempt, setAttempt] = useState(0);
 
   // Fires exactly once per completed submission, on the pending -> !pending
@@ -139,7 +148,7 @@ export function QuestionEditForm({
     event.currentTarget.form?.requestSubmit();
   }
 
-  function submitOnChange(event: React.ChangeEvent<HTMLSelectElement>) {
+  function submitOnChange(event: React.ChangeEvent<HTMLInputElement>) {
     event.currentTarget.form?.requestSubmit();
   }
 
@@ -162,73 +171,99 @@ export function QuestionEditForm({
   }
 
   return (
-    <form action={formAction}>
+    <form action={formAction} className="create-field-group">
       <input type="hidden" name="wavelengthId" value={wavelengthId} />
       <input type="hidden" name="questionId" value={question.id} />
 
-      <label htmlFor={`text-${question.id}`}>Question text</label>
-      <input
-        id={`text-${question.id}`}
-        type="text"
-        name="text"
-        defaultValue={question.text}
-        onBlur={submitOnBlur}
-        required
-        minLength={3}
-        maxLength={300}
-        disabled={pending}
-      />
+      <div className="create-field">
+        <label className="create-field__label" htmlFor={`text-${question.id}`}>
+          Question
+        </label>
+        <input
+          id={`text-${question.id}`}
+          className="create-input"
+          type="text"
+          name="text"
+          defaultValue={question.text}
+          onBlur={submitOnBlur}
+          required
+          minLength={3}
+          maxLength={300}
+          disabled={pending}
+        />
+      </div>
 
-      <label htmlFor={`category-${question.id}`}>Category</label>
-      <select
-        key={attempt}
-        id={`category-${question.id}`}
-        name="category"
-        defaultValue={question.category}
-        onChange={submitOnChange}
-        disabled={pending}
-      >
-        {CATEGORIES.map((c) => (
-          <option key={c} value={c}>
-            {CATEGORY_LABELS[c]}
-          </option>
-        ))}
-      </select>
+      <div className="create-field" key={attempt}>
+        <span className="create-field__label">Category</span>
+        <div className="create-pill-group" role="radiogroup" aria-label="Category">
+          {CATEGORIES.map((c) => (
+            <label key={c} className="create-pill-option">
+              <input
+                type="radio"
+                name="category"
+                value={c}
+                className="create-pill-input"
+                defaultChecked={question.category === c}
+                onChange={submitOnChange}
+                disabled={pending}
+              />
+              <span className={`create-pill create-pill--${CATEGORY_TINTS[c]}`}>
+                {CATEGORY_LABELS[c]}
+              </span>
+            </label>
+          ))}
+        </div>
+      </div>
 
       {question.type !== "scale" && (
-        <fieldset disabled={pending}>
-          <legend>
-            Options ({MIN_CHOICE_OPTIONS}–{MAX_CHOICE_OPTIONS})
+        <fieldset className="create-field" disabled={pending}>
+          <legend className="create-field__label">
+            Answer options ({MIN_CHOICE_OPTIONS}–{MAX_CHOICE_OPTIONS})
           </legend>
-          {slots.map((slot, i) => (
-            <div key={slot.key}>
-              <input
-                type="text"
-                name="options"
-                defaultValue={slot.initialValue}
-                placeholder={`Option ${i + 1}`}
-                onBlur={submitOnBlur}
-                required
-              />
-              <button
-                type="button"
-                onClick={(event) => removeOption(event, slot.key)}
-                disabled={slots.length <= MIN_CHOICE_OPTIONS}
-                aria-label={`Remove option ${i + 1}`}
-              >
-                Remove
-              </button>
-            </div>
-          ))}
-          <button type="button" onClick={addOption} disabled={slots.length >= MAX_CHOICE_OPTIONS}>
-            Add option
+          <div className="create-options">
+            {slots.map((slot, i) => (
+              <div className="create-option-row" key={slot.key}>
+                <input
+                  type="text"
+                  name="options"
+                  className="create-input"
+                  defaultValue={slot.initialValue}
+                  placeholder={`Option ${i + 1}`}
+                  onBlur={submitOnBlur}
+                  required
+                />
+                <button
+                  type="button"
+                  className="create-option-remove"
+                  onClick={(event) => removeOption(event, slot.key)}
+                  disabled={slots.length <= MIN_CHOICE_OPTIONS}
+                  aria-label={`Remove option ${i + 1}`}
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+          <button
+            type="button"
+            className="create-add-option"
+            onClick={addOption}
+            disabled={slots.length >= MAX_CHOICE_OPTIONS}
+          >
+            + Add option
           </button>
         </fieldset>
       )}
 
-      <p aria-live="polite">{pending ? "Saving…" : state.error ? "" : "Saved"}</p>
+      <p className="create-save-status" aria-live="polite">
+        {pending ? "Saving…" : state.error ? "" : "Saved"}
+      </p>
 
-      {state.error && <p role="alert">{state.error}</p>}
+      {state.error && (
+        <p role="alert" className="create-form-error">
+          {state.error}
+        </p>
+      )}
     </form>
   );
 }
