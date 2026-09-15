@@ -458,11 +458,33 @@ dialog::backdrop {
   color: var(--wl-ink);
 }
 
-/* "For couples" / "FAQ" / footer legal links — shown in the reference but
-   with no corresponding page anywhere in the app (see landing-header.tsx
-   / landing-footer.tsx doc comments). Styled identically to the real
-   links so the header/footer still matches the screenshot visually,
-   without pretending they lead anywhere. */
+/* Current-route indicator (components/landing/landing-header.tsx compares
+   usePathname() against each link's href). A thin lavender underline
+   under just that link's own label — an ::after so it adds no padding,
+   background block, or extra height to the nav/header, and can't affect
+   sticky positioning or layout. */
+.landing-nav__link--active {
+  position: relative;
+  color: var(--wl-ink);
+  font-weight: 700;
+}
+
+.landing-nav__link--active::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.4rem;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--wl-lavender);
+}
+
+/* Footer legal links ("About" / "Privacy" / "Terms" / "Contact") — shown
+   in the reference but with no corresponding page anywhere in the app
+   (see landing-footer.tsx doc comment). Styled identically to the real
+   nav links so the footer still matches the screenshot visually, without
+   pretending they lead anywhere. */
 .landing-nav__inert {
   color: var(--wl-muted);
   cursor: default;

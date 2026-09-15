@@ -16,17 +16,17 @@ interface FaqAccordionProps {
  * separate interaction level from the category tabs above it: switching
  * categories never opens or closes anything here, it just swaps which
  * `items` this component receives (and this component resets its own
- * open state whenever that happens, via `key={tint}` on the parent).
+ * open state whenever that happens, via `key={category.id}` on the
+ * parent). Every category always starts fully collapsed — on first load
+ * and on every category switch alike — so nothing is ever auto-expanded;
+ * the user has to click a "+" to see any answer.
  *
  * The "+" toggle rotates 45° into an "×" on open rather than swapping to
  * a literal "−" glyph — same visual result as the reference, one glyph,
  * no icon library.
  */
 export function FaqAccordion({ items, tint }: FaqAccordionProps) {
-  const firstQuestion = items[0]?.question;
-  const [openQuestions, setOpenQuestions] = useState<ReadonlySet<string>>(
-    () => new Set(firstQuestion ? [firstQuestion] : []),
-  );
+  const [openQuestions, setOpenQuestions] = useState<ReadonlySet<string>>(() => new Set());
 
   function toggle(question: string) {
     setOpenQuestions((current) => {
