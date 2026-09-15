@@ -10,12 +10,13 @@ import { LogoMark } from "./logo-mark";
  * "How it works" links to the dedicated /how-it-works route (bug fix —
  * it used to be an in-page anchor to the 3-card section further down "/"
  * itself; now that /how-it-works exists as its own page, this always
- * navigates there instead). "For couples" and "FAQ" are shown in the
- * reference but have no corresponding section anywhere in the supplied
- * screenshots or in the rest of the app; per the brief's own "do not
- * invent navigation/content" rule, these are rendered as plain
- * (non-interactive) labels — same visual position/styling as the
- * reference — rather than dead links to a page that doesn't exist.
+ * navigates there instead). "For couples" links to the dedicated
+ * /for-couples route the same way. "FAQ" is shown in the reference but
+ * has no corresponding section anywhere in the supplied screenshots or in
+ * the rest of the app; per the brief's own "do not invent
+ * navigation/content" rule, it's rendered as a plain (non-interactive)
+ * label — same visual position/styling as the reference — rather than a
+ * dead link to a page that doesn't exist.
  * "Start playing" is the same single real CTA the whole app has: /create.
  */
 export function LandingHeader() {
@@ -29,7 +30,7 @@ export function LandingHeader() {
 
         <nav className="landing-nav" aria-label="Landing sections">
           <Link href="/how-it-works">How it works</Link>
-          <span className="landing-nav__inert">For couples</span>
+          <Link href="/for-couples">For couples</Link>
           <span className="landing-nav__inert">FAQ</span>
         </nav>
 
