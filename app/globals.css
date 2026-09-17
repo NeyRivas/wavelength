@@ -3016,3 +3016,121 @@ dialog::backdrop {
   cursor: default;
   transform: none;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   /w/[token]/answer — Participant B's answering screen. Reuses .wl-create,
+   CreateHeader, the .create-shell__intro/.create-progress "intro +
+   progress readout" pattern app/create/page.tsx already established, and
+   the .create-card/.create-answer family AnswerControl and QuestionCard
+   already use for the very same save mechanism — same product namespace,
+   same underlying answer-saving action, just B's own read-only question
+   text instead of an editable one. Everything below is new and additive.
+   The selected-pill recolor and full-width option layout are scoped under
+   .answer-shell (this page's own <main> class) plus new create-answer--*
+   classes AnswerControl only ever emits when a `tint` prop is passed
+   (never done on /create), so none of it touches /create's existing
+   rendering of those same shared classes.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.answer-question__text {
+  margin: 0 0 1.25rem;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--wl-ink);
+}
+
+/* Full-width, stacked answer options instead of /create's wrapped inline
+   pills — easier to scan and tap one-handed on mobile, and reads more
+   like a set of game-show answer buttons than a form's radio row. */
+.answer-shell .create-answer-options {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.answer-shell .create-answer-pill {
+  justify-content: center;
+  width: 100%;
+  min-height: 3rem;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.9375rem;
+  text-align: center;
+}
+
+/* Soft, per-question pastel selected state (replacing /create's flat ink
+   fill for this screen only) — cycles the same 5 tints already used for
+   each question's numbered badge, so the tint carries through from badge
+   to selected answer instead of flattening to black. */
+.answer-shell .create-answer--lavender .create-answer-pill-input:checked + .create-answer-pill {
+  background: var(--wl-lavender);
+  color: var(--wl-ink);
+  border-color: transparent;
+}
+
+.answer-shell .create-answer--blue .create-answer-pill-input:checked + .create-answer-pill {
+  background: var(--wl-blue);
+  color: var(--wl-ink);
+  border-color: transparent;
+}
+
+.answer-shell .create-answer--mint .create-answer-pill-input:checked + .create-answer-pill {
+  background: var(--wl-mint);
+  color: var(--wl-ink);
+  border-color: transparent;
+}
+
+.answer-shell .create-answer--pink .create-answer-pill-input:checked + .create-answer-pill {
+  background: var(--wl-pink);
+  color: var(--wl-ink);
+  border-color: transparent;
+}
+
+.answer-shell .create-answer--peach .create-answer-pill-input:checked + .create-answer-pill {
+  background: var(--wl-peach);
+  color: var(--wl-ink);
+  border-color: transparent;
+}
+
+/* Soft primary CTA — same recipe as .invite-button/.share-copy-button
+   (pastel fill + ink text + pastel-tinted shadow), not a flat --wl-ink
+   block, per the same "soft, warm, integrated" direction already applied
+   to every primary action introduced since the Review & Share pass. */
+.answer-submit-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 999px;
+  background: var(--wl-lavender);
+  color: var(--wl-ink);
+  font-family: var(--font-nunito), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 0.9375rem;
+  cursor: pointer;
+  box-shadow: 0 6px 16px -6px color-mix(in srgb, var(--wl-lavender) 75%, transparent);
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+}
+
+.answer-submit-button:hover {
+  background: color-mix(in srgb, var(--wl-lavender) 82%, var(--wl-ink) 18%);
+  box-shadow: 0 8px 18px -6px color-mix(in srgb, var(--wl-lavender) 85%, transparent);
+  transform: translateY(-1px);
+}
+
+.answer-submit-button:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 10px -6px color-mix(in srgb, var(--wl-lavender) 75%, transparent);
+}
+
+.answer-submit-button:disabled {
+  opacity: 0.6;
+  cursor: default;
+  transform: none;
+}

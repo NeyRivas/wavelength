@@ -1,7 +1,8 @@
+import { Fraunces, Nunito_Sans } from "next/font/google";
 import { redirect } from "next/navigation";
 
-import { saveAnswerB } from "@/app/actions/answers";
-import { AnswerControl } from "@/components/questionnaire/answer-control";
+import { AnswerQuestionCard } from "@/components/questionnaire/answer-question-card";
+import { CreateHeader } from "@/components/questionnaire/create-header";
 import { CreateNewWavelengthAction } from "@/components/wavelength/create-new-wavelength-action";
 import { SubmitFinalForm } from "@/components/wavelength/submit-final-form";
 import { requireUserId } from "@/lib/supabase/identity";
@@ -19,7 +20,56 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
  * would independently block it anyway (`answers_select`: B can only read
  * their own rows before COMPLETED), but the query here doesn't rely on
  * that as the only line of defense.
+ *
+ * Fonts are instantiated here — same per-page pattern as app/create/page.tsx
+ * and app/w/[token]/page.tsx — but only ever applied to the live,
+ * IN_PROGRESS answering view below. The post-completion "Nice try" guard
+ * and the redirect above it are untouched, still the same bare markup as
+ * before.
  */
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  style: ["italic"],
+  weight: ["400", "500", "600"],
+  variable: "--font-fraunces",
+  display: "swap",
+});
+
+const nunitoSans = Nunito_Sans({
+  subsets: ["latin"],
+  weight: ["400", "600", "700", "800"],
+  variable: "--font-nunito",
+  display: "swap",
+});
+
+function AnswerShellIntro({ answered, total }: { answered: number; total: number }) {
+  const fraction = total > 0 ? answered / total : 0;
+  return (
+    <div className="create-shell__intro">
+      <h1 className="create-shell__heading">Time to answer</h1>
+      <p className="create-shell__text">
+        Go with your gut — there are no wrong answers, and you can change any answer any time before
+        you submit.
+      </p>
+      <div className="create-progress">
+        <div
+          className="create-progress__track"
+          role="progressbar"
+          aria-valuenow={answered}
+          aria-valuemin={0}
+          aria-valuemax={total}
+          aria-label="Questions answered"
+        >
+          <div className="create-progress__fill" style={{ width: `${fraction * 100}%` }} />
+        </div>
+        <p className="create-progress__label">
+          {answered} of {total} answered
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export default async function AnswerPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
   const userId = await requireUserId();
@@ -85,27 +135,34 @@ export default async function AnswerPage({ params }: { params: Promise<{ token: 
   const allAnswered = questionList.length > 0 && answeredCount === questionList.length;
 
   return (
-    <main>
-      <h1>Answer the questions</h1>
-      <p>
-        {answeredCount} of {questionList.length} answered — you can leave and come back, and change
-        any answer, any time before you submit.
-      </p>
-      <ol>
-        {questionList.map((question) => (
-          <li key={question.id}>
-            <p>{question.text}</p>
-            <AnswerControl
-              action={saveAnswerB}
-              wavelengthId={wavelength.id}
-              question={question}
-              currentValue={answerByQuestion.get(question.id)}
-            />
-          </li>
-        ))}
-      </ol>
+    <div className={`${fraunces.variable} ${nunitoSans.variable} wl-create`}>
+      <CreateHeader />
+      <main className="create-shell answer-shell">
+        <AnswerShellIntro answered={answeredCount} total={questionList.length} />
 
-      {allAnswered && <SubmitFinalForm wavelengthId={wavelength.id} shareToken={token} />}
-    </main>
+        {questionList.length > 0 && (
+          <ol className="create-card-list">
+            {questionList.map((question, index) => (
+              <li key={question.id}>
+                <AnswerQuestionCard
+                  wavelengthId={wavelength.id}
+                  question={question}
+                  index={index}
+                  answerValue={answerByQuestion.get(question.id)}
+                />
+              </li>
+            ))}
+          </ol>
+        )}
+
+        {allAnswered ? (
+          <SubmitFinalForm wavelengthId={wavelength.id} shareToken={token} />
+        ) : (
+          questionList.length > 0 && (
+            <p className="create-helper-note">Answer every question to see your results.</p>
+          )
+        )}
+      </main>
+    </div>
   );
 }

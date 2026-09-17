@@ -6,6 +6,7 @@ import type { ActionState } from "@/app/actions/shared";
 import { initialActionState } from "@/app/actions/shared";
 import { SCALE_LABELS, SCALE_VALUES } from "@/lib/wavelength/categories";
 
+import type { CategoryTint } from "./category-visuals";
 import type { QuestionRow } from "./types";
 
 type SaveAnswerAction = (prevState: ActionState, formData: FormData) => Promise<ActionState>;
@@ -58,6 +59,7 @@ export function AnswerControl({
   question,
   currentValue,
   onSelect,
+  tint,
 }: {
   action: SaveAnswerAction;
   wavelengthId: string;
@@ -69,6 +71,15 @@ export function AnswerControl({
    * a substitute for the real save; `formAction`/`action` below is still
    * what actually persists the answer. */
   onSelect?: (value: number) => void;
+  /** Optional cosmetic hook: adds a `create-answer--{tint}` class
+   * alongside the base `create-answer` class so a caller can recolor the
+   * selected-pill state via CSS alone, without touching this component's
+   * markup or save logic. QuestionCard (A's /create builder) never passes
+   * this, so its existing ink-filled selected state is completely
+   * unaffected; B's answering screen (app/w/[token]/answer) passes each
+   * question's own badge tint so the selected pill picks up that same
+   * color instead. */
+  tint?: CategoryTint;
 }) {
   const [state, formAction, pending] = useActionState(action, initialActionState);
 
@@ -78,7 +89,7 @@ export function AnswerControl({
   }
 
   return (
-    <form action={formAction} className="create-answer">
+    <form action={formAction} className={`create-answer${tint ? ` create-answer--${tint}` : ""}`}>
       <input type="hidden" name="wavelengthId" value={wavelengthId} />
       <input type="hidden" name="questionId" value={question.id} />
 
