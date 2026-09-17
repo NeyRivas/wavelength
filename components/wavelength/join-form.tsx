@@ -11,23 +11,45 @@ import { initialActionState } from "@/app/actions/shared";
  * a failure here (already claimed by someone else, invalid/expired token)
  * shows inline rather than a silent redirect, so a losing race is obvious
  * to the user instead of looking like nothing happened.
+ *
+ * Presentation only — same wiring as before (useActionState, hidden token
+ * field, required alias input, pending/error handling). The invitation
+ * context line now lives in InviteIntro alongside it, so this only asks
+ * the one thing it needs to.
  */
-export function JoinForm({ token, aAlias }: { token: string; aAlias: string | null }) {
+export function JoinForm({ token }: { token: string }) {
   const [state, formAction, pending] = useActionState(claimParticipantB, initialActionState);
 
   return (
-    <form action={formAction}>
-      <input type="hidden" name="token" value={token} />
-      <p>{aAlias ?? "Someone"} invited you to find out if you&apos;re on the same wavelength.</p>
+    <section className="invite-card">
+      <form action={formAction}>
+        <input type="hidden" name="token" value={token} />
 
-      <label htmlFor="join-alias">Your name</label>
-      <input id="join-alias" type="text" name="alias" required maxLength={60} />
+        <div className="create-field">
+          <label htmlFor="join-alias" className="invite-card__label">
+            What&apos;s your name?
+          </label>
+          <input
+            id="join-alias"
+            className="create-input"
+            type="text"
+            name="alias"
+            placeholder="Your name"
+            required
+            maxLength={60}
+          />
+        </div>
 
-      {state.error && <p role="alert">{state.error}</p>}
+        {state.error && (
+          <p className="create-form-error" role="alert">
+            {state.error}
+          </p>
+        )}
 
-      <button type="submit" disabled={pending}>
-        {pending ? "Joining…" : "Start answering"}
-      </button>
-    </form>
+        <button type="submit" className="invite-button" disabled={pending}>
+          {pending ? "Joining…" : "Start answering"}
+        </button>
+      </form>
+    </section>
   );
 }

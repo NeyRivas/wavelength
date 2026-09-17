@@ -2893,3 +2893,126 @@ dialog::backdrop {
     justify-content: center;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   /w/[token] — Participant B's invitation/welcome screen (the
+   not-yet-a-participant branch of app/w/[token]/page.tsx, before B claims
+   their spot). Reuses .wl-create, CreateHeader, and the .create-field/
+   .create-input/.create-form-error primitives already established on
+   /create — this is the same product namespace and shares its palette
+   tokens and form primitives rather than inventing new ones. Everything
+   below is new and additive for this screen's own content (the intro and
+   its motif, the name/CTA card); nothing above this line was changed.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.invite-shell {
+  text-align: center;
+}
+
+/* ── intro ─────────────────────────────────────────────────────────────── */
+
+.invite-intro {
+  margin-bottom: 2.5rem;
+}
+
+.invite-intro__eyebrow {
+  margin: 0 0 1rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--wl-muted);
+}
+
+.invite-intro__heading {
+  margin: 0 0 1.5rem;
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(2rem, 6vw, 2.5rem);
+  color: var(--wl-ink);
+}
+
+.invite-intro__motif {
+  display: block;
+  margin: 0 auto 1.5rem;
+  width: min(16rem, 100%);
+  height: auto;
+}
+
+.invite-intro__text {
+  margin: 0 auto;
+  max-width: 26rem;
+  font-size: 1rem;
+  color: var(--wl-muted);
+}
+
+/* ── name + CTA card ───────────────────────────────────────────────────── */
+
+/* Blue-tinted rather than the lavender used by A's own share-card — same
+   card language (color-mix of one approved token + white), just a
+   distinct accent so B's screen reads as its own moment while still
+   obviously part of the same family. Matches the blue accent already
+   used for B's dot in the motif above. */
+.invite-card {
+  margin: 0 auto;
+  max-width: 26rem;
+  padding: 1.75rem;
+  border-radius: 1.25rem;
+  background: color-mix(in srgb, var(--wl-blue) 20%, white);
+  text-align: left;
+}
+
+.invite-card__label {
+  display: block;
+  margin: 0 0 0.75rem;
+  font-weight: 800;
+  font-size: 1.0625rem;
+  color: var(--wl-ink);
+}
+
+/* Soft primary CTA from the outset — the same "soft primary" pattern
+   approved for A's Copy link button (a pastel fill + ink text, a
+   pastel-tinted shadow, hover/active states that deepen the same fill
+   slightly toward ink), not a flat --wl-ink/white block. Lavender here
+   (rather than blue, which the card background already uses) keeps the
+   button visually distinct from its own card. */
+.invite-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 999px;
+  background: var(--wl-lavender);
+  color: var(--wl-ink);
+  font-family: var(--font-nunito), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 0.9375rem;
+  cursor: pointer;
+  box-shadow: 0 6px 16px -6px color-mix(in srgb, var(--wl-lavender) 75%, transparent);
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+}
+
+.invite-button:hover {
+  background: color-mix(in srgb, var(--wl-lavender) 82%, var(--wl-ink) 18%);
+  box-shadow: 0 8px 18px -6px color-mix(in srgb, var(--wl-lavender) 85%, transparent);
+  transform: translateY(-1px);
+}
+
+.invite-button:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 10px -6px color-mix(in srgb, var(--wl-lavender) 75%, transparent);
+}
+
+.invite-button:disabled {
+  opacity: 0.6;
+  cursor: default;
+  transform: none;
+}

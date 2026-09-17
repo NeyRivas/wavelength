@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { CreateHeader } from "@/components/questionnaire/create-header";
 import { ReadOnlyAnswers } from "@/components/questionnaire/read-only-answers";
+import { InviteIntro } from "@/components/wavelength/invite-intro";
 import { JoinForm } from "@/components/wavelength/join-form";
 import { ReviewIntro } from "@/components/wavelength/review-intro";
 import { ShareView } from "@/components/wavelength/share-view";
@@ -20,10 +21,11 @@ import { absoluteUrl } from "@/lib/wavelength/absolute-url";
  * never participant ids, never questions or answers.
  *
  * Fonts are instantiated here — same per-page pattern as app/create/page.tsx
- * — but only ever applied to A's WAITING/IN_PROGRESS branch below (the
- * "Review & Share" screen this pass implements). Every other branch on
- * this page (DRAFT/COMPLETED redirects, B's flow, the pre-claim preview,
- * not-found/taken) is untouched, still the same bare markup as before.
+ * — and applied to two branches below: A's WAITING/IN_PROGRESS "Review &
+ * Share" screen, and the not-yet-a-participant "invitation" screen B lands
+ * on before claiming their spot. Every other branch on this page
+ * (DRAFT/COMPLETED redirects, B's post-claim flow, not-found/taken) is
+ * untouched, still the same bare markup as before.
  */
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -124,9 +126,12 @@ export default async function WavelengthPage({ params }: { params: Promise<{ tok
   }
 
   return (
-    <main>
-      <h1>You&apos;ve been invited to a Wavelength</h1>
-      <JoinForm token={token} aAlias={preview.participant_a_alias} />
-    </main>
+    <div className={`${fraunces.variable} ${nunitoSans.variable} wl-create`}>
+      <CreateHeader />
+      <main className="create-shell invite-shell">
+        <InviteIntro aAlias={preview.participant_a_alias} />
+        <JoinForm token={token} />
+      </main>
+    </div>
   );
 }
