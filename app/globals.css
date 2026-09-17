@@ -2743,6 +2743,17 @@ dialog::backdrop {
   white-space: nowrap;
 }
 
+/* Softer primary action for this screen only (Review & Share feedback
+   pass): a lavender fill + ink text — the same "soft primary" pattern
+   already established elsewhere (e.g. the dark closing CTA's own light
+   button), not the flat --wl-ink/white fill .create-button--primary
+   still uses on /create. Ink stays the text color (strong, legible
+   contrast against the light pastel fill) rather than the harsher
+   pure-black-on-white block this replaces. Depth comes from a soft,
+   pastel-tinted shadow (color-mix of the same fill color, never a new
+   color) instead of a heavy dark drop shadow, and the hover/active
+   states just deepen that same lavender slightly toward ink — no new
+   colors, no layout change (same size/shape/position as before). */
 .share-copy-button {
   display: inline-flex;
   align-items: center;
@@ -2753,13 +2764,29 @@ dialog::backdrop {
   padding: 0 1.5rem;
   border: none;
   border-radius: 999px;
-  background: var(--wl-ink);
-  color: #ffffff;
+  background: var(--wl-lavender);
+  color: var(--wl-ink);
   font-family: var(--font-nunito), system-ui, sans-serif;
   font-weight: 700;
   font-size: 0.9375rem;
   white-space: nowrap;
   cursor: pointer;
+  box-shadow: 0 6px 16px -6px color-mix(in srgb, var(--wl-lavender) 75%, transparent);
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+}
+
+.share-copy-button:hover {
+  background: color-mix(in srgb, var(--wl-lavender) 82%, var(--wl-ink) 18%);
+  box-shadow: 0 8px 18px -6px color-mix(in srgb, var(--wl-lavender) 85%, transparent);
+  transform: translateY(-1px);
+}
+
+.share-copy-button:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 10px -6px color-mix(in srgb, var(--wl-lavender) 75%, transparent);
 }
 
 .share-copy-button__icon {
@@ -2770,6 +2797,7 @@ dialog::backdrop {
 .share-copy-button--copied {
   background: var(--wl-mint);
   color: var(--wl-ink);
+  box-shadow: 0 6px 16px -6px color-mix(in srgb, var(--wl-mint) 75%, transparent);
 }
 
 .share-status {
