@@ -5,6 +5,12 @@ import { CopyLinkButton } from "./copy-link-button";
  * progress beyond "has B joined yet" (approved rule: A can know B has
  * started, but not see answers or exact progress) — this component never
  * receives an answer count, only a status and B's alias once claimed.
+ *
+ * Presentation only: same two props/states as before. The link itself is
+ * kept visually secondary (smaller, muted, truncating) — "Copy link" is
+ * the one prominent action in this card, matching the brief's "invitation
+ * area is the main functional focus" without turning the link display
+ * itself into a competing CTA.
  */
 export function ShareView({
   link,
@@ -18,21 +24,26 @@ export function ShareView({
   bAlias: string | null;
 }) {
   return (
-    <section>
-      <p>
-        <label htmlFor="share-link">Your link</label>
-        <br />
-        <input id="share-link" type="text" value={link} readOnly />
-        <CopyLinkButton link={link} />
-      </p>
+    <section className="share-card">
+      <p className="share-card__label">Your invitation link</p>
 
-      {state === "WAITING" && <p>Waiting for someone to open your link.</p>}
-      {state === "IN_PROGRESS" && (
-        <p>
-          {bAlias ?? "Someone"} has joined and is answering — you&apos;ll see the result once they
-          finish.
-        </p>
-      )}
+      <div className="share-card__link-row">
+        <label htmlFor="share-link" className="share-link-visually-hidden">
+          Your invitation link
+        </label>
+        <input id="share-link" className="share-link" type="text" value={link} readOnly />
+        <CopyLinkButton link={link} />
+      </div>
+
+      <p className="share-status">
+        <span
+          className={`share-status__dot share-status__dot--${state === "IN_PROGRESS" ? "joined" : "waiting"}`}
+          aria-hidden="true"
+        />
+        {state === "WAITING" && "Waiting for someone to open your link."}
+        {state === "IN_PROGRESS" &&
+          `${bAlias ?? "Someone"} has joined and is answering — you'll see the result once they finish.`}
+      </p>
     </section>
   );
 }

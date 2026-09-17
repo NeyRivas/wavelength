@@ -1,7 +1,10 @@
+import { Fraunces, Nunito_Sans } from "next/font/google";
 import { redirect } from "next/navigation";
 
+import { CreateHeader } from "@/components/questionnaire/create-header";
 import { ReadOnlyAnswers } from "@/components/questionnaire/read-only-answers";
 import { JoinForm } from "@/components/wavelength/join-form";
+import { ReviewIntro } from "@/components/wavelength/review-intro";
 import { ShareView } from "@/components/wavelength/share-view";
 import { requireUserId } from "@/lib/supabase/identity";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -15,7 +18,27 @@ import { absoluteUrl } from "@/lib/wavelength/absolute-url";
  * B); everyone else falls through to `get_wavelength_preview`, the
  * SECURITY DEFINER RPC that returns only a safe, minimal projection —
  * never participant ids, never questions or answers.
+ *
+ * Fonts are instantiated here — same per-page pattern as app/create/page.tsx
+ * — but only ever applied to A's WAITING/IN_PROGRESS branch below (the
+ * "Review & Share" screen this pass implements). Every other branch on
+ * this page (DRAFT/COMPLETED redirects, B's flow, the pre-claim preview,
+ * not-found/taken) is untouched, still the same bare markup as before.
  */
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  style: ["italic"],
+  weight: ["400", "500", "600"],
+  variable: "--font-fraunces",
+  display: "swap",
+});
+
+const nunitoSans = Nunito_Sans({
+  subsets: ["latin"],
+  weight: ["400", "600", "700", "800"],
+  variable: "--font-nunito",
+  display: "swap",
+});
 export default async function WavelengthPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
   const userId = await requireUserId();
@@ -56,11 +79,14 @@ export default async function WavelengthPage({ params }: { params: Promise<{ tok
         .eq("participant", "A"),
     ]);
     return (
-      <main>
-        <h1>Your Wavelength</h1>
-        <ShareView link={link} state={wavelength.state} bAlias={wavelength.participant_b_alias} />
-        <ReadOnlyAnswers questions={questions ?? []} answers={answers ?? []} />
-      </main>
+      <div className={`${fraunces.variable} ${nunitoSans.variable} wl-create`}>
+        <CreateHeader />
+        <main className="create-shell share-shell">
+          <ReviewIntro />
+          <ShareView link={link} state={wavelength.state} bAlias={wavelength.participant_b_alias} />
+          <ReadOnlyAnswers questions={questions ?? []} answers={answers ?? []} />
+        </main>
+      </div>
     );
   }
 

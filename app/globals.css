@@ -2633,7 +2633,235 @@ dialog::backdrop {
     grid-template-columns: 1fr;
   }
 
-  .create-card {
+  /* Bug fix: this targeted .create-card itself before the card was split
+     into a full-bleed .create-card__head band + .create-card__body (a
+     later pass) — .create-card no longer has any padding of its own to
+     override, so this was silently doing nothing at this breakpoint
+     (worse, it would have re-added padding around the head band, breaking
+     its full-bleed edge, on any rule-order change). Retargeting it at the
+     body preserves the original intent — slightly tighter padding at
+     mobile — instead of the pre-split selector. */
+  .create-card__body {
     padding: 1.25rem;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   /w/[token] — Participant A's Review & Share screen (WAITING/IN_PROGRESS
+   only; app/w/[token]/page.tsx). Reuses .wl-create (the same top-level
+   product namespace app/create/page.tsx uses) rather than a third
+   namespace — this screen is the direct continuation of that same flow,
+   not a new product surface, so it shares the same CreateHeader, palette
+   tokens, and .create-card/.create-pill/.create-card-list primitives
+   already established there. Everything below is new and additive for
+   this screen's own content (the intro, the share card, the locked
+   answer pill); nothing above this line was changed for it, and nothing
+   in /create itself is affected.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.share-shell {
+  text-align: center;
+}
+
+/* ── intro ─────────────────────────────────────────────────────────────── */
+
+.share-intro {
+  margin-bottom: 2.5rem;
+}
+
+.share-intro__motif {
+  display: block;
+  margin: 0 auto 1.5rem;
+  width: min(16rem, 100%);
+  height: auto;
+}
+
+.share-intro__heading {
+  margin: 0 0 0.5rem;
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(2rem, 6vw, 2.5rem);
+  color: var(--wl-ink);
+}
+
+.share-intro__text {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--wl-muted);
+}
+
+/* ── share card ────────────────────────────────────────────────────────── */
+
+.share-card {
+  margin-bottom: 2.5rem;
+  padding: 1.75rem;
+  border-radius: 1.25rem;
+  background: color-mix(in srgb, var(--wl-lavender) 20%, white);
+  text-align: left;
+}
+
+.share-card__label {
+  margin: 0 0 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--wl-muted);
+}
+
+.share-card__link-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+/* The link stays visually secondary to "Copy link" — smaller, muted,
+   truncating rather than wrapping/growing. */
+.share-link-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.share-link {
+  flex: 1 1 12rem;
+  min-width: 0;
+  min-height: 2.75rem;
+  padding: 0 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--wl-muted);
+  font-family: var(--font-nunito), system-ui, sans-serif;
+  font-size: 0.8125rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.share-copy-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  min-height: 2.75rem;
+  padding: 0 1.5rem;
+  border: none;
+  border-radius: 999px;
+  background: var(--wl-ink);
+  color: #ffffff;
+  font-family: var(--font-nunito), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 0.9375rem;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.share-copy-button__icon {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+.share-copy-button--copied {
+  background: var(--wl-mint);
+  color: var(--wl-ink);
+}
+
+.share-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1.25rem 0 0;
+  font-size: 0.875rem;
+  color: var(--wl-muted);
+}
+
+.share-status__dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  flex-shrink: 0;
+  border-radius: 50%;
+}
+
+.share-status__dot--waiting {
+  background: var(--wl-peach);
+}
+
+.share-status__dot--joined {
+  background: var(--wl-mint);
+}
+
+/* ── answer review ─────────────────────────────────────────────────────── */
+
+.share-answers {
+  text-align: left;
+}
+
+.share-answers__heading {
+  margin: 0 0 0.5rem;
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(1.5rem, 4vw, 1.875rem);
+  color: var(--wl-ink);
+  text-align: center;
+}
+
+.share-answers__text {
+  margin: 0 0 2rem;
+  font-size: 0.9375rem;
+  color: var(--wl-muted);
+  text-align: center;
+}
+
+.share-answer__question {
+  margin: 0 0 1rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--wl-ink);
+}
+
+.share-answer-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.625rem 1.125rem;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.share-answer-pill--locked {
+  background: var(--wl-ink);
+  color: #ffffff;
+}
+
+.share-answer-pill--empty {
+  background: var(--color-surface);
+  color: var(--wl-muted);
+}
+
+@media (max-width: 30rem) {
+  .share-card__link-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  /* Bug fix: .share-link's flex-basis (12rem) sets its *width* in the
+     default row layout, but flex-basis tracks the main axis — once the
+     rule above switches this container to column, that same 12rem
+     became the link's height instead, ballooning it into an oval. Reset
+     the basis so height instead comes from min-height/padding, same as
+     every other breakpoint. */
+  .share-link {
+    flex-basis: auto;
+  }
+
+  .share-copy-button {
+    justify-content: center;
   }
 }
