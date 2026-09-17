@@ -2092,7 +2092,13 @@ dialog::backdrop {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
-  margin: 0 0 1.25rem;
+  /* More breathing room below the last card than between cards
+     themselves — "+ Add question" (the trigger or, expanded, the
+     add-question card) needs to read as a distinct action below the
+     list, not another row in it. Responsive: ~2rem at 390px, up to
+     2.75rem at 1440px — noticeably more than the 1.25rem inter-card
+     gap above, without feeling excessive on mobile. */
+  margin: 0 0 clamp(2rem, 5vw, 2.75rem);
   padding: 0;
   list-style: none;
 }
@@ -2438,14 +2444,22 @@ dialog::backdrop {
   margin-bottom: 0.75rem;
 }
 
+/* Now a <label htmlFor> targeting AnswerControl's real radio for this
+   option (question-edit-form.tsx) — cursor:pointer signals the whole row
+   is clickable. The nested text input and remove button keep their own
+   native cursors/behavior regardless (a label never forwards its click
+   to the `for` target when the click itself lands on another
+   interactive control — standard HTML, not overridden here). */
 .create-option-row {
   display: flex;
   align-items: center;
   gap: 0.625rem;
+  cursor: pointer;
 }
 
 .create-option-row .create-input {
   flex: 1;
+  cursor: text;
 }
 
 /* Decorative only — reflects whichever option is currently A's saved

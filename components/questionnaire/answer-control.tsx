@@ -10,6 +10,14 @@ import type { QuestionRow } from "./types";
 
 type SaveAnswerAction = (prevState: ActionState, formData: FormData) => Promise<ActionState>;
 
+/** Stable id for a given question+value's radio, shared with
+ * question-edit-form.tsx so its decorative per-option indicator can
+ * target the exact same input via a native `<label htmlFor>` — see the
+ * doc comment below for why that's the whole trick. */
+export function answerInputId(questionId: string, value: number): string {
+  return `answer-${questionId}-${value}`;
+}
+
 /**
  * Choice: radio per option, value = its 0-based index (matches the DB's
  * stored answer shape). Scale: radio per fixed 0/25/50/75/100 level. Both A
@@ -37,6 +45,12 @@ type SaveAnswerAction = (prevState: ActionState, formData: FormData) => Promise<
  * same submitOnChange-triggers-immediate-submit behavior. Scale labels are
  * the existing SCALE_LABELS text (unchanged) — this reskins their
  * presentation, not their wording.
+ *
+ * Each radio gets a stable `id` (`answerInputId`) purely so
+ * QuestionEditForm's decorative per-option indicator/row (a *different*
+ * form, rendered by the same QuestionCard) can point a plain
+ * `<label htmlFor>` at the exact same input instead of growing a second,
+ * parallel selection mechanism — see that file's own doc comment.
  */
 export function AnswerControl({
   action,
@@ -75,6 +89,7 @@ export function AnswerControl({
             ? SCALE_VALUES.map((v) => (
                 <label key={v} className="create-answer-pill-option">
                   <input
+                    id={answerInputId(question.id, v)}
                     type="radio"
                     name="value"
                     value={v}
@@ -89,6 +104,7 @@ export function AnswerControl({
             : question.options?.map((option, index) => (
                 <label key={option} className="create-answer-pill-option">
                   <input
+                    id={answerInputId(question.id, index)}
                     type="radio"
                     name="value"
                     value={index}

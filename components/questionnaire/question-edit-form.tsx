@@ -12,6 +12,7 @@ import {
   MIN_CHOICE_OPTIONS,
 } from "@/lib/wavelength/categories";
 
+import { answerInputId } from "./answer-control";
 import { CATEGORY_TINTS } from "./category-visuals";
 import type { QuestionRow } from "./types";
 
@@ -103,15 +104,29 @@ import type { QuestionRow } from "./types";
  * own separate action call, which would be a real behavior change, not
  * just a reorder.
  *
- * `answerValue` is new and purely decorative: each option row shows a
- * small filled/empty circle next to it (create-option-indicator) mirroring
- * whichever option is currently A's saved answer, so the "this is your
- * answer" state reads as part of the options list itself, closer to the
- * reference — exactly like the reference's own answered card. It is never
- * submitted, read by any action, or used for validation; the real,
- * interactive answer selection is still entirely AnswerControl's job
- * (rendered by QuestionCard as its own separate form/action, unchanged).
- * Undefined (unanswered) simply renders every indicator empty.
+ * `answerValue` picks which option row's indicator renders filled
+ * (create-option-indicator) — mirroring whichever option is currently A's
+ * saved answer, so "this is your answer" reads as part of the options
+ * list itself. Undefined (unanswered) renders every indicator empty.
+ *
+ * Each option row is now a `<label htmlFor={answerInputId(...)}>`
+ * targeting the *actual* radio AnswerControl renders for that same
+ * option (a sibling form under the same QuestionCard) — not a second,
+ * parallel answer-selection mechanism. A native label-for-a-foreign-
+ * element click is real, standard HTML: clicking anywhere in the row
+ * that isn't itself another interactive control (the text input, the
+ * remove button — both already suppress label click-forwarding per the
+ * HTML spec, so editing text or removing an option still works exactly
+ * as before) fires a real click on AnswerControl's radio, which already
+ * does everything selecting it should: update the shared
+ * `optimisticAnswer` immediately (via its own `onSelect`) and persist
+ * through the existing `saveAnswerA` action via its own form. This file
+ * adds no new state, no new save path — only the `<label>` association.
+ * Options are matched to AnswerControl's by index, so this stays correct
+ * once a save round-trip confirms it; mid-edit (before a locally
+ * added/removed option's own blur-save resolves) the row could
+ * transiently point at the wrong index, the same pre-existing,
+ * self-correcting caveat the decorative indicator already carried.
  */
 
 interface OptionSlot {
@@ -243,7 +258,11 @@ export function QuestionEditForm({
           </legend>
           <div className="create-options">
             {slots.map((slot, i) => (
-              <div className="create-option-row" key={slot.key}>
+              <label
+                className="create-option-row"
+                htmlFor={answerInputId(question.id, i)}
+                key={slot.key}
+              >
                 <span
                   className={`create-option-indicator${answerValue === i ? " create-option-indicator--selected" : ""}`}
                   aria-hidden="true"
@@ -268,7 +287,7 @@ export function QuestionEditForm({
                 >
                   ×
                 </button>
-              </div>
+              </label>
             ))}
           </div>
           <button
