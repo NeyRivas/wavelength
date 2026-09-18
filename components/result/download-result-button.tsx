@@ -36,7 +36,7 @@ export function DownloadResultButton({
   }
 
   return (
-    <button type="button" className="result-action-button" onClick={handleDownload}>
+    <button type="button" className="result-secondary-button" onClick={handleDownload}>
       Download result
     </button>
   );

@@ -4,7 +4,6 @@ import { redirect } from "next/navigation";
 import { CreateHeader } from "@/components/questionnaire/create-header";
 import { ResultReveal } from "@/components/result/result-reveal";
 import { ResultView } from "@/components/result/result-view";
-import { HomeNav } from "@/components/wavelength/home-nav";
 import { requireUserId } from "@/lib/supabase/identity";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { buildWavelengthResultView, ResultDataError } from "@/lib/wavelength/result";
@@ -123,11 +122,6 @@ export default async function ResultPage({ params }: { params: Promise<{ token: 
     );
   }
 
-  // QA fix §8.5: the clickable "Wavelength" nav (start a new one) only ever
-  // appears here, and only for A — before A has seen a result, there is no
-  // way to navigate away from the current flow via this element.
-  const isParticipantA = wavelength.participant_a_id === userId;
-
   // Bug-fix pass: real participant aliases everywhere the UI shows identity
   // — never the bare "A"/"B" internal labels. Both are guaranteed non-null
   // by the time a wavelength reaches COMPLETED (finalize_draft requires
@@ -141,7 +135,6 @@ export default async function ResultPage({ params }: { params: Promise<{ token: 
       <CreateHeader />
       <main className="create-shell result-shell">
         <ResultReveal>
-          {isParticipantA && <HomeNav />}
           <ResultView view={view} aliasA={aliasA} aliasB={aliasB} />
         </ResultReveal>
       </main>

@@ -53,7 +53,7 @@ export function ShareResultButton({
   }
 
   return (
-    <button type="button" className="result-action-button" onClick={handleShare}>
+    <button type="button" className="result-secondary-button" onClick={handleShare}>
       {copied ? "Copied!" : "Share result"}
     </button>
   );

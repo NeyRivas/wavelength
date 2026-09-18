@@ -5,11 +5,13 @@ import { useRouter } from "next/navigation";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 /**
- * The one "start a new, independent Wavelength" action, shared by every
- * surface that offers it (the completed Result page, for both
- * participants, and B's locked "Nice try!" page) — product decision:
- * leaving a completed result always confirms first, since the current
- * participant session may be the only way back to it.
+ * The one "start a new, independent Wavelength" action still using the
+ * generic ConfirmDialog — now only rendered by B's locked "Nice try!"
+ * page (app/w/[token]/answer/page.tsx). The Result page has its own
+ * bespoke equivalent (components/result/create-new-wavelength-cta.tsx)
+ * with a Wavelength-branded confirmation instead of this plain one; this
+ * component is unchanged and unrelated to that pass, kept exactly as it
+ * was for the one surface that still needs it.
  *
  * "Continue" is a plain client-side navigation into the existing /create
  * flow (app/create/page.tsx) — the same one A always used. It takes no id
@@ -17,20 +19,12 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
  * draft.ts) only ever inserts a brand-new row scoped to the caller's own
  * id, so there is nothing here that could reopen, modify, or delete it.
  */
-export function CreateNewWavelengthAction({
-  triggerClassName,
-}: {
-  /** Passed straight through to ConfirmDialog's trigger button — see its
-   * own doc comment. Omitted by the one other caller (B's locked
-   * "Nice try!" page), so that usage is completely unaffected. */
-  triggerClassName?: string;
-}) {
+export function CreateNewWavelengthAction() {
   const router = useRouter();
 
   return (
     <ConfirmDialog
       triggerLabel="Create your own Wavelength"
-      triggerClassName={triggerClassName}
       title="Start a new Wavelength?"
       description="Make sure you've saved or shared your current result first. You may lose access to this completed result when you start a new Wavelength."
       onConfirm={() => router.push("/create")}

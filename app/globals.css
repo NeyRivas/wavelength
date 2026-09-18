@@ -425,57 +425,192 @@ dialog::backdrop {
   padding: 0.25rem 1.25rem 1.25rem;
 }
 
-/* ── result actions (download / share / create-new) ─────────────────── */
-/* A consistent row of quiet, outlined pill buttons — no single one reads
-   as "the" primary action, since none of the three moves the flow
-   forward the way a CTA elsewhere does; this is the terminal screen. */
+/* ── result actions (create-new / share / download) ──────────────────── */
+/* Clear hierarchy (feedback pass): "Create your own Wavelength" is the
+   strongest action on the page — the natural next step once you've seen
+   your result, styled with the same soft-lavender primary treatment used
+   for every other forward-moving CTA in the product (Copy link/Start
+   answering). Share and Download are compact, quiet secondary actions
+   underneath it — same soft pill language, just smaller and lower
+   contrast, so neither competes with the primary CTA or the percentage
+   above it. */
 
 .result-actions {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.75rem;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
   margin: 0 0 2.5rem;
 }
 
-.result-action-button {
+.result-actions__secondary {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.625rem;
+}
+
+.result-primary-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  min-height: 2.75rem;
-  padding: 0 1.5rem;
-  border: 1.5px solid var(--wl-ink);
+  min-height: 3rem;
+  padding: 0 2rem;
+  border: none;
+  border-radius: 999px;
+  background: var(--wl-lavender);
+  color: var(--wl-ink);
+  font-family: var(--font-nunito), system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 6px 16px -6px color-mix(in srgb, var(--wl-lavender) 75%, transparent);
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+}
+
+.result-primary-button:hover {
+  background: color-mix(in srgb, var(--wl-lavender) 82%, var(--wl-ink) 18%);
+  box-shadow: 0 8px 18px -6px color-mix(in srgb, var(--wl-lavender) 85%, transparent);
+  transform: translateY(-1px);
+}
+
+.result-primary-button:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 10px -6px color-mix(in srgb, var(--wl-lavender) 75%, transparent);
+}
+
+/* Noticeably smaller and quieter than the primary CTA — a light neutral
+   outline instead of ink, smaller type, tighter padding — while staying
+   comfortably tappable (2.5rem min-height clears typical mobile tap-
+   target guidance with room for its own padding/gap). */
+.result-secondary-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  min-height: 2.5rem;
+  padding: 0 1.125rem;
+  border: 1px solid var(--color-border);
   border-radius: 999px;
   background: #ffffff;
+  color: var(--wl-muted);
+  font-family: var(--font-nunito), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.result-secondary-button:hover {
+  background: color-mix(in srgb, var(--wl-lavender) 25%, white);
   color: var(--wl-ink);
+}
+
+.result-secondary-button:active {
+  transform: translateY(1px);
+}
+
+/* ── "Keep this wavelength?" confirmation (create-new-wavelength-cta.tsx) ──
+   A bespoke, Wavelength-branded confirmation — deliberately NOT the
+   generic ConfirmDialog/`dialog`/.dialog-actions styling shared elsewhere
+   (components/ui/confirm-dialog.tsx), which is also used by B's locked
+   "Nice try!" page and must stay exactly as it is. This dialog only ever
+   renders on the Result page, so overriding it here via its own class
+   cannot affect that other usage. */
+
+.wavelength-dialog {
+  max-width: 25rem;
+  width: calc(100% - 2rem);
+  padding: 2rem 1.75rem 1.75rem;
+  border-radius: 1.5rem;
+  background: #ffffff;
+  box-shadow: 0 20px 45px -24px color-mix(in srgb, var(--wl-ink) 35%, transparent);
+  text-align: center;
+}
+
+.wavelength-dialog::backdrop {
+  background: color-mix(in srgb, var(--wl-ink) 35%, transparent);
+}
+
+.wavelength-dialog__motif {
+  display: block;
+  width: min(11rem, 100%);
+  height: auto;
+  margin: 0 auto 1.25rem;
+}
+
+.wavelength-dialog__heading {
+  margin: 0 0 0.75rem;
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 1.5rem;
+  color: var(--wl-ink);
+}
+
+.wavelength-dialog__text {
+  margin: 0 0 1.75rem;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--wl-muted);
+}
+
+.wavelength-dialog__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.wavelength-dialog__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0 1.5rem;
+  border-radius: 999px;
+  border: none;
   font-family: var(--font-nunito), system-ui, sans-serif;
   font-weight: 700;
   font-size: 0.9375rem;
   cursor: pointer;
   transition:
     background-color 0.2s ease,
+    box-shadow 0.2s ease,
     transform 0.15s ease;
 }
 
-.result-action-button:hover {
-  background: color-mix(in srgb, var(--wl-lavender) 35%, white);
+.wavelength-dialog__button--secondary {
+  background: #ffffff;
+  color: var(--wl-ink);
+  border: 1.5px solid var(--color-border);
 }
 
-.result-action-button:active {
+.wavelength-dialog__button--secondary:hover {
+  background: var(--color-surface);
+}
+
+.wavelength-dialog__button--primary {
+  background: var(--wl-lavender);
+  color: var(--wl-ink);
+  box-shadow: 0 6px 16px -6px color-mix(in srgb, var(--wl-lavender) 75%, transparent);
+}
+
+.wavelength-dialog__button--primary:hover {
+  background: color-mix(in srgb, var(--wl-lavender) 82%, var(--wl-ink) 18%);
+  box-shadow: 0 8px 18px -6px color-mix(in srgb, var(--wl-lavender) 85%, transparent);
+}
+
+.wavelength-dialog__button--primary:active,
+.wavelength-dialog__button--secondary:active {
   transform: translateY(1px);
-}
-
-/* ── "start a new Wavelength" quiet link (A only, home-nav.tsx) ──────── */
-
-.result-startnew-link {
-  display: inline-block;
-  margin: 0 0 1.5rem;
-  font-size: 0.8125rem;
-  font-weight: 700;
-  color: var(--wl-muted);
-  text-decoration: underline;
-  text-underline-offset: 2px;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════

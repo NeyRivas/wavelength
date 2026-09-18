@@ -7,14 +7,17 @@ import { useId, useRef } from "react";
  * `<dialog>` element (`showModal()` / `close()`) rather than a UI library
  * or `window.confirm()`: no new dependency, works across current browsers,
  * and gets modal semantics (focus, backdrop, Escape-to-dismiss) for free.
- * Any future confirmation should reuse this rather than `window.confirm()`
- * or a parallel implementation — see components/wavelength/home-nav.tsx for
- * the one still-existing `window.confirm()` predating this component,
- * intentionally left as-is (unrelated to this change).
+ * Deliberately unstyled beyond the shared baseline (dialog/.dialog-actions
+ * in app/globals.css) — its one remaining caller is B's locked "Nice
+ * try!" page (components/wavelength/create-new-wavelength-action.tsx),
+ * which stays out of scope for visual redesign passes. The Result page's
+ * own "Create your own Wavelength" confirmation is a separate, bespoke
+ * dialog (components/result/create-new-wavelength-cta.tsx) for exactly
+ * that reason — restyling this shared component would have changed that
+ * protected page too.
  */
 export function ConfirmDialog({
   triggerLabel,
-  triggerClassName,
   title,
   description,
   confirmLabel = "Continue",
@@ -22,12 +25,6 @@ export function ConfirmDialog({
   onConfirm,
 }: {
   triggerLabel: string;
-  /** Optional class for the trigger button only — the dialog itself
-   * (title/description/actions) is unaffected either way. Omitted by
-   * every existing caller except the Result page's "Create your own
-   * Wavelength" action, so every other trigger button renders exactly as
-   * before. */
-  triggerClassName?: string;
   title: string;
   description: string;
   confirmLabel?: string;
@@ -39,11 +36,7 @@ export function ConfirmDialog({
 
   return (
     <>
-      <button
-        type="button"
-        className={triggerClassName}
-        onClick={() => dialogRef.current?.showModal()}
-      >
+      <button type="button" onClick={() => dialogRef.current?.showModal()}>
         {triggerLabel}
       </button>
       <dialog ref={dialogRef} aria-labelledby={headingId}>
