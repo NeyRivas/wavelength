@@ -970,12 +970,13 @@ dialog::backdrop {
 }
 
 /* ── hero illustration ────────────────────────────────────────────────
-   Two flat, off-canvas pastel circles (CSS) behind one inline SVG that
-   draws the "orbit" circle, its bullseye, three colored arcs, the dashed
-   trajectory between two ringed dots, and a handful of scattered dots.
-   A hand-reproduced approximation of the reference composition — see the
-   implementation report for why an exact vector match isn't possible
-   from a flat screenshot. */
+   Three soft, animated gradient blobs (CSS) behind a restrained glass
+   surface (CSS) behind one inline SVG that draws three colored arcs, a
+   bullseye, an animated gradient "wavelength" trajectory between two
+   gently bobbing ringed dots, and a handful of static scattered dots.
+   Visual-exploration pass: gradients/animation/glass added on top of the
+   original hand-reproduced composition — see git history for the earlier,
+   fully static version this replaces. */
 
 .landing-hero__illustration {
   position: relative;
@@ -983,30 +984,80 @@ dialog::backdrop {
   /* No height: 100% here — with align-items: center on .landing-hero,
      that would stretch this box to match the (taller) text column's
      height instead of just centering a min-height: 26rem box within it,
-     which is what was dragging .hero-shape--mint far down the page. */
+     which is what was dragging .hero-shape--two far down the page. */
 }
 
 .hero-shape {
   position: absolute;
   border-radius: 50%;
+  filter: blur(26px);
+  animation: hero-blob-drift 24s ease-in-out infinite;
 }
 
-.hero-shape--lavender {
+/* Gradients built only from the approved palette (Lavender→Pink,
+   SkyBlue→Mint, a soft Peach glow) — soft/dimensional rather than a flat
+   single-hue fill, per the "more dimensional" brief. */
+.hero-shape--one {
   width: 22rem;
   height: 22rem;
   top: -7rem;
   right: -6rem;
-  background: var(--wl-lavender);
+  background: linear-gradient(135deg, var(--wl-lavender), var(--wl-pink));
   opacity: 0.55;
+  animation-duration: 22s;
 }
 
-.hero-shape--mint {
+.hero-shape--two {
   width: 20rem;
   height: 20rem;
   bottom: -9rem;
   left: -7rem;
-  background: var(--wl-mint);
-  opacity: 0.35;
+  background: linear-gradient(135deg, var(--wl-blue), var(--wl-mint));
+  opacity: 0.4;
+  animation-duration: 27s;
+  animation-direction: alternate-reverse;
+}
+
+/* Sits directly behind .hero-glass so its glow reads softly through the
+   translucent surface — "some of the underlying gradient visible through
+   the surface" from the glass-effect brief. */
+.hero-shape--three {
+  width: 15rem;
+  height: 15rem;
+  top: 22%;
+  left: 22%;
+  background: radial-gradient(circle, var(--wl-peach), transparent 72%);
+  opacity: 0.55;
+  animation-duration: 19s;
+}
+
+@keyframes hero-blob-drift {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-0.75rem, 1rem) scale(1.05);
+  }
+}
+
+/* Restrained glass surface: translucent white + backdrop blur + a thin
+   translucent border, replacing the previous flat white "orbit" circle.
+   Deliberately just this one panel, sized/positioned to match the SVG's
+   own circle (cx=200 cy=200 r=150 in a 400x400 viewBox = 75% diameter,
+   12.5% inset) — not a hero-wide glass treatment. */
+.hero-glass {
+  position: absolute;
+  top: 12.5%;
+  left: 12.5%;
+  width: 75%;
+  height: 75%;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 20px 45px rgba(24, 24, 32, 0.08);
 }
 
 .hero-shape__svg {
@@ -1016,8 +1067,47 @@ dialog::backdrop {
   height: 100%;
 }
 
-.hero-orbit-circle {
-  filter: drop-shadow(0 20px 45px rgba(24, 24, 32, 0.08));
+/* The "living wavelength": a marching-dash flow along the gradient
+   trajectory (reads as motion/energy, not a static dashed guideline) plus
+   a small, slow, out-of-phase vertical bob on each participant dot.
+   transform-box/-origin keep each dot bobbing around its own center
+   rather than the SVG viewport's origin. */
+.hero-wave-path {
+  animation: hero-wave-flow 5s linear infinite;
+}
+
+@keyframes hero-wave-flow {
+  to {
+    stroke-dashoffset: -26;
+  }
+}
+
+.hero-wave-dot {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: hero-wave-bob 4.5s ease-in-out infinite;
+}
+
+.hero-wave-dot--b {
+  animation-delay: 1.4s;
+}
+
+@keyframes hero-wave-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-shape,
+  .hero-wave-path,
+  .hero-wave-dot {
+    animation: none;
+  }
 }
 
 /* ── "How it works" ──────────────────────────────────────────────────── */
@@ -1144,6 +1234,30 @@ dialog::backdrop {
   background: var(--wl-pink);
   box-shadow: 0 30px 60px rgba(24, 24, 32, 0.12);
   text-align: left;
+  /* Card tint crossfades instead of cutting abruptly when the active
+     example changes (see .landing-demo__card--* below). */
+  transition: background-color 0.4s ease;
+}
+
+/* Card tints — deliberately never peach, which is reserved as the one
+   consistent "selected" accent for both Choice and Scale options
+   (.landing-demo__option--selected / .landing-demo__scale-option--
+   selected below), so a selected pill never blends into a same-hue card
+   background. */
+.landing-demo__card--pink {
+  background: var(--wl-pink);
+}
+
+.landing-demo__card--blue {
+  background: var(--wl-blue);
+}
+
+.landing-demo__card--mint {
+  background: var(--wl-mint);
+}
+
+.landing-demo__card--lavender {
+  background: var(--wl-lavender);
 }
 
 .landing-demo__head {
@@ -1167,18 +1281,70 @@ dialog::backdrop {
 
 .landing-demo__dots {
   display: flex;
-  gap: 0.375rem;
+  align-items: center;
 }
 
-.landing-demo__dots span {
+/* Real carousel controls now (feedback pass) — each is a button with a
+   generous invisible hit area around the same small visual dot the
+   static version used, so tapping stays comfortable on mobile without
+   changing how the indicator row looks. */
+.landing-demo__indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.375rem;
+  height: 1.375rem;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.landing-demo__indicator::before {
+  content: "";
+  display: block;
   width: 0.4375rem;
   height: 0.4375rem;
   border-radius: 50%;
   background: rgba(24, 24, 32, 0.25);
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease;
 }
 
-.landing-demo__dots span.is-active {
+.landing-demo__indicator.is-active::before {
   background: var(--wl-ink);
+  transform: scale(1.2);
+}
+
+.landing-demo__indicator:focus-visible {
+  outline: 2px solid var(--wl-ink);
+  outline-offset: 1px;
+  border-radius: 50%;
+}
+
+/* The animated part of the card — only the question + its answer control
+   slide/fade in on navigation; the tag, indicators, and footer stay put
+   as stable chrome around it (see experience-demo-card.tsx). */
+.landing-demo__slide {
+  animation: landing-demo-slide-in 0.45s ease;
+}
+
+@keyframes landing-demo-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-demo__slide {
+    animation: none;
+  }
 }
 
 .landing-demo__question {
@@ -1223,10 +1389,39 @@ dialog::backdrop {
   justify-content: center;
   width: 1.5rem;
   height: 1.5rem;
+  flex-shrink: 0;
   border-radius: 50%;
   background: rgba(24, 24, 32, 0.08);
   font-size: 0.75rem;
   font-weight: 700;
+}
+
+/* Scale/Importance example — the same five fixed levels the real
+   questionnaire uses (lib/wavelength/categories.ts SCALE_LABELS), as a
+   compact vertical stack of pills (smaller than Choice's, since there
+   are five of them) rather than Choice's roomier option rows. */
+.landing-demo__scale {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.landing-demo__scale-option {
+  padding: 0.65rem 1rem;
+  border: none;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  font-family: var(--font-nunito), system-ui, sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--wl-ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.landing-demo__scale-option--selected {
+  background: var(--wl-peach);
 }
 
 .landing-demo__footer {

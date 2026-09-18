@@ -1,7 +1,7 @@
 import { ExperienceDemoCard } from "./experience-demo-card";
 
 const PILLS: { label: string; className: string }[] = [
-  { label: "8 categories", className: "landing-pill--lavender" },
+  { label: "6 categories", className: "landing-pill--lavender" },
   { label: "Instant results", className: "landing-pill--mint" },
   { label: "No app needed", className: "landing-pill--peach" },
   { label: "Share any way", className: "landing-pill--pink" },
