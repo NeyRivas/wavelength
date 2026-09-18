@@ -12,7 +12,7 @@ const PILLS: { label: string; className: string }[] = [
  * halo. */
 export function LandingExperience() {
   return (
-    <section className="landing-section landing-experience">
+    <section className="landing-section landing-experience landing-experience--home">
       <div className="landing-experience__content">
         <p className="landing-eyebrow landing-eyebrow--plain">The experience</p>
         <h2 className="landing-section__heading">Questions that actually start conversations</h2>

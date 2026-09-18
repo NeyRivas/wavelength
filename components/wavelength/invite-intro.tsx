@@ -10,6 +10,12 @@
  * to read as "about to begin" rather than passive waiting. Abstract only
  * — no percentage, no scale, no implied result before either side has
  * answered.
+ *
+ * Polish pass: the connecting trajectory now uses the shared .wl-connector
+ * treatment (gradient stroke + a slow marching-dash flow) — the same
+ * lightweight echo of the Hero/Results wavelength language used by
+ * ReviewIntro, the "Finding your wavelength…" transition, and the "Keep
+ * this wavelength?" dialog. The dots and sparkle are unchanged.
  */
 export function InviteIntro({ aAlias }: { aAlias: string | null }) {
   return (
@@ -19,9 +25,16 @@ export function InviteIntro({ aAlias }: { aAlias: string | null }) {
       <h1 className="invite-intro__heading">Ready to find your wavelength?</h1>
 
       <svg className="invite-intro__motif" viewBox="0 0 260 56" fill="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="inviteConnectorGradient" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="var(--wl-lavender)" />
+            <stop offset="100%" stopColor="var(--wl-blue)" />
+          </linearGradient>
+        </defs>
         <path
+          className="wl-connector"
           d="M18 36c40-28 80-28 112 0s72 28 112 0"
-          stroke="var(--wl-muted)"
+          stroke="url(#inviteConnectorGradient)"
           strokeWidth="1.5"
           strokeDasharray="5 6"
         />

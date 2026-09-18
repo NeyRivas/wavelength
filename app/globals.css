@@ -89,6 +89,34 @@ dialog::backdrop {
    pointed outside the approved palette.
    ═══════════════════════════════════════════════════════════════════════ */
 
+/* ── shared "connector" language (polish pass) ────────────────────────
+   ReviewIntro, InviteIntro, the "Finding your wavelength…" transition,
+   and the "Keep this wavelength?" dialog all already draw the same small
+   motif (a dashed trajectory between two ringed dots). Rather than a
+   second full two-independent-wave system (that treatment is reserved
+   for the Hero and the Results WavelengthIndicator — the most expressive
+   screens), these secondary "relationship moment" screens get a lighter,
+   subtler echo of the same family: a gradient stroke (still exactly
+   lavender→blue, the same two colors used for every A/B dot in the
+   product) with a slow marching-dash flow standing in for a gentle
+   current between two people. Same curve family, same movement logic,
+   same palette — just quieter. */
+.wl-connector {
+  animation: wl-connector-flow 6s linear infinite;
+}
+
+@keyframes wl-connector-flow {
+  to {
+    stroke-dashoffset: -22;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wl-connector {
+    animation: none;
+  }
+}
+
 /* ── "Finding your wavelength…" → "See your results" transition ──────── */
 
 .wavelength-loading {
@@ -197,32 +225,49 @@ dialog::backdrop {
   position: absolute;
   inset: -2rem -3rem -11rem;
   z-index: 0;
-  overflow: hidden;
+  /* No overflow:hidden here (polish pass) — same reasoning as
+     .landing-hero__ambient above: clipping at this box's own edge cut
+     the blur halo off mid-fade. .wl-create's own overflow-x:hidden still
+     contains any horizontal bleed; vertical bleed just fades into
+     ordinary page whitespace above/below this section. */
   pointer-events: none;
 }
 
 .global-summary__ambient-blob {
   position: absolute;
   border-radius: 50%;
-  filter: blur(60px);
-  opacity: 0.3;
+  filter: blur(46px);
   animation: hero-blob-drift 26s ease-in-out infinite;
 }
 
+/* Radial, fading to transparent well inside the shape's own edge (see
+   .landing-hero__ambient-blob-- a/--b for the same technique) instead of
+   a flat 2-stop linear fill, so there's no perceptible boundary even
+   before the blur softens it further. */
 .global-summary__ambient-blob--a {
-  width: 20rem;
-  height: 20rem;
+  width: 24rem;
+  height: 24rem;
   top: -4rem;
   left: 8%;
-  background: linear-gradient(135deg, var(--wl-lavender), var(--wl-pink));
+  background: radial-gradient(
+    circle at 40% 40%,
+    color-mix(in srgb, var(--wl-lavender) 70%, transparent) 0%,
+    color-mix(in srgb, var(--wl-pink) 45%, transparent) 42%,
+    transparent 72%
+  );
 }
 
 .global-summary__ambient-blob--b {
-  width: 18rem;
-  height: 18rem;
+  width: 22rem;
+  height: 22rem;
   bottom: -6rem;
   right: 6%;
-  background: linear-gradient(135deg, var(--wl-mint), var(--wl-blue));
+  background: radial-gradient(
+    circle at 60% 60%,
+    color-mix(in srgb, var(--wl-mint) 65%, transparent) 0%,
+    color-mix(in srgb, var(--wl-blue) 45%, transparent) 42%,
+    transparent 72%
+  );
   animation-duration: 31s;
   animation-direction: alternate-reverse;
 }
@@ -1034,7 +1079,12 @@ dialog::backdrop {
 
 .landing-hero {
   position: relative;
-  max-width: 80rem;
+  /* Ad-rail (polish pass): narrower than .landing-section's 80rem so
+     desktop/laptop widths (1440/1280/1024) keep visible lateral space on
+     both sides — reserved for future advertising, not filled with
+     anything yet. Below the 56rem breakpoint the viewport itself is
+     already narrower than this, so mobile/tablet use the full width. */
+  max-width: 60rem;
   margin: 0 auto;
   padding: clamp(3rem, 8vw, 6rem) clamp(1.5rem, 4vw, 4rem) clamp(4rem, 9vw, 6rem);
   display: grid;
@@ -1138,36 +1188,54 @@ dialog::backdrop {
   position: absolute;
   inset: -4rem -2rem;
   z-index: 0;
-  overflow: hidden;
+  /* No overflow:hidden here (polish pass): a blurred blob's soft halo
+     extends well past its own box, and clipping it at this container's
+     edge was exactly what produced the visible "gradient → hard cut →
+     white" seam. Horizontal bleed is still safely contained one level up
+     by .landing main's own overflow-x:hidden; vertical bleed needs no
+     containment at all (it just fades into ordinary page whitespace). */
   pointer-events: none;
 }
 
 .landing-hero__ambient-blob {
   position: absolute;
   border-radius: 50%;
-  filter: blur(70px);
-  opacity: 0.32;
+  filter: blur(50px);
   animation: hero-blob-drift 30s ease-in-out infinite;
 }
 
 /* Sized/positioned (with deliberate overlap between the two) specifically
    so the CTA — which sits roughly in the vertical middle of the text
    column — has visible gradient behind it, not just the very top/bottom
-   of the section. */
+   of the section. Radial, fading all the way to transparent well inside
+   the shape's own edge (rather than a flat 2-stop linear fill), so the
+   "pastel → softer → very subtle glow → white" transition is baked into
+   the gradient itself — the blur above only smooths the little that's
+   left, instead of doing all the work alone. */
 .landing-hero__ambient-blob--a {
-  width: 30rem;
-  height: 34rem;
+  width: 34rem;
+  height: 38rem;
   top: -4rem;
   left: -6%;
-  background: linear-gradient(135deg, var(--wl-lavender), var(--wl-pink));
+  background: radial-gradient(
+    ellipse at 40% 35%,
+    color-mix(in srgb, var(--wl-lavender) 75%, transparent) 0%,
+    color-mix(in srgb, var(--wl-pink) 55%, transparent) 40%,
+    transparent 72%
+  );
 }
 
 .landing-hero__ambient-blob--b {
-  width: 26rem;
-  height: 30rem;
+  width: 30rem;
+  height: 34rem;
   top: 20rem;
   left: 12%;
-  background: linear-gradient(135deg, var(--wl-mint), var(--wl-blue));
+  background: radial-gradient(
+    ellipse at 60% 60%,
+    color-mix(in srgb, var(--wl-mint) 70%, transparent) 0%,
+    color-mix(in srgb, var(--wl-blue) 50%, transparent) 40%,
+    transparent 72%
+  );
   animation-duration: 35s;
   animation-direction: alternate-reverse;
 }
@@ -1194,30 +1262,40 @@ dialog::backdrop {
 .hero-shape {
   position: absolute;
   border-radius: 50%;
-  filter: blur(26px);
+  filter: blur(34px);
   animation: hero-blob-drift 24s ease-in-out infinite;
 }
 
 /* Gradients built only from the approved palette (Lavender→Pink,
    SkyBlue→Mint, a soft Peach glow) — soft/dimensional rather than a flat
-   single-hue fill, per the "more dimensional" brief. */
+   single-hue fill, per the "more dimensional" brief. Radial, fading to
+   transparent within the shape's own edge (polish pass), so there's no
+   perceptible boundary the way a flat 2-stop linear fill had. */
 .hero-shape--one {
-  width: 22rem;
-  height: 22rem;
+  width: 24rem;
+  height: 24rem;
   top: -7rem;
   right: -6rem;
-  background: linear-gradient(135deg, var(--wl-lavender), var(--wl-pink));
-  opacity: 0.55;
+  background: radial-gradient(
+    circle at 35% 35%,
+    color-mix(in srgb, var(--wl-lavender) 80%, transparent) 0%,
+    color-mix(in srgb, var(--wl-pink) 55%, transparent) 45%,
+    transparent 74%
+  );
   animation-duration: 22s;
 }
 
 .hero-shape--two {
-  width: 20rem;
-  height: 20rem;
+  width: 22rem;
+  height: 22rem;
   bottom: -9rem;
   left: -7rem;
-  background: linear-gradient(135deg, var(--wl-blue), var(--wl-mint));
-  opacity: 0.4;
+  background: radial-gradient(
+    circle at 65% 65%,
+    color-mix(in srgb, var(--wl-blue) 65%, transparent) 0%,
+    color-mix(in srgb, var(--wl-mint) 50%, transparent) 45%,
+    transparent 74%
+  );
   animation-duration: 27s;
   animation-direction: alternate-reverse;
 }
@@ -1424,6 +1502,15 @@ dialog::backdrop {
   align-items: center;
 }
 
+/* Ad-rail (polish pass): only the homepage's "The experience" section gets
+   the narrower measure — for-couples-questions.tsx shares the bare
+   .landing-experience class for its layout but not this modifier, so
+   /for-couples (protected) keeps its existing .landing-section width. */
+.landing-experience--home {
+  max-width: 60rem;
+  margin: 0 auto;
+}
+
 .landing-pill-row {
   display: flex;
   flex-wrap: wrap;
@@ -1447,6 +1534,10 @@ dialog::backdrop {
     color-mix(in srgb, var(--wl-blue) 20%, transparent) 60%,
     transparent 78%
   );
+  /* A touch of blur (polish pass) smooths the last bit of the radial
+     gradient's own transparent fade, on top of the already-transparent
+     78% stop above — belt and suspenders against any hard edge. */
+  filter: blur(10px);
   animation: landing-halo-pulse 10s ease-in-out infinite;
 }
 

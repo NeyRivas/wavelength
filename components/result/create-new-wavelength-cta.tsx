@@ -46,9 +46,16 @@ export function CreateNewWavelengthCta() {
           fill="none"
           aria-hidden="true"
         >
+          <defs>
+            <linearGradient id="dialogConnectorGradient" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="var(--wl-lavender)" />
+              <stop offset="100%" stopColor="var(--wl-blue)" />
+            </linearGradient>
+          </defs>
           <path
+            className="wl-connector"
             d="M14 32c26-20 52-20 72 0s46 20 72 0"
-            stroke="var(--wl-muted)"
+            stroke="url(#dialogConnectorGradient)"
             strokeWidth="1.5"
             strokeDasharray="5 6"
           />
