@@ -18,13 +18,17 @@ export function DifferentSection({
 }) {
   return (
     <section className="result-section" aria-labelledby="different-heading">
-      <h2 id="different-heading">Different Wavelengths</h2>
+      <h2 id="different-heading" className="result-section__heading">
+        Different Wavelengths
+      </h2>
       {questions.length === 0 ? (
-        <p>You matched on everything — no differences to explore this time.</p>
+        <p className="result-section__intro">
+          You matched on everything — no differences to explore this time.
+        </p>
       ) : (
         <>
-          <p>
-            Not matching isn&apos;t a bad thing — it&apos;s just where you see things differently.
+          <p className="result-section__intro">
+            Not matching isn&apos;t a bad thing — here are a few things worth talking about.
           </p>
           {questions.map((q) => (
             <QuestionCompare key={q.id} question={q} aliasA={aliasA} aliasB={aliasB} />

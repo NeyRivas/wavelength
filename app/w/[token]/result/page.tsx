@@ -1,11 +1,36 @@
+import { Fraunces, Nunito_Sans } from "next/font/google";
 import { redirect } from "next/navigation";
 
+import { CreateHeader } from "@/components/questionnaire/create-header";
 import { ResultReveal } from "@/components/result/result-reveal";
 import { ResultView } from "@/components/result/result-view";
 import { HomeNav } from "@/components/wavelength/home-nav";
 import { requireUserId } from "@/lib/supabase/identity";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { buildWavelengthResultView, ResultDataError } from "@/lib/wavelength/result";
+
+/**
+ * Fonts are instantiated here — same per-page pattern as app/create/page.tsx
+ * and the rest of the app/w/[token]/* flow — and applied only to the real,
+ * COMPLETED result view at the bottom of this file. Every earlier
+ * return (not-a-participant, not-yet-COMPLETED redirect, the
+ * ResultDataError fallback) is untouched, still the same bare markup as
+ * before.
+ */
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  style: ["italic"],
+  weight: ["400", "500", "600"],
+  variable: "--font-fraunces",
+  display: "swap",
+});
+
+const nunitoSans = Nunito_Sans({
+  subsets: ["latin"],
+  weight: ["400", "600", "700", "800"],
+  variable: "--font-nunito",
+  display: "swap",
+});
 
 /**
  * The shared result (ARCHITECTURE.md §12 Phase 6) — only ever computed
@@ -112,11 +137,14 @@ export default async function ResultPage({ params }: { params: Promise<{ token: 
   const aliasB = wavelength.participant_b_alias ?? "Participant B";
 
   return (
-    <main>
-      {isParticipantA && <HomeNav />}
-      <ResultReveal>
-        <ResultView view={view} aliasA={aliasA} aliasB={aliasB} />
-      </ResultReveal>
-    </main>
+    <div className={`${fraunces.variable} ${nunitoSans.variable} wl-create`}>
+      <CreateHeader />
+      <main className="create-shell result-shell">
+        <ResultReveal>
+          {isParticipantA && <HomeNav />}
+          <ResultView view={view} aliasA={aliasA} aliasB={aliasB} />
+        </ResultReveal>
+      </main>
+    </div>
   );
 }

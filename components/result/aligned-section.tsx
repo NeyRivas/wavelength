@@ -16,8 +16,10 @@ export function AlignedSection({
 }) {
   return (
     <section className="result-section" aria-labelledby="aligned-heading">
-      <h2 id="aligned-heading">Where You&apos;re Aligned</h2>
-      <p>The questions where you saw eye to eye the most.</p>
+      <h2 id="aligned-heading" className="result-section__heading">
+        Where You&apos;re Aligned
+      </h2>
+      <p className="result-section__intro">The questions where you saw eye to eye the most.</p>
       {questions.map((q) => (
         <QuestionCompare key={q.id} question={q} aliasA={aliasA} aliasB={aliasB} />
       ))}

@@ -25,7 +25,7 @@ export function ResultActions({
     <section className="result-actions" aria-label="Result actions">
       <DownloadResultButton view={view} aliasA={aliasA} aliasB={aliasB} />
       <ShareResultButton view={view} aliasA={aliasA} aliasB={aliasB} />
-      <CreateNewWavelengthAction />
+      <CreateNewWavelengthAction triggerClassName="result-action-button" />
     </section>
   );
 }

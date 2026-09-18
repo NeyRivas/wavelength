@@ -29,7 +29,7 @@ export function HomeNav() {
   }
 
   return (
-    <Link href="/create" onClick={handleClick}>
+    <Link href="/create" className="result-startnew-link" onClick={handleClick}>
       Wavelength
     </Link>
   );

@@ -17,12 +17,20 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
  * draft.ts) only ever inserts a brand-new row scoped to the caller's own
  * id, so there is nothing here that could reopen, modify, or delete it.
  */
-export function CreateNewWavelengthAction() {
+export function CreateNewWavelengthAction({
+  triggerClassName,
+}: {
+  /** Passed straight through to ConfirmDialog's trigger button — see its
+   * own doc comment. Omitted by the one other caller (B's locked
+   * "Nice try!" page), so that usage is completely unaffected. */
+  triggerClassName?: string;
+}) {
   const router = useRouter();
 
   return (
     <ConfirmDialog
       triggerLabel="Create your own Wavelength"
+      triggerClassName={triggerClassName}
       title="Start a new Wavelength?"
       description="Make sure you've saved or shared your current result first. You may lose access to this completed result when you start a new Wavelength."
       onConfirm={() => router.push("/create")}

@@ -1,7 +1,6 @@
-/* Minimal, functional baseline — not a design system. Phase 6 needs this
-   for the required "Finding your wavelength…" animation and for the result
-   screen's readability/responsiveness; earlier phases' markup is untouched
-   and simply inherits these resets. */
+/* Minimal, functional baseline — not a design system, but shared by every
+   page underneath whatever namespace (.landing, .wl-create) actually wraps
+   it. */
 
 :root {
   --color-text: #1a1a1a;
@@ -9,14 +8,6 @@
   --color-bg: #ffffff;
   --color-surface: #f6f7f9;
   --color-border: #e1e4e8;
-  --color-accent: #4361ee;
-
-  /* Alignment levels — deliberately no red anywhere: differences are never
-     framed as failures, so "Low Alignment" gets a neutral slate, not a
-     warning color. */
-  --align-high: #2f9e44;
-  --align-mixed: #b8860b;
-  --align-low: #5c6773;
 }
 
 *,
@@ -60,112 +51,6 @@ select {
   font: inherit;
 }
 
-/* ── result screen ──────────────────────────────────────────────────── */
-
-.global-summary {
-  text-align: center;
-  padding: 1.5rem 0 2rem;
-}
-
-.global-summary__score {
-  font-size: 3.5rem;
-  font-weight: 700;
-  margin: 0.5rem 0;
-}
-
-.badge {
-  display: inline-block;
-  padding: 0.25rem 0.75rem;
-  border-radius: 999px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #fff;
-}
-
-.badge--high {
-  background: var(--align-high);
-}
-
-.badge--mixed {
-  background: var(--align-mixed);
-}
-
-.badge--low {
-  background: var(--align-low);
-}
-
-.category-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
-  gap: 0.75rem;
-  margin: 1rem 0 2rem;
-}
-
-.category-card {
-  border: 1px solid var(--color-border);
-  border-radius: 0.5rem;
-  padding: 0.75rem;
-  background: var(--color-surface);
-}
-
-.category-card__score {
-  font-size: 1.5rem;
-  font-weight: 700;
-}
-
-.question-compare {
-  border: 1px solid var(--color-border);
-  border-radius: 0.5rem;
-  padding: 0.875rem 1rem;
-  margin-bottom: 0.75rem;
-}
-
-.question-compare__answers {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
-  margin-top: 0.5rem;
-}
-
-@media (max-width: 28rem) {
-  .question-compare__answers {
-    grid-template-columns: 1fr;
-  }
-}
-
-.question-compare__who {
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: var(--color-muted);
-  margin: 0 0 0.125rem;
-}
-
-.result-section {
-  margin: 2rem 0;
-}
-
-/* ── result actions (download / share / create-new) ─────────────────── */
-/* Deliberately plain — same button reset as the rest of the app, no
-   elevated styling — so this row never competes with the percentage
-   above it for visual weight. */
-
-.result-actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.75rem;
-  margin: 0 0 1.5rem;
-}
-
-.result-actions button {
-  padding: 0.5rem 1rem;
-  border: 1px solid var(--color-border);
-  border-radius: 0.5rem;
-  background: var(--color-surface);
-  color: var(--color-text);
-}
-
 /* ── confirm dialog (components/ui/confirm-dialog.tsx) ───────────────── */
 
 dialog {
@@ -190,55 +75,407 @@ dialog::backdrop {
   margin-top: 1.25rem;
 }
 
-/* ── "Finding your wavelength…" transition ─────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════
+   /w/[token]/result — the transition + final result screen. Reuses
+   .wl-create, CreateHeader and .create-shell (the same product namespace
+   and shell every other app/w/[token]/* screen already uses), so this is
+   styled as the last step of the same flow rather than a new surface.
+   Every class below (.wavelength-loading*, .global-summary*, .badge*,
+   .category-*, .question-compare*, .result-*) already existed pre-redesign
+   with plain/functional styling only — nothing here changes what data any
+   of these render (still exactly `view`/`aliasA`/`aliasB` as computed by
+   lib/wavelength/result.ts + lib/scoring/score.ts), only their appearance
+   and, for .badge/.wavelength-loading, unused now-dead color tokens that
+   pointed outside the approved palette.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── "Finding your wavelength…" → "See your results" transition ──────── */
 
 .wavelength-loading {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
+  gap: 1.5rem;
   min-height: 60vh;
   text-align: center;
 }
 
-.wavelength-pulse {
-  width: 5rem;
-  height: 5rem;
+.wavelength-loading__motif {
+  display: block;
+  width: min(16rem, 100%);
+  height: auto;
 }
 
-.wavelength-pulse circle {
-  fill: none;
-  stroke: var(--color-accent);
-  stroke-width: 2;
-  transform-origin: center;
-  animation: wavelength-ping 1.8s ease-out infinite;
+.wavelength-loading__dot {
+  animation: wavelength-converge-a 1.4s ease-in-out infinite alternate;
 }
 
-.wavelength-pulse circle:nth-child(2) {
-  animation-delay: 0.4s;
+.wavelength-loading__dot--b {
+  animation-name: wavelength-converge-b;
 }
 
-.wavelength-pulse circle:nth-child(3) {
-  animation-delay: 0.8s;
-}
-
-@keyframes wavelength-ping {
-  0% {
-    transform: scale(0.3);
-    opacity: 0.9;
+@keyframes wavelength-converge-a {
+  from {
+    transform: translateX(0);
   }
-  100% {
-    transform: scale(1.4);
-    opacity: 0;
+  to {
+    transform: translateX(80px);
   }
+}
+
+@keyframes wavelength-converge-b {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-80px);
+  }
+}
+
+.wavelength-loading__glow {
+  opacity: 0;
+  transform: scale(0.6);
+  transform-origin: 100px 40px;
+  transition:
+    opacity 0.4s ease,
+    transform 0.4s ease;
+}
+
+.wavelength-loading--ready .wavelength-loading__dot {
+  animation: none;
+  transform: translateX(80px);
+}
+
+.wavelength-loading--ready .wavelength-loading__dot--b {
+  transform: translateX(-80px);
+}
+
+.wavelength-loading--ready .wavelength-loading__glow {
+  opacity: 0.5;
+  transform: scale(1);
+}
+
+.wavelength-loading__text {
+  margin: 0;
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 1.25rem;
+  color: var(--wl-ink);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .wavelength-pulse circle {
+  .wavelength-loading__dot {
     animation: none;
-    opacity: 0.6;
+    transform: translateX(80px);
   }
+
+  .wavelength-loading__dot--b {
+    transform: translateX(-80px);
+  }
+}
+
+/* ── overall result hero ──────────────────────────────────────────────── */
+
+.global-summary {
+  text-align: center;
+  padding: 1rem 0 2.5rem;
+}
+
+.global-summary__eyebrow {
+  margin: 0 0 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--wl-muted);
+}
+
+.global-summary__heading {
+  margin: 0 0 1.5rem;
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(1.75rem, 5vw, 2.25rem);
+  color: var(--wl-ink);
+}
+
+.wavelength-indicator {
+  display: block;
+  margin: 0 auto 1.25rem;
+  max-width: 20rem;
+}
+
+/* Percentage is deliberately smaller than the badge/interpretation below
+   it — secondary confirmation of the human-readable result, not the
+   headline number. */
+.global-summary__score {
+  margin: 0.75rem 0 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--wl-ink);
+}
+
+.global-summary__interpretation {
+  margin: 1rem auto 0;
+  max-width: 28rem;
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 1.25rem;
+  line-height: 1.5;
+  color: var(--wl-ink);
+}
+
+/* ── alignment level badge ─────────────────────────────────────────────── */
+/* Approved pastel tones, dark ink text (same "soft pill" language used
+   throughout — never white-on-pastel). No color implies "bad": mint/
+   peach/blue are equally pleasant tones, not a red-to-green severity
+   ramp. */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.375rem 1rem;
+  border-radius: 999px;
+  font-family: var(--font-nunito), system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--wl-ink);
+}
+
+.badge--high {
+  background: var(--wl-mint);
+}
+
+.badge--mixed {
+  background: var(--wl-peach);
+}
+
+.badge--low {
+  background: var(--wl-blue);
+}
+
+/* ── section heading/intro (Categories, Where You're Aligned, Different
+   Wavelengths, All Questions) ────────────────────────────────────────── */
+
+.result-section {
+  margin: 2.5rem 0;
+}
+
+.result-section__heading {
+  margin: 0 0 0.5rem;
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(1.375rem, 4vw, 1.625rem);
+  color: var(--wl-ink);
+  text-align: center;
+}
+
+.result-section__intro {
+  margin: 0 0 1.25rem;
+  font-size: 0.9375rem;
+  color: var(--wl-muted);
+  text-align: center;
+}
+
+/* ── category grid ─────────────────────────────────────────────────────── */
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 0.875rem;
+  margin: 0 0 1rem;
+}
+
+.category-card {
+  padding: 1.125rem 1.25rem;
+  border-radius: 1.25rem;
+  background: color-mix(in srgb, var(--wl-lavender) 22%, white);
+  text-align: center;
+}
+
+.category-card--lavender {
+  background: color-mix(in srgb, var(--wl-lavender) 22%, white);
+}
+
+.category-card--blue {
+  background: color-mix(in srgb, var(--wl-blue) 22%, white);
+}
+
+.category-card--mint {
+  background: color-mix(in srgb, var(--wl-mint) 22%, white);
+}
+
+.category-card--pink {
+  background: color-mix(in srgb, var(--wl-pink) 22%, white);
+}
+
+.category-card--peach {
+  background: color-mix(in srgb, var(--wl-peach) 22%, white);
+}
+
+.category-card__label {
+  margin: 0 0 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--wl-ink);
+}
+
+.category-card__score {
+  margin: 0 0 0.625rem;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--wl-ink);
+}
+
+/* ── question comparison card (Aligned / Different / All Questions) ──── */
+
+.question-compare {
+  padding: 1.25rem 1.375rem;
+  border-radius: 1.25rem;
+  background: #ffffff;
+  border: 1px solid var(--color-border);
+  margin-bottom: 1rem;
+}
+
+.question-compare__question {
+  margin: 0 0 1rem;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--wl-ink);
+}
+
+.question-compare__answers {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+@media (max-width: 28rem) {
+  .question-compare__answers {
+    grid-template-columns: 1fr;
+  }
+}
+
+.question-compare__who {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--wl-muted);
+  margin: 0 0 0.375rem;
+}
+
+/* A = lavender, B = blue — the same two colors the two-dot "wavelength"
+   motif elsewhere in the product (ReviewIntro, InviteIntro, this screen's
+   own loading transition) already uses for "the two participants". */
+.question-compare__pill {
+  margin: 0;
+  padding: 0.5rem 0.875rem;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--wl-ink);
+}
+
+.question-compare__pill--a {
+  background: color-mix(in srgb, var(--wl-lavender) 45%, white);
+}
+
+.question-compare__pill--b {
+  background: color-mix(in srgb, var(--wl-blue) 45%, white);
+}
+
+.question-compare__score {
+  margin: 0.875rem 0 0;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--wl-muted);
+}
+
+/* ── All Questions: collapsed-by-default category groups ─────────────── */
+
+.category-detail {
+  margin-bottom: 0.75rem;
+  border-radius: 1.25rem;
+  background: var(--color-surface);
+  overflow: hidden;
+}
+
+.category-detail__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  font-weight: 700;
+  font-size: 0.9375rem;
+  color: var(--wl-ink);
+  cursor: pointer;
+  list-style: none;
+}
+
+.category-detail__summary::-webkit-details-marker {
+  display: none;
+}
+
+.category-detail__body {
+  padding: 0.25rem 1.25rem 1.25rem;
+}
+
+/* ── result actions (download / share / create-new) ─────────────────── */
+/* A consistent row of quiet, outlined pill buttons — no single one reads
+   as "the" primary action, since none of the three moves the flow
+   forward the way a CTA elsewhere does; this is the terminal screen. */
+
+.result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin: 0 0 2.5rem;
+}
+
+.result-action-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  padding: 0 1.5rem;
+  border: 1.5px solid var(--wl-ink);
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--wl-ink);
+  font-family: var(--font-nunito), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 0.9375rem;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.result-action-button:hover {
+  background: color-mix(in srgb, var(--wl-lavender) 35%, white);
+}
+
+.result-action-button:active {
+  transform: translateY(1px);
+}
+
+/* ── "start a new Wavelength" quiet link (A only, home-nav.tsx) ──────── */
+
+.result-startnew-link {
+  display: inline-block;
+  margin: 0 0 1.5rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--wl-muted);
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════

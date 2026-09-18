@@ -14,6 +14,7 @@ import { useId, useRef } from "react";
  */
 export function ConfirmDialog({
   triggerLabel,
+  triggerClassName,
   title,
   description,
   confirmLabel = "Continue",
@@ -21,6 +22,12 @@ export function ConfirmDialog({
   onConfirm,
 }: {
   triggerLabel: string;
+  /** Optional class for the trigger button only — the dialog itself
+   * (title/description/actions) is unaffected either way. Omitted by
+   * every existing caller except the Result page's "Create your own
+   * Wavelength" action, so every other trigger button renders exactly as
+   * before. */
+  triggerClassName?: string;
   title: string;
   description: string;
   confirmLabel?: string;
@@ -32,7 +39,11 @@ export function ConfirmDialog({
 
   return (
     <>
-      <button type="button" onClick={() => dialogRef.current?.showModal()}>
+      <button
+        type="button"
+        className={triggerClassName}
+        onClick={() => dialogRef.current?.showModal()}
+      >
         {triggerLabel}
       </button>
       <dialog ref={dialogRef} aria-labelledby={headingId}>
