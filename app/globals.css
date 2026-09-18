@@ -89,34 +89,6 @@ dialog::backdrop {
    pointed outside the approved palette.
    ═══════════════════════════════════════════════════════════════════════ */
 
-/* ── shared "connector" language (polish pass) ────────────────────────
-   ReviewIntro, InviteIntro, the "Finding your wavelength…" transition,
-   and the "Keep this wavelength?" dialog all already draw the same small
-   motif (a dashed trajectory between two ringed dots). Rather than a
-   second full two-independent-wave system (that treatment is reserved
-   for the Hero and the Results WavelengthIndicator — the most expressive
-   screens), these secondary "relationship moment" screens get a lighter,
-   subtler echo of the same family: a gradient stroke (still exactly
-   lavender→blue, the same two colors used for every A/B dot in the
-   product) with a slow marching-dash flow standing in for a gentle
-   current between two people. Same curve family, same movement logic,
-   same palette — just quieter. */
-.wl-connector {
-  animation: wl-connector-flow 6s linear infinite;
-}
-
-@keyframes wl-connector-flow {
-  to {
-    stroke-dashoffset: -22;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .wl-connector {
-    animation: none;
-  }
-}
-
 /* ── "Finding your wavelength…" → "See your results" transition ──────── */
 
 .wavelength-loading {
@@ -2053,7 +2025,45 @@ dialog::backdrop {
   margin: 2.5rem auto 0;
   width: min(22rem, 100%);
   height: auto;
-  color: var(--color-border);
+}
+
+/* Wave A / Wave B (polish pass): same family as the homepage Hero's
+   .hero-wave--a/--b — independent ease-in-out/alternate drift, different
+   durations so their relative phase keeps evolving — just a narrower
+   translateX range, sized for this smaller supporting motif. Static
+   shapes already differ (see how-it-works-hero.tsx), so they stay
+   distinguishable with the animation stopped too. */
+.hiw-hero-wave--a {
+  animation: hiw-hero-wave-drift-a 7.5s ease-in-out infinite alternate;
+}
+
+.hiw-hero-wave--b {
+  animation: hiw-hero-wave-drift-b 9.5s ease-in-out infinite alternate;
+}
+
+@keyframes hiw-hero-wave-drift-a {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-14px);
+  }
+}
+
+@keyframes hiw-hero-wave-drift-b {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(11px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hiw-hero-wave--a,
+  .hiw-hero-wave--b {
+    animation: none;
+  }
 }
 
 /* ── steps ────────────────────────────────────────────────────────────── */
@@ -2284,6 +2294,42 @@ dialog::backdrop {
   margin: 3rem auto 0;
   width: min(18rem, 100%);
   height: auto;
+}
+
+/* Wave A / Wave B (polish pass): same family as the homepage Hero and
+   how-it-works-hero.tsx's echo, contained to the narrowest drift range of
+   the three — this page's motif is meant to read as the quietest. */
+.fc-hero-wave--a {
+  animation: fc-hero-wave-drift-a 7.5s ease-in-out infinite alternate;
+}
+
+.fc-hero-wave--b {
+  animation: fc-hero-wave-drift-b 9.5s ease-in-out infinite alternate;
+}
+
+@keyframes fc-hero-wave-drift-a {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-10px);
+  }
+}
+
+@keyframes fc-hero-wave-drift-b {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fc-hero-wave--a,
+  .fc-hero-wave--b {
+    animation: none;
+  }
 }
 
 /* ── "You know each other. But do you think alike?" ─────────────────── */

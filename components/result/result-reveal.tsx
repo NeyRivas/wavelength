@@ -48,16 +48,9 @@ export function ResultReveal({ children }: { children: React.ReactNode }) {
         fill="none"
         aria-hidden="true"
       >
-        <defs>
-          <linearGradient id="loadingConnectorGradient" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="var(--wl-lavender)" />
-            <stop offset="100%" stopColor="var(--wl-blue)" />
-          </linearGradient>
-        </defs>
         <path
-          className="wl-connector"
           d="M20 40c30-24 60-24 80 0s50 24 80 0"
-          stroke="url(#loadingConnectorGradient)"
+          stroke="var(--wl-muted)"
           strokeWidth="1.5"
           strokeDasharray="5 6"
         />

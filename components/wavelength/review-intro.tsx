@@ -9,28 +9,14 @@
  * B's (right) is a dashed, unfilled ring, waiting to land somewhere on
  * the same line. Abstract only — not a chart, not a score, not a
  * literal spectrum with any position/value.
- *
- * Polish pass: the connecting trajectory now uses the shared
- * .wl-connector treatment (gradient stroke + a slow marching-dash flow)
- * — the same lightweight echo of the Hero/Results wavelength language
- * used by InviteIntro, the "Finding your wavelength…" transition, and
- * the "Keep this wavelength?" dialog. The dots themselves and what they
- * mean are completely unchanged.
  */
 export function ReviewIntro() {
   return (
     <div className="share-intro">
       <svg className="share-intro__motif" viewBox="0 0 260 56" fill="none" aria-hidden="true">
-        <defs>
-          <linearGradient id="reviewConnectorGradient" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="var(--wl-lavender)" />
-            <stop offset="100%" stopColor="var(--wl-blue)" />
-          </linearGradient>
-        </defs>
         <path
-          className="wl-connector"
           d="M18 36c40-28 80-28 112 0s72 28 112 0"
-          stroke="url(#reviewConnectorGradient)"
+          stroke="var(--wl-muted)"
           strokeWidth="1.5"
           strokeDasharray="5 6"
         />
