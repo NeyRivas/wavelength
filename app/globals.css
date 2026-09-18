@@ -177,10 +177,75 @@ dialog::backdrop {
 }
 
 /* ── overall result hero ──────────────────────────────────────────────── */
+/* Visual-signature pass: the same "ambient gradient blobs behind a glass
+   panel" language the Hero and Experience sections use, carried into
+   Results — one glass moment for the whole global result (heading, wave
+   visualization, badge, score, interpretation), not several nested
+   layers. .global-summary needs position:relative to contain the
+   absolutely-positioned ambient blobs; the blobs are sized to bleed well
+   past this section's own bottom edge so the secondary action buttons
+   right after it (.result-secondary-button) sit on the same living
+   gradient too. */
 
 .global-summary {
+  position: relative;
   text-align: center;
   padding: 1rem 0 2.5rem;
+}
+
+.global-summary__ambient {
+  position: absolute;
+  inset: -2rem -3rem -11rem;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.global-summary__ambient-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.3;
+  animation: hero-blob-drift 26s ease-in-out infinite;
+}
+
+.global-summary__ambient-blob--a {
+  width: 20rem;
+  height: 20rem;
+  top: -4rem;
+  left: 8%;
+  background: linear-gradient(135deg, var(--wl-lavender), var(--wl-pink));
+}
+
+.global-summary__ambient-blob--b {
+  width: 18rem;
+  height: 18rem;
+  bottom: -6rem;
+  right: 6%;
+  background: linear-gradient(135deg, var(--wl-mint), var(--wl-blue));
+  animation-duration: 31s;
+  animation-direction: alternate-reverse;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .global-summary__ambient-blob {
+    animation: none;
+  }
+}
+
+/* The one Results glass panel: translucent white over the ambient blobs
+   above, containing every part of the global result so nothing here is
+   read as a second, separate glass layer. */
+.global-summary__glass {
+  position: relative;
+  z-index: 1;
+  padding: 2rem clamp(1.25rem, 5vw, 2.5rem);
+  border-radius: 1.5rem;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: 0 30px 60px -28px rgba(24, 24, 32, 0.22);
 }
 
 .global-summary__eyebrow {
@@ -204,7 +269,57 @@ dialog::backdrop {
 .wavelength-indicator {
   display: block;
   margin: 0 auto 1.25rem;
-  max-width: 20rem;
+  max-width: 22rem;
+  overflow: visible;
+}
+
+/* Two wavelengths (A + B), each drifting on its own independent CSS
+ * animation — see components/result/wavelength-indicator.tsx for how
+ * Wave B's duration is derived from the real score (near-identical to
+ * Wave A's at a high score, increasingly slower/more independent as
+ * score drops). The SVG root's own default overflow:hidden clips
+ * anything that drifts past the visible viewBox, so the paths are simply
+ * drawn wider than it (no explicit clip-path needed here, unlike the
+ * Hero's circular glass surface). */
+.wavelength-wave--a {
+  animation: wavelength-wave-drift-a 4.5s ease-in-out infinite alternate;
+}
+
+.wavelength-wave--b {
+  animation-name: wavelength-wave-drift-b;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+  /* animation-duration is set inline per score — see the component. */
+}
+
+@keyframes wavelength-wave-drift-a {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-9px);
+  }
+}
+
+@keyframes wavelength-wave-drift-b {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(8px);
+  }
+}
+
+.wavelength-indicator__glow {
+  filter: blur(14px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wavelength-wave--a,
+  .wavelength-wave--b {
+    animation: none;
+  }
 }
 
 /* Percentage is deliberately smaller than the badge/interpretation below
@@ -483,10 +598,12 @@ dialog::backdrop {
   box-shadow: 0 4px 10px -6px color-mix(in srgb, var(--wl-lavender) 75%, transparent);
 }
 
-/* Noticeably smaller and quieter than the primary CTA — a light neutral
-   outline instead of ink, smaller type, tighter padding — while staying
-   comfortably tappable (2.5rem min-height clears typical mobile tap-
-   target guidance with room for its own padding/gap). */
+/* Noticeably smaller and quieter than the primary CTA — a light glass
+   touch (translucent white + a soft blur), noticeably less intense than
+   the Hero's own .landing-button--glass, since this sits below the
+   global-summary glass panel and its ambient blobs bleeding down behind
+   it — while staying comfortably tappable (2.5rem min-height clears
+   typical mobile tap-target guidance with room for its own padding/gap). */
 .result-secondary-button {
   display: inline-flex;
   align-items: center;
@@ -494,9 +611,11 @@ dialog::backdrop {
   gap: 0.375rem;
   min-height: 2.5rem;
   padding: 0 1.125rem;
-  border: 1px solid var(--color-border);
+  border: 1px solid rgba(255, 255, 255, 0.7);
   border-radius: 999px;
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   color: var(--wl-muted);
   font-family: var(--font-nunito), system-ui, sans-serif;
   font-weight: 700;
@@ -509,7 +628,7 @@ dialog::backdrop {
 }
 
 .result-secondary-button:hover {
-  background: color-mix(in srgb, var(--wl-lavender) 25%, white);
+  background: color-mix(in srgb, var(--wl-lavender) 30%, white);
   color: var(--wl-ink);
 }
 
@@ -748,6 +867,44 @@ dialog::backdrop {
   color: var(--wl-ink);
 }
 
+/* Hero CTA glass treatment (visual-signature pass) — additive to
+   .landing-button--primary, applied only on the Hero's own CTA link
+   (components/landing/landing-hero.tsx). Every other page/section using
+   .landing-button--primary alone (the header, /for-couples' hero) is
+   completely unaffected. A translucent surface, not a flat ink pill:
+   ~50% white + backdrop blur + a delicate border + an inset top
+   highlight (the "glass edge catching light") + a soft shadow. Ink text
+   for contrast against the now-light surface (--primary's white text
+   would fail contrast here). The hero's new ambient gradient blobs
+   behind it are what make this actually read as glass instead of flat
+   grey — see .landing-hero__ambient above. */
+.landing-button--glass {
+  background: rgba(255, 255, 255, 0.5);
+  color: var(--wl-ink);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow:
+    0 14px 32px -14px rgba(24, 24, 32, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+}
+
+.landing-button--glass:hover {
+  background: rgba(255, 255, 255, 0.68);
+  box-shadow:
+    0 18px 38px -14px rgba(24, 24, 32, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  transform: translateY(-1px);
+}
+
+.landing-button--glass:active {
+  transform: translateY(0);
+}
+
 .landing-pill {
   display: inline-block;
   padding: 0.5rem 1.125rem;
@@ -969,17 +1126,64 @@ dialog::backdrop {
   background: var(--wl-mint);
 }
 
-/* ── hero illustration ────────────────────────────────────────────────
+/* ── hero ambient background ──────────────────────────────────────────
+   Two large, very soft gradient blobs spanning the WHOLE hero section
+   (not just the illustration column) — so the glass CTA in the text
+   column has living gradient underneath it too, not a flat white
+   background (visual-signature pass: "si el glass no se percibe porque
+   está sobre un fondo blanco plano, ajusta la composición"). Kept low-
+   opacity/heavily-blurred so body text stays fully readable. */
+
+.landing-hero__ambient {
+  position: absolute;
+  inset: -4rem -2rem;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.landing-hero__ambient-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(70px);
+  opacity: 0.32;
+  animation: hero-blob-drift 30s ease-in-out infinite;
+}
+
+/* Sized/positioned (with deliberate overlap between the two) specifically
+   so the CTA — which sits roughly in the vertical middle of the text
+   column — has visible gradient behind it, not just the very top/bottom
+   of the section. */
+.landing-hero__ambient-blob--a {
+  width: 30rem;
+  height: 34rem;
+  top: -4rem;
+  left: -6%;
+  background: linear-gradient(135deg, var(--wl-lavender), var(--wl-pink));
+}
+
+.landing-hero__ambient-blob--b {
+  width: 26rem;
+  height: 30rem;
+  top: 20rem;
+  left: 12%;
+  background: linear-gradient(135deg, var(--wl-mint), var(--wl-blue));
+  animation-duration: 35s;
+  animation-direction: alternate-reverse;
+}
+
+/* ── hero illustration: two wavelengths ───────────────────────────────
    Three soft, animated gradient blobs (CSS) behind a restrained glass
-   surface (CSS) behind one inline SVG that draws three colored arcs, a
-   bullseye, an animated gradient "wavelength" trajectory between two
-   gently bobbing ringed dots, and a handful of static scattered dots.
-   Visual-exploration pass: gradients/animation/glass added on top of the
-   original hand-reproduced composition — see git history for the earlier,
-   fully static version this replaces. */
+   surface (CSS) behind one inline SVG. The SVG's focal content is now
+   two independently-animated wave paths — "Wave A" and "Wave B", each
+   with its own participant dot — drifting toward and away from phase
+   inside the glass circle, plus a slow ambient sync-glow pulse. See
+   components/landing/landing-hero.tsx for how the wave shapes/dot
+   positions are computed. */
 
 .landing-hero__illustration {
   position: relative;
+  z-index: 1;
   min-height: 26rem;
   /* No height: 100% here — with align-items: center on .landing-hero,
      that would stretch this box to match the (taller) text column's
@@ -1067,45 +1271,69 @@ dialog::backdrop {
   height: 100%;
 }
 
-/* The "living wavelength": a marching-dash flow along the gradient
-   trajectory (reads as motion/energy, not a static dashed guideline) plus
-   a small, slow, out-of-phase vertical bob on each participant dot.
-   transform-box/-origin keep each dot bobbing around its own center
-   rather than the SVG viewport's origin. */
-.hero-wave-path {
-  animation: hero-wave-flow 5s linear infinite;
+/* Two wavelengths, two rhythms: each wave + its dot drifts back and
+   forth on its OWN independent duration (7.5s vs 9.5s, different
+   direction), so their relative phase keeps evolving — sometimes closer,
+   sometimes farther apart — without ever being scripted to a specific
+   "synced" frame. The two waves' shapes (amplitude/frequency/phase) also
+   differ statically, so they stay visually distinguishable even with the
+   animation fully stopped (prefers-reduced-motion, below). */
+.hero-wave--a {
+  animation: hero-wave-drift-a 7.5s ease-in-out infinite alternate;
 }
 
-@keyframes hero-wave-flow {
+.hero-wave--b {
+  animation: hero-wave-drift-b 9.5s ease-in-out infinite alternate;
+}
+
+@keyframes hero-wave-drift-a {
+  from {
+    transform: translateX(0);
+  }
   to {
-    stroke-dashoffset: -26;
+    transform: translateX(-45px);
   }
 }
 
-.hero-wave-dot {
+@keyframes hero-wave-drift-b {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(35px);
+  }
+}
+
+/* A recurring, soft "moment of alignment" — pulses on its own slower,
+   independent cycle rather than being precisely timed to the two waves'
+   actual relative phase (which would need JS); artistically it still
+   reads as "every so often, a moment of connection". */
+.hero-sync-glow {
   transform-box: fill-box;
   transform-origin: center;
-  animation: hero-wave-bob 4.5s ease-in-out infinite;
+  filter: blur(20px);
+  opacity: 0.15;
+  animation: hero-sync-pulse 11s ease-in-out infinite;
 }
 
-.hero-wave-dot--b {
-  animation-delay: 1.4s;
-}
-
-@keyframes hero-wave-bob {
+@keyframes hero-sync-pulse {
   0%,
   100% {
-    transform: translateY(0);
+    opacity: 0.15;
+    transform: scale(0.85);
   }
   50% {
-    transform: translateY(-5px);
+    opacity: 0.4;
+    transform: scale(1.1);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .hero-shape,
-  .hero-wave-path,
-  .hero-wave-dot {
+  .landing-hero__ambient-blob,
+  .hero-wave--a,
+  .hero-wave--b,
+  .hero-sync-glow {
     animation: none;
   }
 }
@@ -1219,6 +1447,25 @@ dialog::backdrop {
     color-mix(in srgb, var(--wl-blue) 20%, transparent) 60%,
     transparent 78%
   );
+  animation: landing-halo-pulse 10s ease-in-out infinite;
+}
+
+@keyframes landing-halo-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.06);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-experience__halo {
+    animation: none;
+  }
 }
 
 .landing-demo {
@@ -1228,11 +1475,18 @@ dialog::backdrop {
   text-align: center;
 }
 
+/* A translucent glass surface rather than a flat pastel fill — the halo
+   behind it (above) is what shows through, so "hay algo vivo detrás de
+   esta superficie" reads clearly. Inner content (options/scale pills)
+   stays fully opaque white for legibility regardless. */
 .landing-demo__card {
   padding: 1.75rem;
   border-radius: 1.25rem;
-  background: var(--wl-pink);
-  box-shadow: 0 30px 60px rgba(24, 24, 32, 0.12);
+  background: color-mix(in srgb, var(--wl-pink) 55%, transparent);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: 0 30px 60px -20px rgba(24, 24, 32, 0.2);
   text-align: left;
   /* Card tint crossfades instead of cutting abruptly when the active
      example changes (see .landing-demo__card--* below). */
@@ -1245,19 +1499,19 @@ dialog::backdrop {
    selected below), so a selected pill never blends into a same-hue card
    background. */
 .landing-demo__card--pink {
-  background: var(--wl-pink);
+  background: color-mix(in srgb, var(--wl-pink) 55%, transparent);
 }
 
 .landing-demo__card--blue {
-  background: var(--wl-blue);
+  background: color-mix(in srgb, var(--wl-blue) 55%, transparent);
 }
 
 .landing-demo__card--mint {
-  background: var(--wl-mint);
+  background: color-mix(in srgb, var(--wl-mint) 55%, transparent);
 }
 
 .landing-demo__card--lavender {
-  background: var(--wl-lavender);
+  background: color-mix(in srgb, var(--wl-lavender) 55%, transparent);
 }
 
 .landing-demo__head {
@@ -1282,6 +1536,11 @@ dialog::backdrop {
 .landing-demo__dots {
   display: flex;
   align-items: center;
+  padding: 0.1875rem 0.375rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 
 /* Real carousel controls now (feedback pass) — each is a button with a
@@ -2448,6 +2707,14 @@ dialog::backdrop {
   --wl-muted: var(--color-muted);
 
   min-height: 100vh;
+  /* Visual-signature pass: the Result page's new ambient gradient blobs
+     (.global-summary__ambient) deliberately bleed a few rem past their
+     own section's edges for a soft, edge-to-edge wash — same technique,
+     and same fix, as .landing main's own overflow-x:hidden (this
+     namespace previously never needed it, since nothing here bled past
+     .create-shell's own bounds before). Horizontal-bleed containment
+     only; never affects in-bounds layout/appearance on any screen. */
+  overflow-x: hidden;
   background: #fdfdfd;
   color: var(--wl-ink);
   font-family: var(--font-nunito), system-ui, sans-serif;

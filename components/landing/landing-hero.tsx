@@ -7,27 +7,104 @@ const AVATARS: { label: string; className: string }[] = [
   { label: "D", className: "landing-avatar--mint" },
 ];
 
+const WAVE_START_X = -60;
+const WAVE_WIDTH = 520;
+
+/** A plain sine polyline, computed once at render time (this stays a
+ * Server Component — no client JS). Same technique as
+ * components/result/wavelength-indicator.tsx's buildSinePath, just
+ * parametrized for this illustration's own wider canvas (the path is
+ * drawn well past both edges of the visible glass circle so the CSS
+ * translateX drift below never reveals empty space). */
+function buildWavePath(
+  baseline: number,
+  amplitude: number,
+  periods: number,
+  phase: number,
+  points = 56,
+): string {
+  const segments: string[] = [];
+  for (let i = 0; i <= points; i++) {
+    const x = WAVE_START_X + (i / points) * WAVE_WIDTH;
+    const theta = (i / points) * periods * 2 * Math.PI + phase;
+    const y = baseline + amplitude * Math.sin(theta);
+    segments.push(`${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`);
+  }
+  return segments.join(" ");
+}
+
+function waveY(baseline: number, amplitude: number, periods: number, phase: number, x: number) {
+  const theta = ((x - WAVE_START_X) / WAVE_WIDTH) * periods * 2 * Math.PI + phase;
+  return baseline + amplitude * Math.sin(theta);
+}
+
+// Wave A ("Person A") and Wave B ("Person B") — deliberately different
+// amplitude/frequency/phase so the two are visually distinct even under
+// prefers-reduced-motion (with the CSS animation below stopped, these two
+// static shapes alone still read as "two different rhythms"). Each then
+// drifts at its own independent CSS animation speed (app/globals.css:
+// hero-wave-drift-a/-b — different durations, no shared timing), so their
+// relative phase continuously evolves: sometimes closer, sometimes
+// farther apart, never mechanically synced or permanently apart.
+const WAVE_A_BASELINE = 200;
+const WAVE_A_AMPLITUDE = 26;
+const WAVE_A_PERIODS = 2.6;
+const WAVE_A_PHASE = 0;
+
+const WAVE_B_BASELINE = 200;
+const WAVE_B_AMPLITUDE = 20;
+const WAVE_B_PERIODS = 3.1;
+const WAVE_B_PHASE = Math.PI / 2.5;
+
+const wavePathA = buildWavePath(WAVE_A_BASELINE, WAVE_A_AMPLITUDE, WAVE_A_PERIODS, WAVE_A_PHASE);
+const wavePathB = buildWavePath(WAVE_B_BASELINE, WAVE_B_AMPLITUDE, WAVE_B_PERIODS, WAVE_B_PHASE);
+
+const DOT_A_X = 130;
+const DOT_A_Y = waveY(WAVE_A_BASELINE, WAVE_A_AMPLITUDE, WAVE_A_PERIODS, WAVE_A_PHASE, DOT_A_X);
+const DOT_B_X = 300;
+const DOT_B_Y = waveY(WAVE_B_BASELINE, WAVE_B_AMPLITUDE, WAVE_B_PERIODS, WAVE_B_PHASE, DOT_B_X);
+
 /**
  * Hero (Figma reference, screenshot 1): eyebrow, headline, description,
  * primary CTA + note, social proof row, and the abstract right-side
  * illustration.
  *
- * Visual-exploration pass (feedback: "make the Hero more dynamic and
- * visually dimensional"): the illustration keeps its original elements
- * (three colored arcs, a bullseye, scattered dots) but the two flat
- * off-canvas circles are now soft animated gradient blobs, the previously
- * opaque "orbit" circle is a translucent glass surface (backdrop-filter)
- * with a blob visible through it, and the dashed trajectory between the
- * two ringed dots is now an actual flowing wavelength — a gradient stroke
- * with a slow marching dash animation, plus a gentle, out-of-phase bob on
- * each dot. All motion is CSS-only (no JS, no new state), slow and
- * looping, and disabled entirely under prefers-reduced-motion (see
- * app/globals.css) — purely decorative, still `aria-hidden`, and never
- * competes with the headline/CTA for attention.
+ * Visual-signature pass ("two people → two wavelengths → different
+ * rhythms → trying to align"): the illustration's focal content is now
+ * two independently-animated wave paths (Wave A, Wave B), each carrying
+ * its own "participant dot" (the same lavender/blue ringed-dot language
+ * ReviewIntro/InviteIntro/the Result page's own wave already use), drawn
+ * inside the glass circle so they visibly drift toward and away from
+ * phase over time — never mechanically synced, never permanently apart.
+ * A soft central glow pulses on its own slower cycle, standing in for a
+ * recurring "moment of alignment" without literally scripting one. The
+ * previous orbit/arcs/bullseye motif is retired in favor of this more
+ * legible, more central two-wave visual (the arcs read as more generic
+ * "target" iconography, competing with — rather than reinforcing — the
+ * two-wavelength concept this pass is meant to make obvious).
+ *
+ * The primary CTA additionally gets a restrained glass treatment
+ * (.landing-button--glass, additive to the existing .landing-button--
+ * primary class other pages still use unmodified) — for the surface to
+ * read as glass rather than flat grey, the hero now also carries two
+ * large, very soft ambient gradient blobs (.landing-hero__ambient-blob)
+ * spanning the whole section (not just the illustration column), so the
+ * CTA — sitting in the text column — has living gradient underneath it
+ * too, not a flat white background.
+ *
+ * All motion is CSS-only (no JS, no new state), continuous and slow, and
+ * disabled entirely under prefers-reduced-motion (see app/globals.css) —
+ * purely decorative, still `aria-hidden`, and never competes with the
+ * headline/CTA for attention.
  */
 export function LandingHero() {
   return (
     <section className="landing-hero">
+      <div className="landing-hero__ambient" aria-hidden="true">
+        <div className="landing-hero__ambient-blob landing-hero__ambient-blob--a" />
+        <div className="landing-hero__ambient-blob landing-hero__ambient-blob--b" />
+      </div>
+
       <div className="landing-hero__content">
         <p className="landing-eyebrow">
           <span className="landing-eyebrow__dot landing-eyebrow__dot--pink" aria-hidden="true" />
@@ -43,7 +120,10 @@ export function LandingHero() {
         </p>
 
         <div className="landing-hero__actions">
-          <Link href="/create" className="landing-button landing-button--primary">
+          <Link
+            href="/create"
+            className="landing-button landing-button--primary landing-button--glass"
+          >
             Let&apos;s play <span aria-hidden="true">→</span>
           </Link>
           <span className="landing-hero__note">Free · No sign-up needed</span>
@@ -69,97 +149,78 @@ export function LandingHero() {
         {/* Restrained glass surface — a translucent, blurred-backdrop
             circle floating above the gradient blobs (hero-shape--three
             sits directly behind it, so its peach glow shows through),
-            replacing the previous flat white "orbit" circle. A plain
-            HTML div rather than an SVG element specifically so it can use
-            backdrop-filter, which SVG shapes can't reliably use for
-            content painted outside the SVG itself. Sized/positioned as
-            percentages matching the SVG's own 400x400 viewBox circle
-            (cx=200 cy=200 r=150 → 75% diameter, 12.5% inset) so it lines
-            up with the artwork drawn on top of it in the SVG below. */}
+            containing the two-wave visualization drawn in the SVG below. */}
         <div className="hero-glass" />
 
         <svg className="hero-shape__svg" viewBox="0 0 400 400" fill="none">
-          {/* three colored arcs curving around the lower-left of the orbit */}
-          <path
-            d="M90 250a130 130 0 0 1 55-108"
-            stroke="var(--wl-peach)"
-            strokeWidth="14"
-            strokeLinecap="round"
-          />
-          <path
-            d="M100 285a150 150 0 0 1 45-158"
-            stroke="var(--wl-pink)"
-            strokeWidth="14"
-            strokeLinecap="round"
-          />
-          <path
-            d="M115 310a165 165 0 0 1 20-190"
-            stroke="var(--wl-blue)"
-            strokeWidth="10"
-            strokeLinecap="round"
-          />
-
-          {/* bullseye at the orbit's center */}
-          <circle cx="200" cy="200" r="46" stroke="var(--wl-lavender)" strokeWidth="14" />
-          <circle cx="200" cy="200" r="26" fill="#ffffff" />
-          <circle cx="200" cy="200" r="13" fill="var(--wl-ink)" />
-
-          {/* the wavelength itself: a gradient-stroked trajectory between
-              the two ringed dots (each representing a participant), with
-              a slow marching-dash flow (app/globals.css: hero-wave-flow)
-              standing in for "energy traveling along the connection"
-              instead of a static dashed line, plus a gentle, out-of-phase
-              vertical bob on each dot (hero-wave-bob) — deliberately
-              small/slow so it reads as alive, not distracting. */}
           <defs>
-            <linearGradient id="heroWaveGradient" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stopColor="var(--wl-pink)" />
-              <stop offset="100%" stopColor="var(--wl-blue)" />
+            <clipPath id="heroGlassClip">
+              <circle cx="200" cy="200" r="150" />
+            </clipPath>
+            <linearGradient id="heroWaveGradientA" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="var(--wl-lavender)" />
+              <stop offset="100%" stopColor="var(--wl-pink)" />
+            </linearGradient>
+            <linearGradient id="heroWaveGradientB" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="var(--wl-blue)" />
+              <stop offset="100%" stopColor="var(--wl-mint)" />
             </linearGradient>
           </defs>
-          <path
-            className="hero-wave-path"
-            d="M60 235c70-70 210-70 280 25"
-            stroke="url(#heroWaveGradient)"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeDasharray="2 11"
-            fill="none"
-          />
-          <circle
-            className="hero-wave-dot"
-            cx="60"
-            cy="235"
-            r="13"
-            fill="#ffffff"
-            stroke="var(--wl-pink)"
-            strokeWidth="4"
-          />
-          <circle className="hero-wave-dot" cx="60" cy="235" r="5" fill="var(--wl-ink)" />
-          <circle
-            className="hero-wave-dot hero-wave-dot--b"
-            cx="340"
-            cy="260"
-            r="13"
-            fill="#ffffff"
-            stroke="var(--wl-blue)"
-            strokeWidth="4"
-          />
-          <circle
-            className="hero-wave-dot hero-wave-dot--b"
-            cx="340"
-            cy="260"
-            r="5"
-            fill="var(--wl-ink)"
-          />
 
-          {/* scattered small dots */}
+          {/* a handful of scattered dots, kept outside the glass circle as
+              light peripheral texture — not competing with the waves */}
           <circle cx="18" cy="278" r="5" fill="var(--wl-lavender)" />
-          <circle cx="238" cy="132" r="5" fill="var(--wl-mint)" />
           <circle cx="368" cy="182" r="6" fill="var(--wl-peach)" />
           <circle cx="352" cy="322" r="5" fill="var(--wl-lavender)" />
-          <circle cx="185" cy="368" r="5" fill="var(--wl-peach)" />
           <circle cx="80" cy="345" r="5" fill="var(--wl-pink)" />
+
+          <g clipPath="url(#heroGlassClip)">
+            {/* the recurring "moment of alignment" — a soft glow pulsing on
+                its own, slower, independent cycle at the circle's center */}
+            <circle className="hero-sync-glow" cx="200" cy="200" r="60" fill="var(--wl-mint)" />
+
+            {/* Wave A — "Person A"'s own rhythm */}
+            <g className="hero-wave hero-wave--a">
+              <path
+                d={wavePathA}
+                stroke="url(#heroWaveGradientA)"
+                strokeWidth="4"
+                strokeLinecap="round"
+                fill="none"
+                opacity="0.9"
+              />
+              <circle
+                cx={DOT_A_X}
+                cy={DOT_A_Y}
+                r="11"
+                fill="#ffffff"
+                stroke="var(--wl-lavender)"
+                strokeWidth="4"
+              />
+              <circle cx={DOT_A_X} cy={DOT_A_Y} r="4" fill="var(--wl-ink)" />
+            </g>
+
+            {/* Wave B — "Person B"'s own, slightly different rhythm */}
+            <g className="hero-wave hero-wave--b">
+              <path
+                d={wavePathB}
+                stroke="url(#heroWaveGradientB)"
+                strokeWidth="4"
+                strokeLinecap="round"
+                fill="none"
+                opacity="0.9"
+              />
+              <circle
+                cx={DOT_B_X}
+                cy={DOT_B_Y}
+                r="11"
+                fill="#ffffff"
+                stroke="var(--wl-blue)"
+                strokeWidth="4"
+              />
+              <circle cx={DOT_B_X} cy={DOT_B_Y} r="4" fill="var(--wl-ink)" />
+            </g>
+          </g>
         </svg>
       </div>
     </section>
