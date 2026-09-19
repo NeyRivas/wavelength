@@ -1,0 +1,402 @@
+/* Isolated prototype styles for the "Wavelength Result Cards" social-share
+   concept. Deliberately scoped as a CSS Module used only by this route —
+   nothing here touches app/globals.css or any shared class name. */
+
+.root {
+  --ink: #181820;
+  --lavender: #c9c3f4;
+  --blue: #b9ddf4;
+  --pink: #f3c7dd;
+  --peach: #f7d0b5;
+  --mint: #c5e8dd;
+  --muted: #5c6773;
+
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  padding: 32px 16px 48px;
+  background: #ffffff;
+}
+
+.label {
+  font-family: var(--font-nunito), system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* ---------- the 9:16 frame ---------- */
+
+.phone {
+  position: relative;
+  width: min(92vw, 380px);
+  aspect-ratio: 9 / 16;
+  border-radius: 34px;
+  overflow: hidden;
+  box-shadow:
+    0 40px 70px -30px rgba(24, 24, 32, 0.35),
+    0 0 0 1px rgba(24, 24, 32, 0.04);
+  color: var(--ink);
+}
+
+.bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(
+      120% 85% at 12% 4%,
+      color-mix(in srgb, var(--c1) 65%, transparent) 0%,
+      transparent 58%
+    ),
+    radial-gradient(
+      120% 90% at 92% 96%,
+      color-mix(in srgb, var(--c2) 60%, transparent) 0%,
+      transparent 58%
+    ),
+    linear-gradient(
+      165deg,
+      color-mix(in srgb, var(--c1) 38%, white) 0%,
+      #ffffff 52%,
+      color-mix(in srgb, var(--c2) 38%, white) 100%
+    );
+}
+
+.grain {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  opacity: 0.18;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ---------- floating glass card ---------- */
+
+.frame {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  padding: 56px 26px;
+  box-sizing: border-box;
+}
+
+.card {
+  position: relative;
+  height: 100%;
+  border-radius: 28px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.26));
+  backdrop-filter: blur(22px) saturate(165%);
+  -webkit-backdrop-filter: blur(22px) saturate(165%);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow:
+    0 24px 50px -20px rgba(24, 24, 32, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+/* ---------- top row: brand + progress dots ---------- */
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 18px 0;
+  flex-shrink: 0;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-nunito), system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.brandMark {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+}
+
+.dots {
+  display: flex;
+  align-items: flex-end;
+  gap: 5px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(10px) saturate(160%);
+  -webkit-backdrop-filter: blur(10px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+}
+
+.dot {
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+.dotCurrent {
+  transform: scale(1.15);
+}
+
+/* ---------- content ---------- */
+
+.content {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px 24px 34px;
+  gap: 10px;
+}
+
+.eyebrow {
+  font-family: var(--font-nunito), system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.names {
+  font-family: var(--font-nunito), system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink);
+  margin-top: 6px;
+}
+
+.score {
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-weight: 600;
+  font-size: 88px;
+  line-height: 1;
+  color: var(--ink);
+  margin: 2px 0 0;
+}
+
+.scoreSmall {
+  font-size: 64px;
+}
+
+.caption {
+  font-family: var(--font-nunito), system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.wave {
+  margin-top: 14px;
+}
+
+.waveLarge {
+  margin-top: 20px;
+}
+
+/* card 2 — spotlight words */
+
+.spotlight {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 4px;
+}
+
+.spotlightWord {
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-weight: 600;
+  font-size: 38px;
+  line-height: 1.18;
+  color: var(--ink);
+}
+
+.line {
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 16px;
+  color: var(--muted);
+  max-width: 260px;
+  line-height: 1.4;
+  margin-top: 16px;
+}
+
+/* card 3 — difference chips */
+
+.diffHeadline {
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-weight: 600;
+  font-size: 26px;
+  line-height: 1.2;
+  color: var(--ink);
+  max-width: 230px;
+  margin-top: 4px;
+}
+
+.chipRow {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  margin-top: 18px;
+}
+
+.chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  font-family: var(--font-nunito), system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+}
+
+.chipDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* card 4 — share/poster */
+
+.shareWordmark {
+  font-family: var(--font-nunito), system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink);
+  margin-bottom: 2px;
+}
+
+.shareBadge {
+  margin-top: 26px;
+  font-family: var(--font-nunito), system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  padding: 9px 18px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(10px) saturate(160%);
+  -webkit-backdrop-filter: blur(10px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+}
+
+/* ---------- navigation ---------- */
+
+.tapZone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  z-index: 4;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.tapZonePrev {
+  left: 0;
+}
+
+.tapZoneNext {
+  right: 0;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.arrows {
+  display: flex;
+  gap: 10px;
+}
+
+.arrowButton {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid rgba(24, 24, 32, 0.1);
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--ink);
+}
+
+.arrowButton:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* ---------- palette preset switcher ---------- */
+
+.presetRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.presetSwatch {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 0;
+}
+
+.presetSwatchActive {
+  border-color: var(--ink, #181820);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dot {
+    transition: none;
+  }
+}
