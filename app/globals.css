@@ -1172,41 +1172,45 @@ dialog::backdrop {
 .landing-hero__ambient-blob {
   position: absolute;
   border-radius: 50%;
-  filter: blur(50px);
+  /* Blur/opacity restored to 72b2068's exact values (that subtler
+     atmosphere is the approved intensity) — only the gradient shape
+     below changed, so the edge still fades to transparent instead of
+     cutting off hard. */
+  filter: blur(70px);
+  opacity: 0.32;
   animation: hero-blob-drift 30s ease-in-out infinite;
 }
 
 /* Sized/positioned (with deliberate overlap between the two) specifically
    so the CTA — which sits roughly in the vertical middle of the text
    column — has visible gradient behind it, not just the very top/bottom
-   of the section. Radial, fading all the way to transparent well inside
-   the shape's own edge (rather than a flat 2-stop linear fill), so the
-   "pastel → softer → very subtle glow → white" transition is baked into
-   the gradient itself — the blur above only smooths the little that's
-   left, instead of doing all the work alone. */
+   of the section. Radial instead of 72b2068's flat 2-stop linear fill,
+   fading to transparent well inside the shape's own edge, so there's no
+   perceptible boundary — everything else (size, colors, blur, opacity)
+   is exactly 72b2068's. */
 .landing-hero__ambient-blob--a {
-  width: 34rem;
-  height: 38rem;
+  width: 30rem;
+  height: 34rem;
   top: -4rem;
   left: -6%;
   background: radial-gradient(
     ellipse at 40% 35%,
-    color-mix(in srgb, var(--wl-lavender) 75%, transparent) 0%,
-    color-mix(in srgb, var(--wl-pink) 55%, transparent) 40%,
-    transparent 72%
+    var(--wl-lavender) 0%,
+    var(--wl-pink) 55%,
+    transparent 100%
   );
 }
 
 .landing-hero__ambient-blob--b {
-  width: 30rem;
-  height: 34rem;
+  width: 26rem;
+  height: 30rem;
   top: 20rem;
   left: 12%;
   background: radial-gradient(
     ellipse at 60% 60%,
-    color-mix(in srgb, var(--wl-mint) 70%, transparent) 0%,
-    color-mix(in srgb, var(--wl-blue) 50%, transparent) 40%,
-    transparent 72%
+    var(--wl-mint) 0%,
+    var(--wl-blue) 55%,
+    transparent 100%
   );
   animation-duration: 35s;
   animation-direction: alternate-reverse;
@@ -1234,40 +1238,44 @@ dialog::backdrop {
 .hero-shape {
   position: absolute;
   border-radius: 50%;
-  filter: blur(34px);
+  /* Blur restored to 72b2068's exact value; each variant's own opacity
+     below is restored too — only the gradient shape changed (see
+     .landing-hero__ambient-blob above for the same reasoning). */
+  filter: blur(26px);
   animation: hero-blob-drift 24s ease-in-out infinite;
 }
 
 /* Gradients built only from the approved palette (Lavender→Pink,
-   SkyBlue→Mint, a soft Peach glow) — soft/dimensional rather than a flat
-   single-hue fill, per the "more dimensional" brief. Radial, fading to
-   transparent within the shape's own edge (polish pass), so there's no
-   perceptible boundary the way a flat 2-stop linear fill had. */
+   SkyBlue→Mint) — radial instead of 72b2068's flat 2-stop linear fill,
+   fading to transparent within the shape's own edge so there's no
+   perceptible boundary; size/colors/opacity are exactly 72b2068's. */
 .hero-shape--one {
-  width: 24rem;
-  height: 24rem;
+  width: 22rem;
+  height: 22rem;
   top: -7rem;
   right: -6rem;
   background: radial-gradient(
     circle at 35% 35%,
-    color-mix(in srgb, var(--wl-lavender) 80%, transparent) 0%,
-    color-mix(in srgb, var(--wl-pink) 55%, transparent) 45%,
-    transparent 74%
+    var(--wl-lavender) 0%,
+    var(--wl-pink) 55%,
+    transparent 100%
   );
+  opacity: 0.55;
   animation-duration: 22s;
 }
 
 .hero-shape--two {
-  width: 22rem;
-  height: 22rem;
+  width: 20rem;
+  height: 20rem;
   bottom: -9rem;
   left: -7rem;
   background: radial-gradient(
     circle at 65% 65%,
-    color-mix(in srgb, var(--wl-blue) 65%, transparent) 0%,
-    color-mix(in srgb, var(--wl-mint) 50%, transparent) 45%,
-    transparent 74%
+    var(--wl-blue) 0%,
+    var(--wl-mint) 55%,
+    transparent 100%
   );
+  opacity: 0.4;
   animation-duration: 27s;
   animation-direction: alternate-reverse;
 }
@@ -1394,6 +1402,18 @@ dialog::backdrop {
   max-width: 80rem;
   margin: 0 auto;
   padding: clamp(3rem, 7vw, 5rem) clamp(1.5rem, 4vw, 4rem);
+}
+
+/* Alignment fix: .landing-how is only ever used by this page's own
+   How It Works section (components/landing/landing-how-it-works.tsx),
+   never shared with a protected page, so it can safely join the same
+   60rem column as .landing-hero and .landing-experience--home instead of
+   inheriting .landing-section's wider 80rem — without touching
+   .landing-section itself, which /how-it-works, /for-couples, and /faq
+   still rely on unmodified. */
+.landing-how {
+  max-width: 60rem;
+  margin: 0 auto;
 }
 
 .landing-eyebrow--plain {
@@ -1786,6 +1806,17 @@ dialog::backdrop {
   background: var(--wl-ink);
   padding: clamp(4rem, 10vw, 7rem) clamp(1.5rem, 4vw, 4rem);
   text-align: center;
+}
+
+/* Alignment fix: LandingCtaSection is shared with /how-it-works,
+   /for-couples, and /faq (all protected — their near-full-bleed CTA
+   panel is unchanged), so this narrower measure is opt-in via a modifier
+   class that only app/page.tsx passes, joining the same 60rem column as
+   .landing-hero/.landing-how/.landing-experience--home on this page
+   alone. Internal padding/shapes/content are untouched either way. */
+.landing-dark-cta--home {
+  max-width: 60rem;
+  margin: 0 auto;
 }
 
 .landing-dark-cta__shapes {

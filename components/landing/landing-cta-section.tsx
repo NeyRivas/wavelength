@@ -10,10 +10,15 @@ const DOT_CLASSES = [
 
 /** The dark closing CTA band (Figma reference, screenshot 4, top half —
  * the white footer below it is LandingFooter). Same /create destination
- * as every other CTA on this page. */
-export function LandingCtaSection() {
+ * as every other CTA on this page.
+ *
+ * Shared as-is by /how-it-works, /for-couples, and /faq — `className` is
+ * an opt-in extra class (only app/page.tsx passes one, to join the
+ * homepage's narrower 60rem column) so those other pages' rendered
+ * markup, and therefore their width, is completely unaffected. */
+export function LandingCtaSection({ className }: { className?: string } = {}) {
   return (
-    <section className="landing-dark-cta">
+    <section className={`landing-dark-cta${className ? ` ${className}` : ""}`}>
       <div className="landing-dark-cta__shapes" aria-hidden="true">
         <div className="dark-shape dark-shape--1" />
         <div className="dark-shape dark-shape--2" />
