@@ -1,9 +1,17 @@
-const WAVE_START_X = 20;
-const WAVE_WIDTH = 260;
+// The two dots sit at x=24 and x=296 (see the <circle> elements below) —
+// the wave path now spans exactly that range, so both ends land ON the
+// dots instead of stopping short of them.
+const WAVE_START_X = 24;
+const WAVE_WIDTH = 272;
 
-/** Same plain-sine-polyline technique as components/landing/landing-hero.tsx
- * (buildWavePath), just parametrized smaller/quieter for this supporting
- * motif — this stays a Server Component, no client JS. */
+/** Same family as components/landing/landing-hero.tsx's buildWavePath,
+ * with one addition: an amplitude envelope (sin(π·t), 0 at both ends,
+ * peaking at the midpoint) so the curve always eases back to the
+ * baseline exactly at each end, regardless of amplitude/periods/phase —
+ * needed here because, unlike the homepage Hero (where the dots sit well
+ * inside a much longer wave), this composition's two dots ARE the wave's
+ * literal start and end anchors. This stays a Server Component, no
+ * client JS. */
 function buildWavePath(
   baseline: number,
   amplitude: number,
@@ -13,9 +21,11 @@ function buildWavePath(
 ): string {
   const segments: string[] = [];
   for (let i = 0; i <= points; i++) {
-    const x = WAVE_START_X + (i / points) * WAVE_WIDTH;
-    const theta = (i / points) * periods * 2 * Math.PI + phase;
-    const y = baseline + amplitude * Math.sin(theta);
+    const t = i / points;
+    const x = WAVE_START_X + t * WAVE_WIDTH;
+    const envelope = Math.sin(Math.PI * t);
+    const theta = t * periods * 2 * Math.PI + phase;
+    const y = baseline + amplitude * envelope * Math.sin(theta);
     segments.push(`${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`);
   }
   return segments.join(" ");
@@ -52,12 +62,16 @@ const wavePathB = buildWavePath(WAVE_B_BASELINE, WAVE_B_AMPLITUDE, WAVE_B_PERIOD
  * own id of the same name; here it resolves to the top of this page's
  * own how-it-works content. No change to the shared header was needed.
  *
- * The connecting motif between the two dots now draws the same
- * "Wave A + Wave B" language as the Hero (two independently-drifting
- * sine paths, same two gradients — lavender→pink, blue→mint) instead of
- * a single static currentColor line, so this page reads as part of the
- * same product story: two people, moving through the process together.
- * Composition/copy/dots are otherwise unchanged.
+ * The connecting motif between the two dots draws the same "Wave A +
+ * Wave B" language as the Hero (two independently-drifting sine paths,
+ * same two gradients — lavender→pink, blue→mint) instead of a single
+ * static currentColor line, so this page reads as part of the same
+ * product story: two people, moving through the process together. Both
+ * waves span exactly from one dot to the other (see buildWavePath's
+ * envelope above), and the CSS drift (app/globals.css) is kept small
+ * enough that the join with each dot stays visually continuous through
+ * the whole animation, not just at rest. Composition/copy/dots are
+ * otherwise unchanged.
  */
 export function HowItWorksHero() {
   return (

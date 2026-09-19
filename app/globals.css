@@ -2009,6 +2009,14 @@ dialog::backdrop {
 
 .hiw-hero {
   text-align: center;
+  /* Ad-rail: narrower than .landing-section's 80rem so desktop/laptop
+     widths keep visible lateral space on both sides — reserved for
+     future advertising, not filled with anything yet. Both .hiw-hero and
+     .hiw-steps-section are exclusive to /how-it-works (never shared with
+     /for-couples or /faq), so this doesn't touch .landing-section
+     itself. Below the 56rem breakpoint the viewport is already narrower
+     than this, so mobile/tablet use the full width, same as "/". */
+  max-width: 60rem;
 }
 
 .hiw-hero__eyebrow {
@@ -2037,7 +2045,13 @@ dialog::backdrop {
    durations so their relative phase keeps evolving — just a narrower
    translateX range, sized for this smaller supporting motif. Static
    shapes already differ (see how-it-works-hero.tsx), so they stay
-   distinguishable with the animation stopped too. */
+   distinguishable with the animation stopped too.
+
+   The translateX distance is kept well inside the end dots' own radius
+   (r=9 in the SVG's own units) so each wave's drifting endpoint never
+   pulls loose of its dot mid-animation — both ends are anchored exactly
+   on the dots at rest (see buildWavePath's envelope in
+   how-it-works-hero.tsx), and this keeps that join intact in motion. */
 .hiw-hero-wave--a {
   animation: hiw-hero-wave-drift-a 7.5s ease-in-out infinite alternate;
 }
@@ -2051,7 +2065,7 @@ dialog::backdrop {
     transform: translateX(0);
   }
   to {
-    transform: translateX(-14px);
+    transform: translateX(-6px);
   }
 }
 
@@ -2060,7 +2074,7 @@ dialog::backdrop {
     transform: translateX(0);
   }
   to {
-    transform: translateX(11px);
+    transform: translateX(5px);
   }
 }
 
@@ -2075,6 +2089,9 @@ dialog::backdrop {
 
 .hiw-steps-section {
   padding-top: 0;
+  /* Ad-rail: see .hiw-hero above — same narrower measure so the whole
+     page's main content reads as one consistent column. */
+  max-width: 60rem;
 }
 
 .hiw-steps {
@@ -2149,7 +2166,8 @@ dialog::backdrop {
   flex-wrap: wrap;
   justify-content: center;
   gap: 1.25rem 2.5rem;
-  max-width: 80rem;
+  /* Ad-rail: see .hiw-hero above — same narrower measure. */
+  max-width: 60rem;
   margin: 0 auto;
   padding: clamp(2rem, 5vw, 3rem) clamp(1.5rem, 4vw, 4rem) 0;
 }
