@@ -4256,6 +4256,145 @@ dialog::backdrop {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
+   /w/[token]/result — "Result not available" (components/wavelength/
+   result-not-available-notice.tsx). Same visual-redesign pass and
+   technique as B's "Nice try!" screen just above (.b-locked*): purely a
+   restyle of what used to be a single bare, unstyled <main><h1>/<p> — the
+   guard that decides when this renders (no wavelength row, or the caller
+   is neither participant) lives entirely in app/w/[token]/result/page.tsx
+   and is untouched. The motif here is deliberately NOT the "two ringed
+   dots" language (that implies two specific participants meeting) — this
+   screen means the opposite (no valid link for this viewer), so it's a
+   single wave whose stroke gradient fades to transparent at both ends
+   instead of terminating in a dot. Same ambient-blob technique as
+   .b-locked (radial gradients fading to transparent, no overflow:hidden
+   clipping), scoped under .result-unavailable so nothing here touches
+   any other screen's classes. */
+
+.result-unavailable-shell {
+  position: relative;
+  text-align: center;
+}
+
+.result-unavailable {
+  position: relative;
+}
+
+.result-unavailable__ambient {
+  position: absolute;
+  inset: -3rem -2rem;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.result-unavailable__ambient-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.3;
+  animation: hero-blob-drift 30s ease-in-out infinite;
+}
+
+.result-unavailable__ambient-blob--a {
+  width: 20rem;
+  height: 20rem;
+  top: -2rem;
+  left: 10%;
+  background: radial-gradient(
+    circle at 40% 40%,
+    var(--wl-blue) 0%,
+    var(--wl-lavender) 55%,
+    transparent 100%
+  );
+}
+
+.result-unavailable__ambient-blob--b {
+  width: 18rem;
+  height: 18rem;
+  bottom: -3rem;
+  right: 8%;
+  background: radial-gradient(
+    circle at 60% 60%,
+    var(--wl-peach) 0%,
+    var(--wl-pink) 55%,
+    transparent 100%
+  );
+  animation-duration: 25s;
+  animation-direction: alternate-reverse;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .result-unavailable__ambient-blob {
+    animation: none;
+  }
+}
+
+.result-unavailable__motif {
+  position: relative;
+  z-index: 1;
+  display: block;
+  margin: 0 auto 1.75rem;
+  width: min(16rem, 100%);
+  height: auto;
+}
+
+.result-unavailable__heading {
+  position: relative;
+  z-index: 1;
+  margin: 0 0 0.75rem;
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(2rem, 6vw, 2.5rem);
+  color: var(--wl-ink);
+}
+
+.result-unavailable__text {
+  position: relative;
+  z-index: 1;
+  margin: 0 auto 2rem;
+  max-width: 26rem;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--wl-muted);
+}
+
+.result-unavailable__button {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3rem;
+  padding: 0 2rem;
+  border: none;
+  border-radius: 999px;
+  background: var(--wl-lavender);
+  color: var(--wl-ink);
+  font-family: var(--font-nunito), system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 1rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+  box-shadow: 0 6px 16px -6px color-mix(in srgb, var(--wl-lavender) 75%, transparent);
+}
+
+.result-unavailable__button:hover {
+  background: color-mix(in srgb, var(--wl-lavender) 82%, var(--wl-ink) 18%);
+  box-shadow: 0 8px 18px -6px color-mix(in srgb, var(--wl-lavender) 85%, transparent);
+  transform: translateY(-1px);
+}
+
+.result-unavailable__button:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 10px -6px color-mix(in srgb, var(--wl-lavender) 75%, transparent);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
    /w/[token]/answer — Participant B's answering screen. Reuses .wl-create,
    CreateHeader, the .create-shell__intro/.create-progress "intro +
    progress readout" pattern app/create/page.tsx already established, and

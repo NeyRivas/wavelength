@@ -4,17 +4,20 @@ import { redirect } from "next/navigation";
 import { CreateHeader } from "@/components/questionnaire/create-header";
 import { ResultReveal } from "@/components/result/result-reveal";
 import { ResultView } from "@/components/result/result-view";
+import { ResultNotAvailableNotice } from "@/components/wavelength/result-not-available-notice";
 import { requireUserId } from "@/lib/supabase/identity";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { buildWavelengthResultView, ResultDataError } from "@/lib/wavelength/result";
 
 /**
  * Fonts are instantiated here — same per-page pattern as app/create/page.tsx
- * and the rest of the app/w/[token]/* flow — and applied only to the real,
- * COMPLETED result view at the bottom of this file. Every earlier
- * return (not-a-participant, not-yet-COMPLETED redirect, the
- * ResultDataError fallback) is untouched, still the same bare markup as
- * before.
+ * and the rest of the app/w/[token]/* flow — and now also wrap the
+ * not-a-participant state below (visual redesign pass: components/
+ * wavelength/result-not-available-notice.tsx), in addition to the real,
+ * COMPLETED result view at the bottom of this file. The not-yet-COMPLETED
+ * redirect and the ResultDataError fallback are untouched, still the same
+ * bare markup as before — only the not-a-participant branch's markup
+ * changed, not the condition that decides when it renders.
  */
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -75,10 +78,12 @@ export default async function ResultPage({ params }: { params: Promise<{ token: 
     (wavelength.participant_a_id !== userId && wavelength.participant_b_id !== userId)
   ) {
     return (
-      <main>
-        <h1>Result not available</h1>
-        <p>This link either doesn&apos;t exist, or you&apos;re not one of its two participants.</p>
-      </main>
+      <div className={`${fraunces.variable} ${nunitoSans.variable} wl-create`}>
+        <CreateHeader />
+        <main className="create-shell result-unavailable-shell">
+          <ResultNotAvailableNotice />
+        </main>
+      </div>
     );
   }
 
