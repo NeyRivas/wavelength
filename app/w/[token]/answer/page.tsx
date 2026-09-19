@@ -3,8 +3,8 @@ import { redirect } from "next/navigation";
 
 import { AnswerQuestionCard } from "@/components/questionnaire/answer-question-card";
 import { CreateHeader } from "@/components/questionnaire/create-header";
-import { CreateNewWavelengthAction } from "@/components/wavelength/create-new-wavelength-action";
 import { SubmitFinalForm } from "@/components/wavelength/submit-final-form";
+import { WavelengthLockedNotice } from "@/components/wavelength/wavelength-locked-notice";
 import { requireUserId } from "@/lib/supabase/identity";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -22,10 +22,11 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
  * that as the only line of defense.
  *
  * Fonts are instantiated here — same per-page pattern as app/create/page.tsx
- * and app/w/[token]/page.tsx — but only ever applied to the live,
- * IN_PROGRESS answering view below. The post-completion "Nice try" guard
- * and the redirect above it are untouched, still the same bare markup as
- * before.
+ * and app/w/[token]/page.tsx — and now also wrap the post-completion "Nice
+ * try" state below (visual redesign pass: components/wavelength/
+ * wavelength-locked-notice.tsx), in addition to the live IN_PROGRESS
+ * answering view. Only the markup changed — the guard's own condition and
+ * the redirect below it are untouched.
  */
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -91,24 +92,17 @@ export default async function AnswerPage({ params }: { params: Promise<{ token: 
   // every "B, already completed" path rather than a parallel message living
   // in the action.
   //
-  // Product decision: "Create your own Wavelength" is the same shared,
-  // confirm-before-navigating action rendered on the completed Result page
-  // for both participants (components/wavelength/create-new-wavelength-
-  // action.tsx) — one implementation, reused here rather than a plain link
-  // with its own separate behavior.
+  // Product decision: "Create your own Wavelength" is a confirm-before-
+  // navigating action (components/wavelength/create-new-wavelength-
+  // action.tsx), not a plain link with its own separate behavior.
   if (wavelength?.participant_b_id === userId && wavelength.state === "COMPLETED") {
     return (
-      <main>
-        <h1>Nice try! 😄</h1>
-        <p>
-          You&apos;ve already answered this Wavelength — no going back and changing your mind now,
-          that&apos;s not really the same wavelength anymore.
-        </p>
-        <p>
-          <a href={`/w/${token}/result`}>See your result</a>
-        </p>
-        <CreateNewWavelengthAction />
-      </main>
+      <div className={`${fraunces.variable} ${nunitoSans.variable} wl-create`}>
+        <CreateHeader />
+        <main className="create-shell b-locked-shell">
+          <WavelengthLockedNotice shareToken={token} />
+        </main>
+      </div>
     );
   }
 

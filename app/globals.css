@@ -4012,6 +4012,250 @@ dialog::backdrop {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
+   /w/[token]/answer — B's locked "Nice try!" state (components/wavelength/
+   wavelength-locked-notice.tsx). Purely a visual redesign of what used to
+   be a single bare, unstyled <main><h1>/<p>/<a> with no classes at all —
+   the guard that decides when this renders lives entirely in
+   app/w/[token]/answer/page.tsx and is untouched. Same "two ringed dots +
+   gradient connector" language as ReviewIntro/InviteIntro (.wl-connector),
+   same soft ambient-blob technique as the Hero/Results (radial gradients
+   fading to transparent, no overflow:hidden clipping, so there's no hard
+   edge) — both scoped under .b-locked so nothing here touches those other
+   screens' own classes. .b-locked__secondary styles
+   components/ui/confirm-dialog.tsx's plain <button>/<dialog> for this one
+   caller only, via a wrapper class, without modifying that shared,
+   deliberately-unstyled component itself. */
+
+.b-locked-shell {
+  position: relative;
+  text-align: center;
+}
+
+.b-locked {
+  position: relative;
+}
+
+.b-locked__ambient {
+  position: absolute;
+  inset: -3rem -2rem;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.b-locked__ambient-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.3;
+  animation: hero-blob-drift 28s ease-in-out infinite;
+}
+
+.b-locked__ambient-blob--a {
+  width: 20rem;
+  height: 20rem;
+  top: -2rem;
+  left: 8%;
+  background: radial-gradient(
+    circle at 40% 40%,
+    var(--wl-lavender) 0%,
+    var(--wl-pink) 55%,
+    transparent 100%
+  );
+}
+
+.b-locked__ambient-blob--b {
+  width: 18rem;
+  height: 18rem;
+  bottom: -3rem;
+  right: 6%;
+  background: radial-gradient(
+    circle at 60% 60%,
+    var(--wl-mint) 0%,
+    var(--wl-blue) 55%,
+    transparent 100%
+  );
+  animation-duration: 33s;
+  animation-direction: alternate-reverse;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .b-locked__ambient-blob {
+    animation: none;
+  }
+}
+
+.b-locked__motif {
+  position: relative;
+  z-index: 1;
+  display: block;
+  margin: 0 auto 1.75rem;
+  width: min(16rem, 100%);
+  height: auto;
+}
+
+.b-locked__heading {
+  position: relative;
+  z-index: 1;
+  margin: 0 0 0.75rem;
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(2rem, 6vw, 2.5rem);
+  color: var(--wl-ink);
+}
+
+.b-locked__text {
+  position: relative;
+  z-index: 1;
+  margin: 0 auto 2rem;
+  max-width: 28rem;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--wl-muted);
+}
+
+.b-locked__actions {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+.b-locked__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3rem;
+  padding: 0 2rem;
+  border-radius: 999px;
+  font-family: var(--font-nunito), system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 1rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+}
+
+.b-locked__button--primary {
+  border: none;
+  background: var(--wl-lavender);
+  color: var(--wl-ink);
+  box-shadow: 0 6px 16px -6px color-mix(in srgb, var(--wl-lavender) 75%, transparent);
+}
+
+.b-locked__button--primary:hover {
+  background: color-mix(in srgb, var(--wl-lavender) 82%, var(--wl-ink) 18%);
+  box-shadow: 0 8px 18px -6px color-mix(in srgb, var(--wl-lavender) 85%, transparent);
+  transform: translateY(-1px);
+}
+
+.b-locked__button--primary:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 10px -6px color-mix(in srgb, var(--wl-lavender) 75%, transparent);
+}
+
+/* Restyles confirm-dialog.tsx's plain elements for this one usage only —
+   that shared component stays exactly as it is. */
+.b-locked__secondary > button {
+  min-height: 2.5rem;
+  padding: 0 1.25rem;
+  border: 1.5px solid var(--color-border);
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--wl-muted);
+  font-family: var(--font-nunito), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.b-locked__secondary > button:hover {
+  background: var(--color-surface);
+  color: var(--wl-ink);
+}
+
+.b-locked__secondary dialog {
+  max-width: 25rem;
+  padding: 2rem 1.75rem 1.75rem;
+  border-radius: 1.5rem;
+  background: #ffffff;
+  box-shadow: 0 20px 45px -24px color-mix(in srgb, var(--wl-ink) 35%, transparent);
+  text-align: center;
+}
+
+.b-locked__secondary dialog::backdrop {
+  background: color-mix(in srgb, var(--wl-ink) 35%, transparent);
+}
+
+.b-locked__secondary dialog h2 {
+  margin: 0 0 0.75rem;
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 1.5rem;
+  color: var(--wl-ink);
+}
+
+.b-locked__secondary dialog p {
+  margin: 0 0 1.75rem;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--wl-muted);
+}
+
+.b-locked__secondary dialog .dialog-actions {
+  flex-direction: column;
+  margin-top: 0;
+}
+
+.b-locked__secondary dialog .dialog-actions button {
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0 1.5rem;
+  border-radius: 999px;
+  border: none;
+  font-family: var(--font-nunito), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 0.9375rem;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.b-locked__secondary dialog .dialog-actions button:first-child {
+  background: #ffffff;
+  color: var(--wl-ink);
+  border: 1.5px solid var(--color-border);
+}
+
+.b-locked__secondary dialog .dialog-actions button:first-child:hover {
+  background: var(--color-surface);
+}
+
+.b-locked__secondary dialog .dialog-actions button:last-child {
+  background: var(--wl-lavender);
+  color: var(--wl-ink);
+  box-shadow: 0 6px 16px -6px color-mix(in srgb, var(--wl-lavender) 75%, transparent);
+}
+
+.b-locked__secondary dialog .dialog-actions button:last-child:hover {
+  background: color-mix(in srgb, var(--wl-lavender) 82%, var(--wl-ink) 18%);
+}
+
+.b-locked__secondary dialog .dialog-actions button:active {
+  transform: translateY(1px);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
    /w/[token]/answer — Participant B's answering screen. Reuses .wl-create,
    CreateHeader, the .create-shell__intro/.create-progress "intro +
    progress readout" pattern app/create/page.tsx already established, and
