@@ -43,7 +43,7 @@ export default function HomePage() {
         <LandingHero />
         <LandingHowItWorks />
         <LandingExperience />
-        <LandingCtaSection className="landing-dark-cta--home" />
+        <LandingCtaSection />
       </main>
       <LandingFooter />
     </div>

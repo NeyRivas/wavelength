@@ -1280,9 +1280,7 @@ dialog::backdrop {
   animation-direction: alternate-reverse;
 }
 
-/* Sits directly behind .hero-glass so its glow reads softly through the
-   translucent surface — "some of the underlying gradient visible through
-   the surface" from the glass-effect brief. */
+/* A soft peach glow among the illustration's other blurred blobs. */
 .hero-shape--three {
   width: 15rem;
   height: 15rem;
@@ -1301,25 +1299,6 @@ dialog::backdrop {
   50% {
     transform: translate(-0.75rem, 1rem) scale(1.05);
   }
-}
-
-/* Restrained glass surface: translucent white + backdrop blur + a thin
-   translucent border, replacing the previous flat white "orbit" circle.
-   Deliberately just this one panel, sized/positioned to match the SVG's
-   own circle (cx=200 cy=200 r=150 in a 400x400 viewBox = 75% diameter,
-   12.5% inset) — not a hero-wide glass treatment. */
-.hero-glass {
-  position: absolute;
-  top: 12.5%;
-  left: 12.5%;
-  width: 75%;
-  height: 75%;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.65);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  box-shadow: 0 20px 45px rgba(24, 24, 32, 0.08);
 }
 
 .hero-shape__svg {
@@ -1806,17 +1785,6 @@ dialog::backdrop {
   background: var(--wl-ink);
   padding: clamp(4rem, 10vw, 7rem) clamp(1.5rem, 4vw, 4rem);
   text-align: center;
-}
-
-/* Alignment fix: LandingCtaSection is shared with /how-it-works,
-   /for-couples, and /faq (all protected — their near-full-bleed CTA
-   panel is unchanged), so this narrower measure is opt-in via a modifier
-   class that only app/page.tsx passes, joining the same 60rem column as
-   .landing-hero/.landing-how/.landing-experience--home on this page
-   alone. Internal padding/shapes/content are untouched either way. */
-.landing-dark-cta--home {
-  max-width: 60rem;
-  margin: 0 auto;
 }
 
 .landing-dark-cta__shapes {

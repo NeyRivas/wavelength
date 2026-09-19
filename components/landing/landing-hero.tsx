@@ -73,10 +73,12 @@ const DOT_B_Y = waveY(WAVE_B_BASELINE, WAVE_B_AMPLITUDE, WAVE_B_PERIODS, WAVE_B_
  * rhythms → trying to align"): the illustration's focal content is now
  * two independently-animated wave paths (Wave A, Wave B), each carrying
  * its own "participant dot" (the same lavender/blue ringed-dot language
- * ReviewIntro/InviteIntro/the Result page's own wave already use), drawn
- * inside the glass circle so they visibly drift toward and away from
- * phase over time — never mechanically synced, never permanently apart.
- * A soft central glow pulses on its own slower cycle, standing in for a
+ * ReviewIntro/InviteIntro/the Result page's own wave already use),
+ * floating freely over the soft gradient blobs (no framing circle — see
+ * the removal note in app/globals.css near .hero-shape--three) so they
+ * visibly drift toward and away from phase over time — never
+ * mechanically synced, never permanently apart. A soft central glow
+ * pulses on its own slower cycle, standing in for a
  * recurring "moment of alignment" without literally scripting one. The
  * previous orbit/arcs/bullseye motif is retired in favor of this more
  * legible, more central two-wave visual (the arcs read as more generic
@@ -146,17 +148,8 @@ export function LandingHero() {
         <div className="hero-shape hero-shape--two" />
         <div className="hero-shape hero-shape--three" />
 
-        {/* Restrained glass surface — a translucent, blurred-backdrop
-            circle floating above the gradient blobs (hero-shape--three
-            sits directly behind it, so its peach glow shows through),
-            containing the two-wave visualization drawn in the SVG below. */}
-        <div className="hero-glass" />
-
         <svg className="hero-shape__svg" viewBox="0 0 400 400" fill="none">
           <defs>
-            <clipPath id="heroGlassClip">
-              <circle cx="200" cy="200" r="150" />
-            </clipPath>
             <linearGradient id="heroWaveGradientA" x1="0" y1="0" x2="1" y2="0">
               <stop offset="0%" stopColor="var(--wl-lavender)" />
               <stop offset="100%" stopColor="var(--wl-pink)" />
@@ -167,59 +160,58 @@ export function LandingHero() {
             </linearGradient>
           </defs>
 
-          {/* a handful of scattered dots, kept outside the glass circle as
-              light peripheral texture — not competing with the waves */}
+          {/* a handful of scattered dots, kept clear of the two waves as
+              light peripheral texture — not competing with them */}
           <circle cx="18" cy="278" r="5" fill="var(--wl-lavender)" />
           <circle cx="368" cy="182" r="6" fill="var(--wl-peach)" />
           <circle cx="352" cy="322" r="5" fill="var(--wl-lavender)" />
           <circle cx="80" cy="345" r="5" fill="var(--wl-pink)" />
 
-          <g clipPath="url(#heroGlassClip)">
-            {/* the recurring "moment of alignment" — a soft glow pulsing on
-                its own, slower, independent cycle at the circle's center */}
-            <circle className="hero-sync-glow" cx="200" cy="200" r="60" fill="var(--wl-mint)" />
+          {/* the recurring "moment of alignment" — a soft glow pulsing on
+              its own, slower, independent cycle at the illustration's
+              center */}
+          <circle className="hero-sync-glow" cx="200" cy="200" r="60" fill="var(--wl-mint)" />
 
-            {/* Wave A — "Person A"'s own rhythm */}
-            <g className="hero-wave hero-wave--a">
-              <path
-                d={wavePathA}
-                stroke="url(#heroWaveGradientA)"
-                strokeWidth="4"
-                strokeLinecap="round"
-                fill="none"
-                opacity="0.9"
-              />
-              <circle
-                cx={DOT_A_X}
-                cy={DOT_A_Y}
-                r="11"
-                fill="#ffffff"
-                stroke="var(--wl-lavender)"
-                strokeWidth="4"
-              />
-              <circle cx={DOT_A_X} cy={DOT_A_Y} r="4" fill="var(--wl-ink)" />
-            </g>
+          {/* Wave A — "Person A"'s own rhythm */}
+          <g className="hero-wave hero-wave--a">
+            <path
+              d={wavePathA}
+              stroke="url(#heroWaveGradientA)"
+              strokeWidth="4"
+              strokeLinecap="round"
+              fill="none"
+              opacity="0.9"
+            />
+            <circle
+              cx={DOT_A_X}
+              cy={DOT_A_Y}
+              r="11"
+              fill="#ffffff"
+              stroke="var(--wl-lavender)"
+              strokeWidth="4"
+            />
+            <circle cx={DOT_A_X} cy={DOT_A_Y} r="4" fill="var(--wl-ink)" />
+          </g>
 
-            {/* Wave B — "Person B"'s own, slightly different rhythm */}
-            <g className="hero-wave hero-wave--b">
-              <path
-                d={wavePathB}
-                stroke="url(#heroWaveGradientB)"
-                strokeWidth="4"
-                strokeLinecap="round"
-                fill="none"
-                opacity="0.9"
-              />
-              <circle
-                cx={DOT_B_X}
-                cy={DOT_B_Y}
-                r="11"
-                fill="#ffffff"
-                stroke="var(--wl-blue)"
-                strokeWidth="4"
-              />
-              <circle cx={DOT_B_X} cy={DOT_B_Y} r="4" fill="var(--wl-ink)" />
-            </g>
+          {/* Wave B — "Person B"'s own, slightly different rhythm */}
+          <g className="hero-wave hero-wave--b">
+            <path
+              d={wavePathB}
+              stroke="url(#heroWaveGradientB)"
+              strokeWidth="4"
+              strokeLinecap="round"
+              fill="none"
+              opacity="0.9"
+            />
+            <circle
+              cx={DOT_B_X}
+              cy={DOT_B_Y}
+              r="11"
+              fill="#ffffff"
+              stroke="var(--wl-blue)"
+              strokeWidth="4"
+            />
+            <circle cx={DOT_B_X} cy={DOT_B_Y} r="4" fill="var(--wl-ink)" />
           </g>
         </svg>
       </div>
