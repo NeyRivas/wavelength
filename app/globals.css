@@ -1059,19 +1059,25 @@ dialog::backdrop {
   max-width: 60rem;
   margin: 0 auto;
   padding: clamp(3rem, 8vw, 6rem) clamp(1.5rem, 4vw, 4rem) clamp(4rem, 9vw, 6rem);
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 3rem;
+  /* Centered composition (redesign pass): one vertical column — content,
+     then the wave illustration + social proof — instead of a left
+     text/right illustration grid. Centered at every breakpoint, so there
+     is no separate mobile override for this anymore. */
+  display: flex;
+  flex-direction: column;
   align-items: center;
+  gap: 2rem;
+  text-align: center;
 }
 
 .landing-hero__content {
   position: relative;
   z-index: 1;
+  max-width: 36rem;
 }
 
 .landing-hero__heading {
-  margin: 0 0 1.5rem;
+  margin: 0 auto 1.5rem;
   max-width: 22ch;
   font-family: var(--font-fraunces), serif;
   font-style: italic;
@@ -1082,7 +1088,7 @@ dialog::backdrop {
 }
 
 .landing-hero__description {
-  margin: 0 0 2rem;
+  margin: 0 auto 2rem;
   max-width: 30rem;
   font-size: 1.125rem;
   line-height: 1.6;
@@ -1092,22 +1098,35 @@ dialog::backdrop {
 .landing-hero__actions {
   display: flex;
   align-items: center;
+  justify-content: center;
   flex-wrap: wrap;
   gap: 1rem;
-  margin-bottom: 2.5rem;
+}
+
+/* Centers the shared .landing-eyebrow's own flex row (dots + label)
+   without touching that shared class — same modifier-class pattern as
+   .hiw-hero__eyebrow / .fc-hero__eyebrow. */
+.landing-hero__eyebrow {
+  justify-content: center;
 }
 
 .landing-hero__note {
   font-size: 0.875rem;
-  color: var(--wl-muted);
+  /* var(--wl-muted) reads fine on the plain white background other
+     .landing-* text sits on, but these two words sit over the Hero's
+     colorful ambient gradient, where that gray loses contrast — ink
+     instead, kept legible/secondary purely through the small size and
+     regular weight (unlike the bold, larger headline). */
+  color: var(--wl-ink);
 }
 
 .landing-social-proof {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.75rem;
   font-size: 0.875rem;
-  color: var(--wl-muted);
+  color: var(--wl-ink);
 }
 
 .landing-avatars {
@@ -1217,22 +1236,36 @@ dialog::backdrop {
 }
 
 /* ── hero illustration: two wavelengths ───────────────────────────────
-   Three soft, animated gradient blobs (CSS) behind a restrained glass
-   surface (CSS) behind one inline SVG. The SVG's focal content is now
-   two independently-animated wave paths — "Wave A" and "Wave B", each
-   with its own participant dot — drifting toward and away from phase
-   inside the glass circle, plus a slow ambient sync-glow pulse. See
-   components/landing/landing-hero.tsx for how the wave shapes/dot
-   positions are computed. */
+   Three soft, animated gradient blobs (CSS) behind one inline SVG. The
+   SVG's focal content is two independently-animated wave paths — "Wave
+   A" and "Wave B", each with its own participant dot — drifting toward
+   and away from phase, floating freely (no framing circle), plus a slow
+   ambient sync-glow pulse. See components/landing/landing-hero.tsx for
+   how the wave shapes/dot positions are computed. */
+
+/* Redesign pass: groups the illustration with the social-proof row right
+   below it, centered as one unit under the CTA, instead of the
+   illustration sitting beside the text column. */
+.landing-hero__visual {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+}
 
 .landing-hero__illustration {
   position: relative;
   z-index: 1;
-  min-height: 26rem;
-  /* No height: 100% here — with align-items: center on .landing-hero,
-     that would stretch this box to match the (taller) text column's
-     height instead of just centering a min-height: 26rem box within it,
-     which is what was dragging .hero-shape--two far down the page. */
+  width: 100%;
+  max-width: 26rem;
+  /* A short band rather than the SVG's own full square: the wave paths,
+     dots, and sync-glow all sit within roughly y=110–290 of the 400×400
+     viewBox, so a ~2.2:1 box (with the SVG's preserveAspectRatio="xMidYMid
+     slice" — see landing-hero.tsx) crops in tight on that band instead of
+     showing the mostly-empty upper/lower thirds, which is what was
+     pushing the CTA and the social-proof row apart. */
+  aspect-ratio: 2.2 / 1;
 }
 
 .hero-shape {
@@ -1913,33 +1946,6 @@ dialog::backdrop {
 @media (max-width: 56rem) {
   .landing-nav {
     display: none;
-  }
-
-  .landing-hero {
-    grid-template-columns: 1fr;
-    text-align: center;
-  }
-
-  .landing-hero__content {
-    max-width: none;
-    margin: 0 auto;
-  }
-
-  .landing-hero__description {
-    margin-inline: auto;
-  }
-
-  .landing-hero__actions {
-    justify-content: center;
-  }
-
-  .landing-social-proof {
-    justify-content: center;
-  }
-
-  .landing-hero__illustration {
-    min-height: 20rem;
-    order: -1;
   }
 
   .landing-card-grid {
