@@ -396,14 +396,81 @@
   cursor: default;
 }
 
+/* ---------- gradient picker ----------
+   Ported from the approved app/proto-result-cards prototype's
+   .presetRow/.presetSwatch — same small circular swatches, same active
+   ring, just without the prototype-only "not random yet" debug label
+   (this is now a real, elegant preference control, not a dev tool). */
+
+.presetRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.presetSwatch {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 0;
+}
+
+.presetSwatchActive {
+  border-color: #181820;
+}
+
 /* ---------- post-approval: real download/share controls ----------
    New (not part of the visual concept that was approved, which had no
-   working export) — styled to match the same quiet-glass-pill language as
-   .arrowButton/.chip rather than introducing a new button style. */
+   working export). Share is the product's primary action here — a
+   lavender-tinted glass pill (translucent + blurred, same family as
+   .chip/.arrowButton, never a flat/solid button) that stands out through
+   size, weight and a soft lavender glow rather than a hard color swap.
+   Download stays the smaller, quieter glass pill it already was, right
+   next to it in the same row. */
 
 .actionsRow {
   display: flex;
-  gap: 10px;
+  align-items: center;
+  gap: 12px;
+}
+
+.primaryAction {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 3rem;
+  padding: 0 1.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(201, 195, 244, 0.65), rgba(201, 195, 244, 0.42));
+  backdrop-filter: blur(10px) saturate(170%);
+  -webkit-backdrop-filter: blur(10px) saturate(170%);
+  font-family: var(--font-nunito), system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 0.9375rem;
+  color: #181820;
+  cursor: pointer;
+  box-shadow: 0 14px 28px -14px rgba(201, 195, 244, 0.9);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.2s ease;
+}
+
+.primaryAction:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 32px -14px rgba(201, 195, 244, 1);
+}
+
+.primaryAction:active {
+  transform: translateY(0);
+}
+
+.primaryAction:disabled {
+  opacity: 0.5;
+  cursor: default;
+  transform: none;
 }
 
 .actionButton {
