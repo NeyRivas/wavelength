@@ -1,4 +1,5 @@
 import { AnimatedQuestionList } from "./animated-question-list";
+import { assignQuestionTints } from "./category-visuals";
 import { FinalizeForm } from "./finalize-form";
 import { QuestionAddForm } from "./question-add-form";
 import { QuestionCard } from "./question-card";
@@ -42,6 +43,7 @@ export function QuestionnaireBuilder({
   const answeredCount = questions.filter((q) => answerByQuestion.has(q.id)).length;
   const atMax = questions.length >= MAX_QUESTIONS;
   const canFinalize = questions.length >= MIN_QUESTIONS && answeredCount === questions.length;
+  const tintByQuestion = assignQuestionTints(questions);
 
   return (
     <div className="create-builder">
@@ -53,6 +55,7 @@ export function QuestionnaireBuilder({
                 wavelengthId={wavelength.id}
                 question={question}
                 index={index}
+                tint={tintByQuestion.get(question.id)!}
                 answerValue={answerByQuestion.get(question.id)}
                 isFirst={index === 0}
                 isLast={index === questions.length - 1}

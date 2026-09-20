@@ -26,22 +26,47 @@ export function tintForIndex(index: number): CategoryTint {
 }
 
 /**
- * Same 5-tint cycle, but keyed by a question's own stable `id` rather than
- * its position in the list (bug fix). `/create`'s builder list is
- * reorderable (see moveQuestion, app/actions/questions.ts), and QuestionCard
- * used to derive its tint from `index` — so swapping two neighbors visually
- * looked like the *colors* swapped in place rather than the cards
- * themselves moving, since each position always resolved to the same tint
- * regardless of which question now sat there. A tint derived purely from
- * the question's own id never changes for that question no matter how many
- * times it's reordered relative to its siblings, so the color now travels
- * with the card exactly like its content does. A simple, non-cryptographic
- * string hash is enough — it only needs to spread ids evenly across the
- * same 5 approved tints, deterministically. */
-export function tintForId(id: string): CategoryTint {
-  let hash = 0;
-  for (let i = 0; i < id.length; i++) {
-    hash = (hash * 31 + id.charCodeAt(i)) | 0;
-  }
-  return TINT_CYCLE[Math.abs(hash) % TINT_CYCLE.length]!;
+ * Assigns each question in `/create`'s reorderable builder list a tint
+ * that's both stable across reorders AND distinct from its siblings' while
+ * there are 5 or fewer of them (bug fix, 2nd pass). The first attempt at
+ * "stable across reorders" hashed each question's own `id` — stable, yes,
+ * but a hash can (and with only 5 buckets, easily does) collide, so two
+ * different questions could land on the same tint even with as few as 3
+ * questions total. That's wrong: with N <= 5 questions, all N tints shown
+ * must be distinct, and with N > 5 the cycle may legitimately repeat.
+ *
+ * The fix ranks questions by `created_at` (a real DB column, already
+ * present on every row — see supabase/migrations/20260904120100_schema.sql
+ * — just not previously selected by /create's query) rather than by `id`
+ * or by list position. Unlike `order_index`/array position, `created_at`
+ * never changes for a question no matter how many times it's reordered
+ * relative to its siblings — so ranking by it gives a tint that (a) is
+ * guaranteed distinct among the first 5 questions ever added (rank 0-4 map
+ * 1:1 onto the 5 tints), (b) only repeats once a 6th question exists,
+ * exactly like the approved category-tint cycle already works elsewhere in
+ * this file, and (c) travels permanently with its question through any
+ * number of reorders, since reordering never touches `created_at`.
+ *
+ * Purely presentational and computed fresh on every render from data
+ * already being fetched for other reasons — nothing is stored, no schema
+ * change, no new column. `QuestionnaireBuilder` calls this once per render
+ * with the full sibling list and threads the result down as an explicit
+ * `tint` prop, since a single `QuestionCard` has no way to know its own
+ * siblings' creation order on its own. */
+export function assignQuestionTints(
+  questions: { id: string; created_at?: string }[],
+): Map<string, CategoryTint> {
+  const ordered = [...questions].sort((a, b) => {
+    const aTime = a.created_at ?? "";
+    const bTime = b.created_at ?? "";
+    if (aTime !== bTime) return aTime < bTime ? -1 : 1;
+    // Deterministic tie-break for identical (or missing) timestamps.
+    return a.id < b.id ? -1 : 1;
+  });
+
+  const tints = new Map<string, CategoryTint>();
+  ordered.forEach((question, rank) => {
+    tints.set(question.id, TINT_CYCLE[rank % TINT_CYCLE.length]!);
+  });
+  return tints;
 }

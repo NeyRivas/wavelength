@@ -3,6 +3,14 @@
    it. */
 
 :root {
+  /* Belt-and-suspenders alongside the `viewport.colorScheme` export in
+     app/layout.tsx (which renders the equivalent <meta name="color-scheme">
+     tag) — this is the CSS-side way of telling a browser "this page only
+     supports a light theme," so it doesn't try to auto-darken these
+     pastel colors when the OS/browser is in dark mode. See layout.tsx for
+     the full root-cause explanation. */
+  color-scheme: light;
+
   --color-text: #1a1a1a;
   --color-muted: #5c6773;
   --color-bg: #ffffff;
@@ -656,16 +664,15 @@ dialog::backdrop {
   gap: 0.625rem;
 }
 
-/* Legibility fix: this is a real <button> with no `appearance` reset, so
-   on browsers that apply native control chrome to unstyled buttons (most
-   notably Safari), that default chrome can visibly compete with the
-   custom background/text before an interaction (hover/focus) forces a
-   repaint that fully commits to the custom styles — reading as faded or
-   "gradient-affected" letters in the resting state. `appearance: none`
-   (plus the -webkit- prefix Safari still needs) removes that native
-   layer entirely so only this solid lavender fill and solid ink text ever
-   render, in every state. Text color itself was already solid — this
-   doesn't change size, color, or the working hover/active states below. */
+/* Legibility fix, root cause identified and fixed at the source (see the
+   `color-scheme: light` in :root above and viewport.colorScheme in
+   app/layout.tsx): without declaring a supported color scheme, a
+   browser/OS in dark mode could auto-darken this button's colors on the
+   fly, which is what actually produced the "gradient/lost contrast"
+   report — reproduced locally by forcing dark mode, with no change to this
+   rule at all. `appearance: none` (plus the -webkit- prefix Safari still
+   needs) is kept as ordinary, unrelated good practice for a custom-styled
+   button — this text/background were already solid CSS-side either way. */
 .result-primary-button {
   display: inline-flex;
   align-items: center;
@@ -679,7 +686,6 @@ dialog::backdrop {
   -webkit-appearance: none;
   background: var(--wl-lavender);
   color: var(--wl-ink);
-  -webkit-text-fill-color: var(--wl-ink);
   font-family: var(--font-nunito), system-ui, sans-serif;
   font-weight: 800;
   font-size: 1rem;
@@ -748,14 +754,14 @@ dialog::backdrop {
    reads as inviting/shareable rather than a hard SaaS CTA. Kept as its own
    dedicated class rather than reusing/changing .result-secondary-button,
    which nothing else in the product uses. */
-/* Legibility fix (same root cause as .result-primary-button above): no
-   `appearance` reset meant native button chrome could show through this
-   button's background before an interaction repainted it — worse here
-   since this background is intentionally not fully opaque (the glass
-   gradient), so native chrome had real surface to blend into. `appearance:
-   none` removes that layer; the gradient stays exactly where it belongs —
-   the button's own surface — never touching the icon or text, which get
-   an explicit solid color so nothing can clip a gradient onto them. */
+/* Legibility fix, same root cause and same fix as .result-primary-button
+   above (`color-scheme: light`, :root + app/layout.tsx) — this button's
+   background was especially exposed to it since it's intentionally
+   translucent (the glass gradient) rather than a flat fill, giving a
+   forced-dark heuristic more surface to re-darken. `appearance: none` is
+   kept as ordinary, unrelated good practice; the gradient stays exactly
+   where it belongs — the button's own surface — never the icon or text,
+   which were already a plain solid color in the CSS either way. */
 .result-share-cta {
   display: inline-flex;
   align-items: center;
@@ -775,7 +781,6 @@ dialog::backdrop {
   backdrop-filter: blur(14px) saturate(180%);
   -webkit-backdrop-filter: blur(14px) saturate(180%);
   color: var(--wl-ink);
-  -webkit-text-fill-color: var(--wl-ink);
   font-family: var(--font-nunito), system-ui, sans-serif;
   font-weight: 800;
   font-size: 1.0625rem;

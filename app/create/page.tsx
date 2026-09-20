@@ -77,7 +77,7 @@ export default async function CreatePage() {
   const [{ data: questions }, { data: answers }] = await Promise.all([
     supabase
       .from("questions")
-      .select("id, category, type, text, options, order_index")
+      .select("id, category, type, text, options, order_index, created_at")
       .eq("wavelength_id", draft.id)
       .order("order_index", { ascending: true }),
     supabase

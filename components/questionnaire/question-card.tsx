@@ -6,7 +6,7 @@ import { saveAnswerA } from "@/app/actions/answers";
 import { deleteQuestion, moveQuestion } from "@/app/actions/questions";
 
 import { AnswerControl } from "./answer-control";
-import { tintForId } from "./category-visuals";
+import type { CategoryTint } from "./category-visuals";
 import { QuestionEditForm } from "./question-edit-form";
 import { TypeChangeControl } from "./type-change-control";
 import type { QuestionRow } from "./types";
@@ -54,6 +54,7 @@ export function QuestionCard({
   wavelengthId,
   question,
   index,
+  tint,
   answerValue,
   isFirst,
   isLast,
@@ -61,6 +62,7 @@ export function QuestionCard({
   wavelengthId: string;
   question: QuestionRow;
   index: number;
+  tint: CategoryTint;
   answerValue: number | undefined;
   isFirst: boolean;
   isLast: boolean;
@@ -72,7 +74,6 @@ export function QuestionCard({
     setOptimisticAnswer(answerValue);
   }
 
-  const tint = tintForId(question.id);
   const isReady = optimisticAnswer !== undefined;
 
   return (
