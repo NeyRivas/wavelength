@@ -130,7 +130,7 @@ export function QuestionAddForm({
       >
         <span className="create-add-question-trigger__label">+ Add question</span>
         <span className="create-add-question-trigger__count">
-          ({nextIndex}/{MAX_QUESTIONS})
+          ({nextIndex + 1}/{MAX_QUESTIONS})
         </span>
       </button>
     );
