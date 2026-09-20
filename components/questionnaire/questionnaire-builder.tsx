@@ -1,3 +1,4 @@
+import { AnimatedQuestionList } from "./animated-question-list";
 import { FinalizeForm } from "./finalize-form";
 import { QuestionAddForm } from "./question-add-form";
 import { QuestionCard } from "./question-card";
@@ -45,9 +46,9 @@ export function QuestionnaireBuilder({
   return (
     <div className="create-builder">
       {questions.length > 0 && (
-        <ol className="create-card-list">
+        <AnimatedQuestionList>
           {questions.map((question, index) => (
-            <li key={question.id}>
+            <li key={question.id} data-flip-id={question.id}>
               <QuestionCard
                 wavelengthId={wavelength.id}
                 question={question}
@@ -58,7 +59,7 @@ export function QuestionnaireBuilder({
               />
             </li>
           ))}
-        </ol>
+        </AnimatedQuestionList>
       )}
 
       {atMax ? (

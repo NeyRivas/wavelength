@@ -422,31 +422,62 @@ dialog::backdrop {
   margin: 0 0 1rem;
 }
 
+/* Glass pass: same pastel tint per category as before, now a soft frosted
+   panel (translucent gradient fill + blurred backdrop + soft white border
+   + soft ambient shadow) instead of a flat color-mix fill — coherent with
+   the glass language already established by .global-summary__glass, just
+   lighter, since these sit lower on the page without ambient blobs behind
+   them. Hue per category is unchanged; only the fill's translucency and
+   the added border/shadow/blur are new. */
 .category-card {
+  position: relative;
   padding: 1.125rem 1.25rem;
   border-radius: 1.25rem;
-  background: color-mix(in srgb, var(--wl-lavender) 22%, white);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 14px 30px -22px rgba(24, 24, 32, 0.16);
   text-align: center;
 }
 
 .category-card--lavender {
-  background: color-mix(in srgb, var(--wl-lavender) 22%, white);
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--wl-lavender) 40%, white) 0%,
+    color-mix(in srgb, var(--wl-lavender) 14%, white) 100%
+  );
 }
 
 .category-card--blue {
-  background: color-mix(in srgb, var(--wl-blue) 22%, white);
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--wl-blue) 40%, white) 0%,
+    color-mix(in srgb, var(--wl-blue) 14%, white) 100%
+  );
 }
 
 .category-card--mint {
-  background: color-mix(in srgb, var(--wl-mint) 22%, white);
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--wl-mint) 40%, white) 0%,
+    color-mix(in srgb, var(--wl-mint) 14%, white) 100%
+  );
 }
 
 .category-card--pink {
-  background: color-mix(in srgb, var(--wl-pink) 22%, white);
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--wl-pink) 40%, white) 0%,
+    color-mix(in srgb, var(--wl-pink) 14%, white) 100%
+  );
 }
 
 .category-card--peach {
-  background: color-mix(in srgb, var(--wl-peach) 22%, white);
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--wl-peach) 40%, white) 0%,
+    color-mix(in srgb, var(--wl-peach) 14%, white) 100%
+  );
 }
 
 .category-card__label {
@@ -465,11 +496,17 @@ dialog::backdrop {
 
 /* ── question comparison card (Aligned / Different / All Questions) ──── */
 
+/* Glass pass: a soft frosted panel instead of the previous flat white
+   fill + hairline border — same content, same layout, just a lighter,
+   elegant separation from the page behind it. */
 .question-compare {
   padding: 1.25rem 1.375rem;
   border-radius: 1.25rem;
-  background: #ffffff;
-  border: 1px solid var(--color-border);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.5));
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 14px 30px -24px rgba(24, 24, 32, 0.16);
   margin-bottom: 1rem;
 }
 
@@ -529,10 +566,16 @@ dialog::backdrop {
 
 /* ── All Questions: collapsed-by-default category groups ─────────────── */
 
+/* Glass pass: same idea as .question-compare above — a soft frosted panel
+   instead of the previous flat --color-surface fill. */
 .category-detail {
   margin-bottom: 0.75rem;
   border-radius: 1.25rem;
-  background: var(--color-surface);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.68), rgba(246, 247, 249, 0.5));
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 10px 24px -22px rgba(24, 24, 32, 0.14);
   overflow: hidden;
 }
 
@@ -4445,6 +4488,140 @@ dialog::backdrop {
 .result-unavailable__button:active {
   transform: translateY(0);
   box-shadow: 0 4px 10px -6px color-mix(in srgb, var(--wl-lavender) 75%, transparent);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   /w/[token] — "already in progress" (components/wavelength/
+   wavelength-in-progress-notice.tsx), shown to a non-participant on a
+   token whose Wavelength already has both A and B. Same visual-redesign
+   pass and technique as .b-locked/.result-unavailable just above: purely a
+   restyle of what used to be a single bare, unstyled <main><h1>/<p> — the
+   guard that decides when this renders (`get_wavelength_preview`'s
+   `is_taken` flag) lives entirely in app/w/[token]/page.tsx and is
+   untouched. Scoped entirely under .wavelength-in-progress so nothing here
+   touches any other screen's classes. */
+
+.wavelength-in-progress-shell {
+  position: relative;
+  text-align: center;
+}
+
+.wavelength-in-progress {
+  position: relative;
+}
+
+.wavelength-in-progress__ambient {
+  position: absolute;
+  inset: -3rem -2rem;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.wavelength-in-progress__ambient-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.3;
+  animation: hero-blob-drift 29s ease-in-out infinite;
+}
+
+.wavelength-in-progress__ambient-blob--a {
+  width: 20rem;
+  height: 20rem;
+  top: -2rem;
+  left: 9%;
+  background: radial-gradient(
+    circle at 40% 40%,
+    var(--wl-peach) 0%,
+    var(--wl-pink) 55%,
+    transparent 100%
+  );
+}
+
+.wavelength-in-progress__ambient-blob--b {
+  width: 18rem;
+  height: 18rem;
+  bottom: -3rem;
+  right: 7%;
+  background: radial-gradient(
+    circle at 60% 60%,
+    var(--wl-lavender) 0%,
+    var(--wl-blue) 55%,
+    transparent 100%
+  );
+  animation-duration: 32s;
+  animation-direction: alternate-reverse;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wavelength-in-progress__ambient-blob {
+    animation: none;
+  }
+}
+
+.wavelength-in-progress__motif {
+  position: relative;
+  z-index: 1;
+  display: block;
+  margin: 0 auto 1.75rem;
+  width: min(16rem, 100%);
+  height: auto;
+}
+
+.wavelength-in-progress__heading {
+  position: relative;
+  z-index: 1;
+  margin: 0 0 0.75rem;
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(2rem, 6vw, 2.5rem);
+  color: var(--wl-ink);
+}
+
+.wavelength-in-progress__text {
+  position: relative;
+  z-index: 1;
+  margin: 0 auto 2rem;
+  max-width: 26rem;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--wl-muted);
+}
+
+.wavelength-in-progress__button {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3rem;
+  padding: 0 2rem;
+  border: none;
+  border-radius: 999px;
+  background: var(--wl-peach);
+  color: var(--wl-ink);
+  font-family: var(--font-nunito), system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 1rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+  box-shadow: 0 6px 16px -6px color-mix(in srgb, var(--wl-peach) 75%, transparent);
+}
+
+.wavelength-in-progress__button:hover {
+  background: color-mix(in srgb, var(--wl-peach) 82%, var(--wl-ink) 18%);
+  box-shadow: 0 8px 18px -6px color-mix(in srgb, var(--wl-peach) 85%, transparent);
+  transform: translateY(-1px);
+}
+
+.wavelength-in-progress__button:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 10px -6px color-mix(in srgb, var(--wl-peach) 75%, transparent);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════

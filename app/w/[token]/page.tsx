@@ -7,6 +7,7 @@ import { InviteIntro } from "@/components/wavelength/invite-intro";
 import { JoinForm } from "@/components/wavelength/join-form";
 import { ReviewIntro } from "@/components/wavelength/review-intro";
 import { ShareView } from "@/components/wavelength/share-view";
+import { WavelengthInProgressNotice } from "@/components/wavelength/wavelength-in-progress-notice";
 import { requireUserId } from "@/lib/supabase/identity";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { absoluteUrl } from "@/lib/wavelength/absolute-url";
@@ -118,10 +119,12 @@ export default async function WavelengthPage({ params }: { params: Promise<{ tok
 
   if (preview.is_taken) {
     return (
-      <main>
-        <h1>This Wavelength is already in progress</h1>
-        <p>It already has two participants.</p>
-      </main>
+      <div className={`${fraunces.variable} ${nunitoSans.variable} wl-create`}>
+        <CreateHeader />
+        <main className="create-shell wavelength-in-progress-shell">
+          <WavelengthInProgressNotice />
+        </main>
+      </div>
     );
   }
 
