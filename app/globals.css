@@ -656,6 +656,16 @@ dialog::backdrop {
   gap: 0.625rem;
 }
 
+/* Legibility fix: this is a real <button> with no `appearance` reset, so
+   on browsers that apply native control chrome to unstyled buttons (most
+   notably Safari), that default chrome can visibly compete with the
+   custom background/text before an interaction (hover/focus) forces a
+   repaint that fully commits to the custom styles — reading as faded or
+   "gradient-affected" letters in the resting state. `appearance: none`
+   (plus the -webkit- prefix Safari still needs) removes that native
+   layer entirely so only this solid lavender fill and solid ink text ever
+   render, in every state. Text color itself was already solid — this
+   doesn't change size, color, or the working hover/active states below. */
 .result-primary-button {
   display: inline-flex;
   align-items: center;
@@ -665,8 +675,11 @@ dialog::backdrop {
   padding: 0 2rem;
   border: none;
   border-radius: 999px;
+  appearance: none;
+  -webkit-appearance: none;
   background: var(--wl-lavender);
   color: var(--wl-ink);
+  -webkit-text-fill-color: var(--wl-ink);
   font-family: var(--font-nunito), system-ui, sans-serif;
   font-weight: 800;
   font-size: 1rem;
@@ -735,6 +748,14 @@ dialog::backdrop {
    reads as inviting/shareable rather than a hard SaaS CTA. Kept as its own
    dedicated class rather than reusing/changing .result-secondary-button,
    which nothing else in the product uses. */
+/* Legibility fix (same root cause as .result-primary-button above): no
+   `appearance` reset meant native button chrome could show through this
+   button's background before an interaction repainted it — worse here
+   since this background is intentionally not fully opaque (the glass
+   gradient), so native chrome had real surface to blend into. `appearance:
+   none` removes that layer; the gradient stays exactly where it belongs —
+   the button's own surface — never touching the icon or text, which get
+   an explicit solid color so nothing can clip a gradient onto them. */
 .result-share-cta {
   display: inline-flex;
   align-items: center;
@@ -744,6 +765,8 @@ dialog::backdrop {
   padding: 0 2.5rem;
   border: 1px solid rgba(255, 255, 255, 0.8);
   border-radius: 999px;
+  appearance: none;
+  -webkit-appearance: none;
   background: linear-gradient(
     135deg,
     color-mix(in srgb, var(--wl-lavender) 92%, transparent),
@@ -752,6 +775,7 @@ dialog::backdrop {
   backdrop-filter: blur(14px) saturate(180%);
   -webkit-backdrop-filter: blur(14px) saturate(180%);
   color: var(--wl-ink);
+  -webkit-text-fill-color: var(--wl-ink);
   font-family: var(--font-nunito), system-ui, sans-serif;
   font-weight: 800;
   font-size: 1.0625rem;
