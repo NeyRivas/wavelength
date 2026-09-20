@@ -22,11 +22,17 @@ const QUESTIONS = [
 
 /**
  * E2E — completed Result page actions (product decision): both A and B get
- * an identical "Download result" / "Share result" / "Create your own
- * Wavelength" action group (components/result/result-actions.tsx), and
- * starting a new Wavelength from either surface always confirms first via
- * the shared dialog (components/ui/confirm-dialog.tsx) rather than
- * navigating immediately.
+ * an identical "Share result" / "Create your own Wavelength" action group
+ * (components/result/result-actions.tsx), and starting a new Wavelength
+ * from either surface always confirms first via the shared dialog
+ * (components/ui/confirm-dialog.tsx) rather than navigating immediately.
+ *
+ * "Share result" opens the Result Cards experience (components/result/
+ * cards/) instead of the old plain-text Web Share sheet — Download now
+ * lives inside that experience (components/result/cards/
+ * result-cards-experience.tsx), saving an image of whichever card is
+ * currently showing, rather than sitting in this row as its own
+ * always-visible text-file button.
  */
 async function completeAWavelength(
   page: import("@playwright/test").Page,
@@ -52,7 +58,7 @@ async function completeAWavelength(
   return { bContext, bPage };
 }
 
-test("Result page shows Download result, Share result, and Create your own Wavelength for both A and B", async ({
+test("Result page shows Share result and Create your own Wavelength for both A and B", async ({
   page,
   browser,
 }) => {
@@ -64,10 +70,48 @@ test("Result page shows Download result, Share result, and Create your own Wavel
   await expectResultVisible(page);
 
   for (const target of [page, bPage]) {
-    await expect(target.getByRole("button", { name: "Download result" })).toBeVisible();
     await expect(target.getByRole("button", { name: "Share result" })).toBeVisible();
     await expect(target.getByRole("button", { name: "Create your own Wavelength" })).toBeVisible();
+    // Download is no longer a standalone action here — it now lives inside
+    // the Result Cards experience opened by "Share result" (see below).
+    await expect(target.getByRole("button", { name: "Download result" })).toHaveCount(0);
   }
+
+  await bContext.close();
+});
+
+test("Share result opens the Result Cards experience, with navigation and a Download action for the current card", async ({
+  page,
+  browser,
+}) => {
+  const { bContext, bPage } = await completeAWavelength(page, browser);
+
+  await bPage.getByRole("button", { name: "Share result" }).click();
+
+  const dialog = bPage.getByRole("dialog", { name: "Wavelength result cards" });
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByText("Your wavelength")).toBeVisible();
+
+  await expect(dialog.getByRole("button", { name: "Download" })).toBeVisible();
+  await expect(dialog.getByRole("button", { name: "Share" })).toBeVisible();
+
+  // "Next card"/"Previous card" also label the full-height invisible tap
+  // zones (Stories-style tap-to-advance), so scope to the one visible
+  // arrow button rather than getByRole, which would match both.
+  const nextButton = dialog.locator('button[aria-label="Next card"]');
+
+  // Step through all 4 cards via the visible arrow controls.
+  await nextButton.click();
+  await expect(dialog.getByText("You really clicked")).toBeVisible();
+  await nextButton.click();
+  await expect(dialog.getByText("Different wavelengths")).toBeVisible();
+  await nextButton.click();
+  await expect(dialog.getByText("wavelength.zone")).toBeVisible();
+
+  await dialog.getByRole("button", { name: "Close" }).click();
+  await expect(dialog).not.toBeVisible();
+  // Closing the experience leaves the completed result underneath intact.
+  await expectResultVisible(bPage);
 
   await bContext.close();
 });

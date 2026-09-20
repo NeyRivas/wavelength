@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { buildResultText, buildShareSummaryText } from "../../lib/wavelength/export";
+import { buildShareSummaryText } from "../../lib/wavelength/export";
 import {
   buildWavelengthResultView,
   type ResultAnswerRow,
@@ -40,32 +40,6 @@ const answers: ResultAnswerRow[] = [
 const view = buildWavelengthResultView(questions, answers);
 const aliasA = "Alex";
 const aliasB = "Bailey";
-
-describe("buildResultText (download — same viewer the Result page already authorized)", () => {
-  it("includes both aliases and the overall score/level", () => {
-    const text = buildResultText(view, aliasA, aliasB);
-    expect(text).toContain(aliasA);
-    expect(text).toContain(aliasB);
-    expect(text).toContain(`${view.global.score}%`);
-    expect(text).toContain(view.global.level);
-  });
-
-  it("includes every category's score", () => {
-    const text = buildResultText(view, aliasA, aliasB);
-    for (const c of view.categories) {
-      expect(text).toContain(`${c.score}%`);
-    }
-  });
-
-  it("includes question text and both participants' individual answers — same data the Result page already shows this viewer", () => {
-    const text = buildResultText(view, aliasA, aliasB);
-    for (const q of [...view.whereAligned, ...view.differentWavelengths]) {
-      expect(text).toContain(q.text);
-      expect(text).toContain(q.answerA);
-      expect(text).toContain(q.answerB);
-    }
-  });
-});
 
 describe("buildShareSummaryText (share — privacy-safe, may reach a non-participant)", () => {
   it("includes both aliases and the overall score/level", () => {
