@@ -557,15 +557,17 @@ dialog::backdrop {
   padding: 0.25rem 1.25rem 1.25rem;
 }
 
-/* ── result actions (create-new / share / download) ──────────────────── */
-/* Clear hierarchy (feedback pass): "Create your own Wavelength" is the
-   strongest action on the page — the natural next step once you've seen
-   your result, styled with the same soft-lavender primary treatment used
-   for every other forward-moving CTA in the product (Copy link/Start
-   answering). Share and Download are compact, quiet secondary actions
-   underneath it — same soft pill language, just smaller and lower
-   contrast, so neither competes with the primary CTA or the percentage
-   above it. */
+/* ── result actions (create-new / share) ──────────────────────────────── */
+/* Hierarchy pass: "Share result" (.result-share-cta) is now the page's
+   standout action — sharing is a core part of the product, so it gets the
+   boldest, most colorful treatment on Results: a bigger pastel-gradient
+   glass pill (lavender → pink, the same two colors the wavelength motif
+   itself uses), not a flat/solid button. "Create your own Wavelength"
+   keeps its existing solid-lavender primary treatment (.result-primary-
+   button, unchanged) — still a strong action, just visually a notch below
+   Share now. (Download used to live in this same row as a third, quieter
+   action; it's since moved inside the Result Cards experience itself,
+   where it saves whichever card is currently showing.) */
 
 .result-actions {
   display: flex;
@@ -651,6 +653,57 @@ dialog::backdrop {
 
 .result-secondary-button:active {
   transform: translateY(1px);
+}
+
+/* The Results page's standout CTA (components/result/cards/
+   result-cards-launcher.tsx's "Share result" button, the entry point into
+   the Result Cards experience) — bigger and bolder than
+   .result-primary-button, a translucent lavender-to-pink glass pill (the
+   wavelength motif's own two colors) rather than a flat/solid fill, so it
+   reads as inviting/shareable rather than a hard SaaS CTA. Kept as its own
+   dedicated class rather than reusing/changing .result-secondary-button,
+   which nothing else in the product uses. */
+.result-share-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  min-height: 3.5rem;
+  padding: 0 2.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 999px;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--wl-lavender) 92%, transparent),
+    color-mix(in srgb, var(--wl-pink) 88%, transparent)
+  );
+  backdrop-filter: blur(14px) saturate(180%);
+  -webkit-backdrop-filter: blur(14px) saturate(180%);
+  color: var(--wl-ink);
+  font-family: var(--font-nunito), system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 1.0625rem;
+  cursor: pointer;
+  box-shadow: 0 18px 38px -12px color-mix(in srgb, var(--wl-pink) 85%, transparent);
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+}
+
+.result-share-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 22px 42px -14px color-mix(in srgb, var(--wl-pink) 80%, transparent);
+}
+
+.result-share-cta:active {
+  transform: translateY(0);
+  box-shadow: 0 12px 26px -14px color-mix(in srgb, var(--wl-pink) 65%, transparent);
+}
+
+.result-share-cta__icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
 }
 
 /* ── "Keep this wavelength?" confirmation (create-new-wavelength-cta.tsx) ──
