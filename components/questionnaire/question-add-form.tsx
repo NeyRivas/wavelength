@@ -65,9 +65,13 @@ const TEXT_PLACEHOLDER = "e.g. What does your ideal weekend look like?";
  * it validates is unaffected either way.
  *
  * UX pass: the *very first* question (nextIndex === 0, i.e. the draft has
- * no questions yet) starts expanded instead — landing on /create with an
- * empty draft should go straight to an open editor, not one more click on
- * a "+ Add question" trigger. Every question after that still starts
+ * no questions yet) starts expanded instead. The only way to reach that
+ * state is DraftSetupForm's "+ Add your first question" (app/create/
+ * page.tsx still shows that intermediate screen for a brand-new A, exactly
+ * as before) — once its `createDraft` submit succeeds and the page
+ * re-renders into this builder, the first question should be open and
+ * ready to fill in immediately, not one more click away behind its own
+ * "+ Add question" trigger. Every question after that still starts
  * collapsed exactly as before: this only affects this component's initial
  * state on mount, and the existing collapse-back-on-successful-submit
  * effect just below already resets it to collapsed the moment the first
