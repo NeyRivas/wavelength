@@ -63,6 +63,16 @@ const TEXT_PLACEHOLDER = "e.g. What does your ideal weekend look like?";
  * collapses it back and resets these local fields, ready for the next
  * one. Purely a local `expanded` toggle — `addQuestion` and everything
  * it validates is unaffected either way.
+ *
+ * UX pass: the *very first* question (nextIndex === 0, i.e. the draft has
+ * no questions yet) starts expanded instead — landing on /create with an
+ * empty draft should go straight to an open editor, not one more click on
+ * a "+ Add question" trigger. Every question after that still starts
+ * collapsed exactly as before: this only affects this component's initial
+ * state on mount, and the existing collapse-back-on-successful-submit
+ * effect just below already resets it to collapsed the moment the first
+ * question is actually added — before a second QuestionAddForm (now at
+ * nextIndex === 1) ever mounts.
  */
 export function QuestionAddForm({
   wavelengthId,
@@ -72,7 +82,7 @@ export function QuestionAddForm({
   nextIndex: number;
 }) {
   const [state, formAction, pending] = useActionState(addQuestion, initialActionState);
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(nextIndex === 0);
   const [type, setType] = useState<QuestionType | null>(null);
   const [options, setOptions] = useState<string[]>(["", ""]);
 

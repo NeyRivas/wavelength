@@ -63,12 +63,30 @@ export default async function CreatePage() {
     .maybeSingle();
 
   if (!draft) {
+    // UX pass: skip the old "Start with your first question" intermediate
+    // screen entirely — auto-create the DRAFT row server-side (the exact
+    // same, still-unmodified insert createDraft/DraftSetupForm performs;
+    // it takes no user input and has nothing to validate) so A lands
+    // straight on the builder, first question already open (see
+    // QuestionAddForm's own nextIndex === 0 check). DraftSetupForm is kept
+    // as a fallback for the — expected-unreachable — case this insert
+    // itself fails, rather than crashing the page.
+    const { data: newDraft } = await supabase
+      .from("wavelengths")
+      .insert({ participant_a_id: userId })
+      .select("id, share_token")
+      .single();
+
     return (
       <div className={`${fraunces.variable} ${nunitoSans.variable} wl-create`}>
         <CreateHeader />
         <main className="create-shell">
           <CreateShellIntro questionCount={0} />
-          <DraftSetupForm />
+          {newDraft ? (
+            <QuestionnaireBuilder wavelength={newDraft} questions={[]} answers={[]} />
+          ) : (
+            <DraftSetupForm />
+          )}
         </main>
       </div>
     );
