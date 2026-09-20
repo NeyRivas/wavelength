@@ -137,7 +137,7 @@ export function QuestionAddForm({
   }
 
   return (
-    <article className={`create-card create-card--${tint}`}>
+    <article className="create-card">
       <header className={`create-card__head create-card__head--${tint}`}>
         <div className="create-card__badge">
           <span className={`create-card__number create-card__number--${tint}`}>
