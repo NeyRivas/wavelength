@@ -6,7 +6,7 @@ import { saveAnswerA } from "@/app/actions/answers";
 import { deleteQuestion, moveQuestion } from "@/app/actions/questions";
 
 import { AnswerControl } from "./answer-control";
-import { tintForIndex } from "./category-visuals";
+import { tintForId } from "./category-visuals";
 import { QuestionEditForm } from "./question-edit-form";
 import { TypeChangeControl } from "./type-change-control";
 import type { QuestionRow } from "./types";
@@ -72,7 +72,7 @@ export function QuestionCard({
     setOptimisticAnswer(answerValue);
   }
 
-  const tint = tintForIndex(index);
+  const tint = tintForId(question.id);
   const isReady = optimisticAnswer !== undefined;
 
   return (

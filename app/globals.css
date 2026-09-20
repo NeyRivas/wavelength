@@ -423,61 +423,72 @@ dialog::backdrop {
 }
 
 /* Glass pass: same pastel tint per category as before, now a soft frosted
-   panel (translucent gradient fill + blurred backdrop + soft white border
-   + soft ambient shadow) instead of a flat color-mix fill — coherent with
-   the glass language already established by .global-summary__glass, just
-   lighter, since these sit lower on the page without ambient blobs behind
-   them. Hue per category is unchanged; only the fill's translucency and
-   the added border/shadow/blur are new. */
+   panel (translucent gradient fill + blurred backdrop + soft border + soft
+   ambient shadow) instead of a flat color-mix fill — coherent with the
+   glass language already established by .global-summary__glass.
+   Perceptibility fix: the page behind these cards is a flat, near-white
+   #fdfdfd (no ambient blobs down here, unlike .global-summary), so a
+   backdrop blur alone has nothing to reveal and a near-white border/fill
+   just disappears into it. What actually reads as "glass" against a flat
+   pale background is (a) a visibly-tinted fill, (b) a soft colored border
+   in the same tint, and (c) a real elevation shadow + a thin glassy top
+   highlight — all bumped up from the first pass, tint hue per category
+   still unchanged. */
 .category-card {
   position: relative;
   padding: 1.125rem 1.25rem;
   border-radius: 1.25rem;
-  border: 1px solid rgba(255, 255, 255, 0.6);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 14px 30px -22px rgba(24, 24, 32, 0.16);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    0 16px 34px -16px rgba(24, 24, 32, 0.24);
   text-align: center;
 }
 
 .category-card--lavender {
   background: linear-gradient(
     160deg,
-    color-mix(in srgb, var(--wl-lavender) 40%, white) 0%,
-    color-mix(in srgb, var(--wl-lavender) 14%, white) 100%
+    color-mix(in srgb, var(--wl-lavender) 58%, white) 0%,
+    color-mix(in srgb, var(--wl-lavender) 24%, white) 100%
   );
+  border: 1px solid color-mix(in srgb, var(--wl-lavender) 55%, white);
 }
 
 .category-card--blue {
   background: linear-gradient(
     160deg,
-    color-mix(in srgb, var(--wl-blue) 40%, white) 0%,
-    color-mix(in srgb, var(--wl-blue) 14%, white) 100%
+    color-mix(in srgb, var(--wl-blue) 58%, white) 0%,
+    color-mix(in srgb, var(--wl-blue) 24%, white) 100%
   );
+  border: 1px solid color-mix(in srgb, var(--wl-blue) 55%, white);
 }
 
 .category-card--mint {
   background: linear-gradient(
     160deg,
-    color-mix(in srgb, var(--wl-mint) 40%, white) 0%,
-    color-mix(in srgb, var(--wl-mint) 14%, white) 100%
+    color-mix(in srgb, var(--wl-mint) 58%, white) 0%,
+    color-mix(in srgb, var(--wl-mint) 24%, white) 100%
   );
+  border: 1px solid color-mix(in srgb, var(--wl-mint) 55%, white);
 }
 
 .category-card--pink {
   background: linear-gradient(
     160deg,
-    color-mix(in srgb, var(--wl-pink) 40%, white) 0%,
-    color-mix(in srgb, var(--wl-pink) 14%, white) 100%
+    color-mix(in srgb, var(--wl-pink) 58%, white) 0%,
+    color-mix(in srgb, var(--wl-pink) 24%, white) 100%
   );
+  border: 1px solid color-mix(in srgb, var(--wl-pink) 55%, white);
 }
 
 .category-card--peach {
   background: linear-gradient(
     160deg,
-    color-mix(in srgb, var(--wl-peach) 40%, white) 0%,
-    color-mix(in srgb, var(--wl-peach) 14%, white) 100%
+    color-mix(in srgb, var(--wl-peach) 58%, white) 0%,
+    color-mix(in srgb, var(--wl-peach) 24%, white) 100%
   );
+  border: 1px solid color-mix(in srgb, var(--wl-peach) 55%, white);
 }
 
 .category-card__label {
@@ -497,16 +508,26 @@ dialog::backdrop {
 /* ── question comparison card (Aligned / Different / All Questions) ──── */
 
 /* Glass pass: a soft frosted panel instead of the previous flat white
-   fill + hairline border — same content, same layout, just a lighter,
-   elegant separation from the page behind it. */
+   fill + hairline border. Perceptibility fix: a near-white fill on the
+   page's own near-white background was invisible, so this now carries a
+   whisper of the same lavender/blue tint the wavelength motif already
+   uses for "the two participants", plus a visible soft border in that
+   same tint and a real (if gentle) elevation shadow — same content, same
+   layout, just an actually-visible separation from the page behind it. */
 .question-compare {
   padding: 1.25rem 1.375rem;
   border-radius: 1.25rem;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.5));
-  border: 1px solid rgba(255, 255, 255, 0.7);
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--wl-lavender) 16%, white) 0%,
+    color-mix(in srgb, var(--wl-blue) 12%, white) 100%
+  );
+  border: 1px solid color-mix(in srgb, var(--wl-lavender) 30%, white);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 14px 30px -24px rgba(24, 24, 32, 0.16);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    0 16px 32px -18px rgba(24, 24, 32, 0.22);
   margin-bottom: 1rem;
 }
 
@@ -566,16 +587,24 @@ dialog::backdrop {
 
 /* ── All Questions: collapsed-by-default category groups ─────────────── */
 
-/* Glass pass: same idea as .question-compare above — a soft frosted panel
-   instead of the previous flat --color-surface fill. */
+/* Glass pass: same idea and same perceptibility fix as .question-compare
+   above — a soft frosted panel with an actually-visible pastel tint
+   (mint/lavender, echoing the "All Questions" section's neutral role)
+   instead of the previous near-invisible near-white fill. */
 .category-detail {
   margin-bottom: 0.75rem;
   border-radius: 1.25rem;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.68), rgba(246, 247, 249, 0.5));
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--wl-mint) 15%, white) 0%,
+    color-mix(in srgb, var(--wl-lavender) 12%, white) 100%
+  );
+  border: 1px solid color-mix(in srgb, var(--wl-mint) 30%, white);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 10px 24px -22px rgba(24, 24, 32, 0.14);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    0 14px 28px -18px rgba(24, 24, 32, 0.2);
   overflow: hidden;
 }
 
