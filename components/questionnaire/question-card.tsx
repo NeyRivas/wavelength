@@ -78,7 +78,7 @@ export function QuestionCard({
 
   return (
     <article
-      className={`create-card${isReady ? " create-card--ready" : ""}`}
+      className={`create-card create-card--${tint}${isReady ? " create-card--ready" : ""}`}
       aria-label={`Question: ${question.text}`}
     >
       <header className={`create-card__head create-card__head--${tint}`}>

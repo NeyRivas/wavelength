@@ -3124,6 +3124,34 @@ dialog::backdrop {
   transition: width 0.2s ease;
 }
 
+/* Small, evenly-spaced reference row — 5 Minimum / 8 Recommended /
+   12 Maximum — added below the track, above the existing dynamic label.
+   Quiet by default (same --wl-muted tone as the label below it); the
+   "Recommended" milestone alone gets a touch more weight via --wl-ink,
+   never a new color, size, or layout change to anything else here. */
+.create-progress__milestones {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin: 0.5rem 0 0;
+}
+
+.create-progress__milestone {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--wl-muted);
+  white-space: nowrap;
+}
+
+.create-progress__milestone strong {
+  font-weight: 700;
+  color: inherit;
+}
+
+.create-progress__milestone--recommended {
+  color: var(--wl-ink);
+}
+
 .create-progress__label {
   margin: 0.625rem 0 0;
   font-size: 0.8125rem;
@@ -3296,9 +3324,92 @@ dialog::backdrop {
   background: #ffffff;
 }
 
-/* Answered ("Ready ✓") — a stronger, mint-derived border. color-mix of two
-   approved tokens (mint + ink), not a new base color, same technique
-   already used elsewhere in this file (e.g. .hiw-step__panel--*). */
+/* Glass experiment (subtle), /create builder only: the card's own pastel
+   identity — previously only present in its head band, with a flat white
+   body below — now carries through the whole card as a soft frosted
+   pastel surface. Same corners/spacing/typography as before; only the
+   fill (translucent gradient instead of flat white), border (a soft tint
+   instead of --color-border) and a light blur/shadow/highlight are new.
+   The head band above (.create-card__head--*, unchanged) stays fully
+   opaque and renders on top of this exactly as it already did — this
+   glass only shows through the card's body/padding areas beneath it.
+   Tint always comes from the same stable `tint` prop QuestionCard already
+   receives (assignQuestionTints, category-visuals.ts), so it's
+   automatically the same color as the head band and travels with the
+   card through any reorder, same as before.
+   Scoped to only apply where one of these modifier classes is present
+   (QuestionCard's own editing card and QuestionAddForm's preview card,
+   both in the reorderable /create builder) — deliberately NOT applied to
+   bare `.create-card` above, so B's read-only review (ReadOnlyAnswers)
+   and B's answer page (AnswerQuestionCard), which never add one of these
+   modifiers, keep rendering with the plain, unchanged card above. */
+.create-card--lavender,
+.create-card--blue,
+.create-card--mint,
+.create-card--pink,
+.create-card--peach {
+  position: relative;
+  border-style: solid;
+  border-width: 1px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.75),
+    0 14px 30px -20px rgba(24, 24, 32, 0.16);
+}
+
+.create-card--lavender {
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--wl-lavender) 26%, white) 0%,
+    color-mix(in srgb, var(--wl-lavender) 9%, white) 100%
+  );
+  border-color: color-mix(in srgb, var(--wl-lavender) 42%, white);
+}
+
+.create-card--blue {
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--wl-blue) 26%, white) 0%,
+    color-mix(in srgb, var(--wl-blue) 9%, white) 100%
+  );
+  border-color: color-mix(in srgb, var(--wl-blue) 42%, white);
+}
+
+.create-card--mint {
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--wl-mint) 26%, white) 0%,
+    color-mix(in srgb, var(--wl-mint) 9%, white) 100%
+  );
+  border-color: color-mix(in srgb, var(--wl-mint) 42%, white);
+}
+
+.create-card--pink {
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--wl-pink) 26%, white) 0%,
+    color-mix(in srgb, var(--wl-pink) 9%, white) 100%
+  );
+  border-color: color-mix(in srgb, var(--wl-pink) 42%, white);
+}
+
+.create-card--peach {
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--wl-peach) 26%, white) 0%,
+    color-mix(in srgb, var(--wl-peach) 9%, white) 100%
+  );
+  border-color: color-mix(in srgb, var(--wl-peach) 42%, white);
+}
+
+/* Answered ("Ready ✓") — a stronger, mint-derived border, still winning
+   over whichever tint border-color above is also active (same source-order
+   precedence this rule already relied on before the glass pass — it's
+   declared after the tint variants, both are single-class selectors).
+   color-mix of two approved tokens (mint + ink), not a new base color,
+   same technique already used elsewhere in this file
+   (e.g. .hiw-step__panel--*). */
 .create-card--ready {
   border-color: color-mix(in srgb, var(--wl-mint) 65%, var(--wl-ink));
   border-width: 1.5px;
