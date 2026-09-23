@@ -76,14 +76,14 @@ const STEPS = [
     title: "Create",
     panel: "lavender",
     icon: <CreateIcon />,
-    text: "Pick your questions from Wavelength's categories — relationship, money, adventures, the future, and more — or write your own. Then answer them yourself, first. Your answers stay private until your person joins in.",
+    text: "Pick your questions from categories like relationship, money, adventures, the future, and more — or write your own. Then answer them yourself, first. Your answers stay private until the other person joins in.",
   },
   {
     label: "Step 02",
     title: "Share",
     panel: "peach",
     icon: <ShareIcon />,
-    text: "Once you've answered everything, Wavelength gives you one link. Send it to the one person you want to compare wavelengths with — it's just the two of you, one shared link.",
+    text: "Once you've answered everything, you'll get one link. Send it to the person you're getting to know — it's just the two of you, one shared link.",
   },
   {
     label: "Step 03",

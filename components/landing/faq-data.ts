@@ -26,18 +26,23 @@ export interface FaqCategory {
 export const FAQ_CATEGORIES: FaqCategory[] = [
   {
     id: "about",
-    label: "About Wavelength",
+    label: "About Sameeeish",
     tint: "lavender",
     questions: [
       {
-        question: "What is Wavelength?",
+        question: "What is Sameeeish?",
         answer:
-          "Wavelength is a game for two people to discover where their answers line up — and where they don't. You create the questions, answer them yourself, and invite someone else to play.",
+          "Sameeeish is a game for two people to discover where their answers line up — and where they don't. You create the questions, answer them yourself, and invite someone else to play.",
       },
       {
-        question: "Is Wavelength a compatibility test?",
+        question: "Is this a compatibility test?",
         answer:
-          "Not exactly. Wavelength isn't here to tell you whether you're compatible. It's a way to discover what you already agree on, where your perspectives differ, and what might be fun to talk about.",
+          "Not exactly. It's not here to score how compatible you are — it's a way to discover what you already agree on, where your perspectives differ, and what might be fun to talk about.",
+      },
+      {
+        question: "Can we use it if we're dating, getting to know each other, or already a couple?",
+        answer:
+          "Yes — it works at any stage. It's just as good for a first real conversation with someone new as it is for finding something new to talk about after years together.",
       },
     ],
   },
@@ -54,17 +59,22 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       {
         question: "Who answers the questions first?",
         answer:
-          "The person creating the wavelength answers first. Once the questions are ready, they can share the link with the other person.",
+          "The person creating the questionnaire answers first. Once the questions are ready, they can share the link with the other person.",
+      },
+      {
+        question: "Do we answer separately?",
+        answer:
+          "Yes. You each answer the same questions on your own, without seeing the other person's answers first — that's what keeps the comparison honest.",
       },
       {
         question: "Can I change my questions after sharing?",
         answer:
-          "Once your wavelength has been shared, the questions and your answers are locked so the other person's answers stay genuine.",
+          "Once you've shared your questionnaire, the questions and your answers are locked so the other person's answers stay genuine.",
       },
       {
         question: "Can more than two people play?",
         answer:
-          "Wavelength is designed for two people — one shared set of questions, two perspectives.",
+          "Sameeeish is designed for two people — one shared set of questions, two perspectives.",
       },
     ],
   },
@@ -74,9 +84,9 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     tint: "blue",
     questions: [
       {
-        question: "How is our score calculated?",
+        question: "What do the results mean?",
         answer:
-          "Your result is based on how closely your answers line up. Some answers match completely, while others are simply different perspectives. The goal isn't to get a perfect score — it's to see where you're aligned and where you're on different wavelengths.",
+          "Your result is based on how closely your answers line up. Some answers match completely, while others are simply different perspectives. The goal isn't a perfect score — it's to see where you're aligned and where you see things differently.",
       },
       {
         question: "What does our percentage mean?",
@@ -98,16 +108,20 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       {
         question: "Do we need to create an account?",
         answer:
-          "No account is required to play. Just create your questions, answer them, and share your wavelength.",
+          "No account is required to play. Just create your questions, answer them, and share the link.",
       },
       {
-        question: "How do I share my wavelength?",
-        answer: "Wavelength gives you a private link you can share with the other person.",
+        question: "Is it free?",
+        answer: "Yes, completely free — no account, no payment, no catch.",
+      },
+      {
+        question: "How do I share it?",
+        answer: "You'll get a private link you can share with the other person.",
       },
       {
         question: "Can someone else see our answers?",
         answer:
-          "Your wavelength is designed to be shared only with the person you invite. Keep your link private and only share it with the person you're playing with.",
+          "It's designed to be shared only with the person you invite. Keep your link private and only share it with the person you're playing with.",
       },
     ],
   },

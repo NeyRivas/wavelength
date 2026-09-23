@@ -35,8 +35,8 @@ const nunitoSans = Nunito_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "FAQ — Wavelength",
-  description: "Everything you need to know before you find your wavelength.",
+  title: "FAQ — Sameeeish",
+  description: "Everything you need to know before you get started.",
 };
 
 export default function FaqPage() {

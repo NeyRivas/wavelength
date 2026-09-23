@@ -120,14 +120,16 @@ export function LandingHero() {
           game for two
         </p>
 
-        <h1 className="landing-hero__heading">How well do you really know each other?</h1>
+        <h1 className="landing-hero__heading">Are you really aligned?</h1>
 
-        <p className="landing-hero__description">Find out how aligned you really are.</p>
+        <p className="landing-hero__description">
+          Create your own questionnaire and discover how aligned you are together.
+        </p>
 
         <div className="landing-hero__actions">
           <Link
             href="/create"
-            className="landing-button landing-button--primary landing-button--glass"
+            className="landing-button landing-button--primary landing-button--glass landing-button--hero"
           >
             Let&apos;s play <span aria-hidden="true">→</span>
           </Link>

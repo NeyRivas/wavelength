@@ -78,14 +78,14 @@ export function ForCouplesHero() {
         </h1>
 
         <p className="landing-section__text fc-hero__text">
-          You know their coffee order, their go-to story, how they take a joke. Wavelength is a
-          quick, private way to find the things you haven&apos;t talked about yet — no quiz score
-          and no verdict, just a shared starting point for a real conversation.
+          You know their coffee order, their go-to story, how they take a joke. This is a quick,
+          private way to find the things you haven&apos;t talked about yet — no quiz score and no
+          verdict, just a shared starting point for a real conversation.
         </p>
 
         <div className="fc-hero__actions">
           <Link href="/create" className="landing-button landing-button--primary">
-            Create your wavelength <span aria-hidden="true">→</span>
+            Create your questionnaire <span aria-hidden="true">→</span>
           </Link>
           <Link href="/how-it-works" className="landing-button landing-button--outline">
             See how it works

@@ -47,10 +47,10 @@ export function ForCouplesAlike() {
       <div className="fc-alike__content">
         <h2 className="fc-alike__heading">You know each other. But do you think alike?</h2>
         <p className="fc-alike__text">
-          Knowing someone and knowing how they see the world aren&apos;t always the same thing.
-          Wavelength doesn&apos;t measure how well you know each other, and it doesn&apos;t score
-          your relationship — it just gives you both the same questions, answered apart, so you can
-          see your two perspectives side by side.
+          Knowing someone and knowing how they see the world aren&apos;t always the same thing. This
+          isn&apos;t about measuring how well you know each other, and it doesn&apos;t score your
+          relationship — it just gives you both the same questions, answered apart, so you can see
+          your two perspectives side by side.
         </p>
       </div>
     </section>

@@ -30,7 +30,7 @@ export function FaqHero() {
         <p className="landing-eyebrow landing-eyebrow--plain faq-hero__eyebrow">FAQ</p>
         <h1 className="landing-section__heading faq-hero__heading">Questions, answered.</h1>
         <p className="landing-section__text faq-hero__text">
-          Everything you need to know before you find your wavelength.
+          Everything you need to know before you get started.
         </p>
       </div>
     </section>

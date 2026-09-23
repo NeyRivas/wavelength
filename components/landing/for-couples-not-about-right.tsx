@@ -15,10 +15,9 @@ export function ForCouplesNotAboutRight() {
           It&apos;s not about the &ldquo;right&rdquo; answer.
         </h2>
         <p className="fc-reassure__text">
-          There&apos;s no passing score, and no percentage that decides how compatible you are.
-          Wavelength just shows you where your answers land next to each other — so the moments you
-          match become a nice surprise, and the moments you don&apos;t become something worth
-          talking about.
+          There&apos;s no passing score, and no percentage measuring how alike you are. It just
+          shows you where your answers land next to each other — so the moments you agree become a
+          nice surprise, and the moments you don&apos;t become something worth talking about.
         </p>
       </div>
     </section>

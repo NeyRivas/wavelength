@@ -21,7 +21,7 @@ const CARDS: { kicker: string; title: string; description: string; blobClass: st
 ];
 
 /**
- * "See where you're on the same wavelength" — the page's closing recap,
+ * "See where you're on the same page" — the page's closing recap,
  * one beat before the shared LandingCtaSection. Reuses the exact 3-card
  * grid primitives the homepage's "How it works" section already
  * established (components/landing/landing-how-it-works.tsx:
@@ -35,9 +35,9 @@ export function ForCouplesSummary() {
   return (
     <section className="landing-section fc-summary">
       <p className="landing-eyebrow landing-eyebrow--plain">The recap</p>
-      <h2 className="landing-section__heading">See where you&apos;re on the same wavelength</h2>
+      <h2 className="landing-section__heading">See where you&apos;re on the same page</h2>
       <p className="landing-section__text">
-        Every wavelength ends with the same three things to look at together.
+        Every round ends with the same three things to look at together.
       </p>
 
       <div className="landing-card-grid fc-summary__grid">

@@ -86,7 +86,7 @@ export function HowItWorksHero() {
 
       <p className="landing-section__text hiw-hero__text">
         One of you creates a set of questions and answers them first. Share the link, they answer
-        the same questions on their own, and Wavelength shows you where you line up — and where you
+        the same questions on their own — and together you see where you line up, and where you
         don&apos;t.
       </p>
 
