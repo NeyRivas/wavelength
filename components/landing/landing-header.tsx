@@ -37,7 +37,7 @@ export function LandingHeader() {
       <div className="landing-header__inner">
         <Link href="/" className="landing-logo">
           <LogoMark className="landing-logo__mark" />
-          <span>Wavelength</span>
+          <span>Sameeeish</span>
         </Link>
 
         <nav className="landing-nav" aria-label="Landing sections">

@@ -9,15 +9,13 @@ const STEPS: { number: string; title: string; description: string; blobClass: st
   {
     number: "02",
     title: "Share",
-    description:
-      "Send your wavelength link to someone. They answer the same questions independently.",
+    description: "Send the link to someone. They answer the same questions independently.",
     blobClass: "landing-card__blob--blue",
   },
   {
     number: "03",
     title: "Discover",
-    description:
-      "See where your answers line up — and where you're on completely different wavelengths.",
+    description: "See where your answers line up — and where you're completely different.",
     blobClass: "landing-card__blob--mint",
   },
 ];

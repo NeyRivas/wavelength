@@ -19,7 +19,7 @@ export function LandingFooter() {
     <footer className="landing-footer">
       <Link href="/" className="landing-logo landing-logo--footer">
         <LogoMark className="landing-logo__mark" />
-        <span>Wavelength</span>
+        <span>Sameeeish</span>
       </Link>
 
       <nav className="landing-footer__links" aria-label="Legal">
@@ -29,7 +29,7 @@ export function LandingFooter() {
         <span className="landing-nav__inert">Contact</span>
       </nav>
 
-      <p className="landing-footer__copy">© 2026 Wavelength. Made with care.</p>
+      <p className="landing-footer__copy">© 2026 Sameeeish. Made with care.</p>
     </footer>
   );
 }

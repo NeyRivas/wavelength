@@ -21,13 +21,13 @@ export function LandingCtaSection() {
       </div>
 
       <div className="landing-dark-cta__content">
-        <h2 className="landing-dark-cta__heading">Find your wavelength.</h2>
+        <h2 className="landing-dark-cta__heading">See how much you&apos;re on the same page.</h2>
         <p className="landing-dark-cta__description">
           It only takes a few minutes. You might learn something new about someone you&apos;ve known
           for years.
         </p>
         <Link href="/create" className="landing-button landing-button--light">
-          Create your wavelength <span aria-hidden="true">→</span>
+          Create your questionnaire <span aria-hidden="true">→</span>
         </Link>
         <div className="landing-dot-row" aria-hidden="true">
           {DOT_CLASSES.map((c) => (

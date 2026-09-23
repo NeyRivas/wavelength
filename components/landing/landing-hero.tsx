@@ -120,12 +120,9 @@ export function LandingHero() {
           game for two
         </p>
 
-        <h1 className="landing-hero__heading">Are we on the same wavelength?</h1>
+        <h1 className="landing-hero__heading">How well do you really know each other?</h1>
 
-        <p className="landing-hero__description">
-          Create a set of questions, answer them yourself, then share the link. See where you align
-          — and where you beautifully don&apos;t.
-        </p>
+        <p className="landing-hero__description">Find out how aligned you really are.</p>
 
         <div className="landing-hero__actions">
           <Link
@@ -238,7 +235,7 @@ export function LandingHero() {
               </span>
             ))}
           </div>
-          <span>12,400+ wavelengths shared</span>
+          <span>12,400+ conversations started</span>
         </div>
       </div>
     </section>
