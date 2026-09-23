@@ -3,7 +3,15 @@
 -- to a real Supabase project. Passwords are fixed, throwaway values scoped to
 -- an ephemeral local Postgres cluster — not secrets.
 
-alter role postgres password 'wavelength_test_admin_pw';
+do $$
+begin
+  if not exists (select 1 from pg_roles where rolname = 'postgres') then
+    create role postgres superuser login password 'wavelength_test_admin_pw';
+  else
+    alter role postgres password 'wavelength_test_admin_pw';
+  end if;
+end
+$$;
 
 do $$
 begin
