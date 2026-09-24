@@ -1076,6 +1076,45 @@ dialog::backdrop {
   transform: translateY(0);
 }
 
+/* Hero CTA visual test — solid treatment, replacing .landing-button--glass
+   on the Hero's own CTA only (components/landing/landing-hero.tsx); every
+   other use of --glass is untouched. Fully opaque flat lavender fill (the
+   same --wl-lavender/#C9C3F4 token used elsewhere, not a translucent
+   layer) so nothing from the hero's pastel gradient shows through, with
+   dark ink text for strong contrast. The thin white-ish border stays
+   purely decorative — a hairline "glass edge" to echo the rest of the
+   page's glass surfaces — while the fill underneath is 100% opaque.
+   position+z-index gives it its own explicit stacking context so it's
+   guaranteed to sit above .landing-hero__ambient's blobs even though the
+   parent .landing-hero__content already does the same. The shadow pairs
+   a grounding dark drop shadow with a soft lavender-tinted glow so the
+   pill visibly separates from the gradient behind it without looking
+   heavy. */
+.landing-button--cta-solid {
+  position: relative;
+  z-index: 1;
+  background: var(--wl-lavender);
+  color: var(--wl-ink);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow:
+    0 18px 40px -18px rgba(24, 24, 32, 0.35),
+    0 0 26px 2px rgba(201, 195, 244, 0.55);
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+}
+
+.landing-button--cta-solid:hover {
+  box-shadow:
+    0 22px 46px -18px rgba(24, 24, 32, 0.4),
+    0 0 32px 4px rgba(201, 195, 244, 0.7);
+  transform: translateY(-2px);
+}
+
+.landing-button--cta-solid:active {
+  transform: translateY(0);
+}
+
 .landing-pill {
   display: inline-block;
   padding: 0.5rem 1.125rem;
@@ -1242,7 +1281,7 @@ dialog::backdrop {
 }
 
 .landing-hero__description {
-  margin: 0 auto 2rem;
+  margin: 0 auto 2.5rem;
   max-width: 30rem;
   font-size: 1.125rem;
   line-height: 1.6;
@@ -1261,15 +1300,16 @@ dialog::backdrop {
   gap: 0.875rem;
 }
 
-/* Hierarchy pass: the Hero's own CTA only (additive to .landing-button--
-   primary/--glass, both otherwise unchanged and still used as-is by the
-   header and other pages) — noticeably larger so it reads unmistakably as
-   the page's primary action, same pill shape/colors/glass treatment,
-   just bigger. */
+/* Hierarchy pass: the Hero's own CTA only (additive to .landing-button,
+   otherwise unchanged and still used as-is by the header and other
+   pages) — noticeably larger so it reads unmistakably as the page's
+   primary action, same pill shape, just bigger. Sized up again for the
+   solid-CTA visual test so the larger footprint plus the new solid fill
+   both read as a clear step up from the rest of the page's buttons. */
 .landing-button--hero {
-  padding: 1.25rem 2.75rem;
-  gap: 0.625rem;
-  font-size: 1.125rem;
+  padding: 1.5rem 3.25rem;
+  gap: 0.75rem;
+  font-size: 1.25rem;
 }
 
 /* Centers the shared .landing-eyebrow's own flex row (dots + label)
@@ -1285,8 +1325,11 @@ dialog::backdrop {
      .landing-* text sits on, but these two words sit over the Hero's
      colorful ambient gradient, where that gray loses contrast — ink
      instead, kept legible/secondary purely through the small size and
-     regular weight (unlike the bold, larger headline). */
+     regular weight (unlike the bold, larger headline). A very soft light
+     text-shadow (no new background/card) keeps it readable regardless of
+     which part of the moving gradient happens to sit behind it. */
   color: var(--wl-ink);
+  text-shadow: 0 1px 3px rgba(255, 255, 255, 0.65);
 }
 
 .landing-social-proof {
