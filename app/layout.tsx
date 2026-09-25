@@ -4,9 +4,37 @@ import { SessionBootstrap } from "./session-bootstrap";
 
 import "./globals.css";
 
+const SITE_DESCRIPTION = "A game for two — find out how aligned you really are.";
+
+// Basic technical SEO (first pass — no keyword work, no new imagery yet):
+// metadataBase lets every route below resolve its own relative
+// alternates.canonical/openGraph.url against the real production domain
+// instead of needing to spell out https://sameeeish.com/... everywhere.
+// openGraph/twitter here are this route's (i.e. "/"'s) own values — each
+// marketing page under app/ defines its own openGraph/twitter object with
+// its own title/description rather than inheriting these, since Next.js
+// metadata merging replaces (not merges) a nested field like openGraph
+// once a child segment sets it. No og:image yet — no approved image
+// exists for this, so it's left out rather than invented.
 export const metadata: Metadata = {
+  metadataBase: new URL("https://sameeeish.com"),
   title: "Sameeeish",
-  description: "A game for two — find out how aligned you really are.",
+  description: SITE_DESCRIPTION,
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "Sameeeish",
+    description: SITE_DESCRIPTION,
+    url: "/",
+    siteName: "Sameeeish",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Sameeeish",
+    description: SITE_DESCRIPTION,
+  },
 };
 
 // Root cause of the "gradient/low-contrast" button reports: this app was

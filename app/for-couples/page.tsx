@@ -38,10 +38,27 @@ const nunitoSans = Nunito_Sans({
   display: "swap",
 });
 
+const PAGE_DESCRIPTION =
+  "You can know someone well and still discover new things about how they think. See where you align, where you differ, and what's worth talking about.";
+
 export const metadata: Metadata = {
   title: "Sameeeish for Couples",
-  description:
-    "You can know someone well and still discover new things about how they think. See where you align, where you differ, and what's worth talking about.",
+  description: PAGE_DESCRIPTION,
+  alternates: {
+    canonical: "/for-couples",
+  },
+  openGraph: {
+    title: "Sameeeish for Couples",
+    description: PAGE_DESCRIPTION,
+    url: "/for-couples",
+    siteName: "Sameeeish",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Sameeeish for Couples",
+    description: PAGE_DESCRIPTION,
+  },
 };
 
 export default function ForCouplesPage() {

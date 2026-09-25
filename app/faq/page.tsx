@@ -34,9 +34,26 @@ const nunitoSans = Nunito_Sans({
   display: "swap",
 });
 
+const PAGE_DESCRIPTION = "Everything you need to know before you get started.";
+
 export const metadata: Metadata = {
   title: "Sameeeish FAQ",
-  description: "Everything you need to know before you get started.",
+  description: PAGE_DESCRIPTION,
+  alternates: {
+    canonical: "/faq",
+  },
+  openGraph: {
+    title: "Sameeeish FAQ",
+    description: PAGE_DESCRIPTION,
+    url: "/faq",
+    siteName: "Sameeeish",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Sameeeish FAQ",
+    description: PAGE_DESCRIPTION,
+  },
 };
 
 export default function FaqPage() {

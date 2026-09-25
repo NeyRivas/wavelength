@@ -35,9 +35,27 @@ const nunitoSans = Nunito_Sans({
   display: "swap",
 });
 
+const PAGE_DESCRIPTION =
+  "See how two people create, share, answer, and discover how aligned they are.";
+
 export const metadata: Metadata = {
   title: "How Sameeeish Works",
-  description: "See how two people create, share, answer, and discover how aligned they are.",
+  description: PAGE_DESCRIPTION,
+  alternates: {
+    canonical: "/how-it-works",
+  },
+  openGraph: {
+    title: "How Sameeeish Works",
+    description: PAGE_DESCRIPTION,
+    url: "/how-it-works",
+    siteName: "Sameeeish",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "How Sameeeish Works",
+    description: PAGE_DESCRIPTION,
+  },
 };
 
 export default function HowItWorksPage() {
