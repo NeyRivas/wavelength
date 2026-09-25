@@ -36,7 +36,7 @@ const nunitoSans = Nunito_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "How it works — Sameeeish",
+  title: "How Sameeeish Works",
   description: "See how two people create, share, answer, and discover how aligned they are.",
 };
 

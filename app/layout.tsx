@@ -5,8 +5,8 @@ import { SessionBootstrap } from "./session-bootstrap";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Wavelength",
-  description: "Are we on the same wavelength?",
+  title: "Sameeeish",
+  description: "A game for two — find out how aligned you really are.",
 };
 
 // Root cause of the "gradient/low-contrast" button reports: this app was

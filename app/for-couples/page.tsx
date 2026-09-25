@@ -39,7 +39,7 @@ const nunitoSans = Nunito_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "For couples — Sameeeish",
+  title: "Sameeeish for Couples",
   description:
     "You can know someone well and still discover new things about how they think. See where you align, where you differ, and what's worth talking about.",
 };
