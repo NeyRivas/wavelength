@@ -3225,6 +3225,131 @@ dialog::backdrop {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
+   /ways-to-play page additions ONLY — this route reuses .landing itself
+   plus every rule above (header, footer, dark CTA, eyebrow/heading/button
+   primitives, card grid, the --wl-* palette) completely unchanged.
+   Everything below is new and additive; nothing above this line was
+   altered for this page, so every other route is unaffected.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* Hero — identical technique to .faq-hero above (own class family, same
+   shapes/wave/dots pattern), just its own palette pairing. */
+.wtp-hero {
+  position: relative;
+  text-align: center;
+  padding-bottom: 2rem;
+}
+
+.wtp-hero__shapes {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.wtp-hero__shape {
+  position: absolute;
+  border-radius: 50%;
+}
+
+.wtp-hero__shape--lavender {
+  width: 14rem;
+  height: 14rem;
+  top: -3rem;
+  left: 6%;
+  background: var(--wl-lavender);
+  opacity: 0.4;
+}
+
+.wtp-hero__shape--mint {
+  width: 12rem;
+  height: 12rem;
+  top: -2rem;
+  right: 4%;
+  background: var(--wl-mint);
+  opacity: 0.35;
+}
+
+.wtp-hero__wave {
+  position: absolute;
+  top: -1.25rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(30rem, 85%);
+  height: auto;
+  opacity: 0.7;
+}
+
+.wtp-hero__dot {
+  position: absolute;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+}
+
+.wtp-hero__dot--pink {
+  top: -3.5rem;
+  left: 30%;
+  background: var(--wl-pink);
+}
+
+.wtp-hero__dot--blue {
+  top: -2.25rem;
+  right: 28%;
+  background: var(--wl-blue);
+}
+
+.wtp-hero__content {
+  position: relative;
+  z-index: 1;
+  max-width: 36rem;
+  margin: 0 auto;
+}
+
+.wtp-hero__eyebrow {
+  justify-content: center;
+}
+
+.wtp-hero__heading {
+  margin-inline: auto;
+}
+
+.wtp-hero__text {
+  margin-inline: auto;
+  text-align: center;
+}
+
+/* Modes — two equal-weight cards. Reuses .landing-card/.landing-card__blob
+   as-is (same border/radius/background/decoration as every other card on
+   the site); only the grid's column count and the extra CTA button inside
+   each card are new. Same button style on both cards, same order weight —
+   neither mode is styled as primary/secondary. Rendered from a plain data
+   array (ways-to-play-modes.tsx) rather than two hand-written blocks, so
+   a future third mode is one more array entry, not a redesign. */
+.wtp-modes__grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.wtp-mode-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.wtp-mode-card__text {
+  margin-bottom: 1.25rem;
+}
+
+.wtp-mode-card .landing-button {
+  margin-top: auto;
+}
+
+@media (max-width: 56rem) {
+  .wtp-modes__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
    /create — the actual product entry point, not another marketing page.
    Deliberately its own top-level namespace (`.wl-create`), a sibling of
    `.landing` rather than nested inside it: this route renders its own

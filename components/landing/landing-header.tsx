@@ -7,7 +7,7 @@ import { LogoMark } from "./logo-mark";
 
 const NAV_LINKS = [
   { href: "/how-it-works", label: "How it works" },
-  { href: "/for-couples", label: "For couples" },
+  { href: "/ways-to-play", label: "Ways to play" },
   { href: "/faq", label: "FAQ" },
 ] as const;
 
@@ -19,8 +19,12 @@ const NAV_LINKS = [
  * "How it works" links to the dedicated /how-it-works route (bug fix —
  * it used to be an in-page anchor to the 3-card section further down "/"
  * itself; now that /how-it-works exists as its own page, this always
- * navigates there instead). "For couples" and "FAQ" link to their own
- * dedicated /for-couples and /faq routes the same way.
+ * navigates there instead). "Ways to play" links to /ways-to-play, the
+ * parent information page for the different Sameeeish experiences
+ * (replaces the old "For couples" nav entry — /for-couples itself is
+ * unchanged and still reachable as its own standalone route, just no
+ * longer the thing top-nav points at). "FAQ" links to its own dedicated
+ * route the same way.
  * "Start playing" is the same single real entry CTA the whole app has: /play.
  *
  * "use client" + usePathname() only to compute which nav item is active —
