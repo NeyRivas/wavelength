@@ -6,7 +6,7 @@ import { finalizeDraft } from "@/app/actions/draft";
 import { initialActionState } from "@/app/actions/shared";
 
 /**
- * The terminal step of A's draft flow: alias + "Create my Wavelength"
+ * The terminal step of A's draft flow: alias + finalize submit
  * (finalize_draft, DRAFT -> WAITING). Only rendered by the page once every
  * question is answered and the planned count is reached — the RPC
  * re-validates both regardless, so this is a UX gate, not the real one.
@@ -54,7 +54,7 @@ export function FinalizeForm({
       )}
 
       <button type="submit" className="create-button create-button--primary" disabled={pending}>
-        {pending ? "Creating…" : "Create my Wavelength"}
+        {pending ? "Creating…" : "Answer. Share. See how much you're on the same page."}
       </button>
     </form>
   );
