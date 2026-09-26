@@ -57,7 +57,7 @@ export const metadata: Metadata = {
 
 export default function WaysToPlayPage() {
   return (
-    <div className={`${fraunces.variable} ${nunitoSans.variable} landing`}>
+    <div className={`${fraunces.variable} ${nunitoSans.variable} landing landing--internal`}>
       <LandingHeader />
       <main>
         <BackLink href="/" />

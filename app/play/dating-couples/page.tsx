@@ -49,7 +49,7 @@ export const metadata: Metadata = {
 
 export default function DatingCouplesPlayPage() {
   return (
-    <div className={`${fraunces.variable} ${nunitoSans.variable} landing`}>
+    <div className={`${fraunces.variable} ${nunitoSans.variable} landing landing--internal`}>
       <LandingHeader />
       <main>
         <BackLink href="/play" />

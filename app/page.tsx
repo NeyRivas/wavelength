@@ -37,7 +37,7 @@ const nunitoSans = Nunito_Sans({
 
 export default function HomePage() {
   return (
-    <div className={`${fraunces.variable} ${nunitoSans.variable} landing`}>
+    <div className={`${fraunces.variable} ${nunitoSans.variable} landing landing--home`}>
       <LandingHeader />
       <main>
         <LandingHero />

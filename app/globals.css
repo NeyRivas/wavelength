@@ -999,6 +999,30 @@ dialog::backdrop {
   overflow-x: hidden;
 }
 
+/* Sticky footer for the internal marketing/picker pages (/how-it-works,
+   /ways-to-play, /for-couples, /faq, /play, /play/dating-couples,
+   /play/friends) — added via this opt-in modifier (alongside the shared
+   "landing" class each page's wrapper already carries) rather than on
+   `.landing` itself, since the landing page ("/") must keep its current
+   footer position exactly as-is. header → content → flexible space →
+   footer: `main` (already the only other direct child besides the
+   header/footer) grows to fill any leftover viewport height so a short
+   page's footer still lands at the bottom, while a long page just
+   scrolls normally once main's content exceeds the viewport. No
+   `overflow` set here — only `display`/`min-height` — so this can't
+   turn `.landing--internal` into a scrolling ancestor and break the
+   header's `position: sticky` (see the .landing main comment above for
+   why that specific interaction matters). */
+.landing--internal {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.landing--internal > main {
+  flex: 1 0 auto;
+}
+
 .landing-container {
   max-width: 80rem;
   margin: 0 auto;
@@ -1218,6 +1242,17 @@ dialog::backdrop {
   z-index: 20;
   background: #ffffff;
   border-bottom: 1px solid var(--color-border);
+}
+
+/* Landing page ("/") only: the header's bottom border is made transparent
+   (not `border: none`, so the header's box height/spacing stay pixel-
+   identical — nothing shifts) so it reads as one continuous surface with
+   the page background right below it. Scoped to the "landing--home"
+   marker on app/page.tsx's own wrapper div, since LandingHeader itself is
+   shared by every other marketing/picker page, which all keep the
+   divider as-is. */
+.landing--home .landing-header {
+  border-bottom-color: transparent;
 }
 
 .landing-header__inner {
