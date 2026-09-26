@@ -126,7 +126,7 @@ export function LandingHero() {
 
         <div className="landing-hero__actions">
           <Link
-            href="/create"
+            href="/play"
             className="landing-button landing-button--cta-solid landing-button--hero"
           >
             Let&apos;s play <span aria-hidden="true">→</span>
