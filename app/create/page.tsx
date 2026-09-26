@@ -36,7 +36,7 @@ const nunitoSans = Nunito_Sans({
 function CreateShellIntro({ questionCount }: { questionCount: number }) {
   return (
     <div className="create-shell__intro">
-      <h1 className="create-shell__heading">Create your wavelength</h1>
+      <h1 className="create-shell__heading">Build your questionnaire</h1>
       <p className="create-shell__text">
         Choose a few questions, answer them yourself, then invite someone to play.
       </p>

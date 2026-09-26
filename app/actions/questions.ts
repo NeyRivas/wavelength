@@ -15,7 +15,7 @@ import {
 import { GENERIC_ERROR, isUniqueViolationOn, type ActionState } from "./shared";
 
 const DUPLICATE_QUESTION_ERROR = "You already have a question with this text.";
-const MAX_QUESTIONS_ERROR = `A Wavelength can have at most ${MAX_QUESTIONS} questions.`;
+const MAX_QUESTIONS_ERROR = `A questionnaire can have at most ${MAX_QUESTIONS} questions.`;
 const TEXT_UNIQUE_CONSTRAINT = "questions_wavelength_text_uidx";
 
 type ServerSupabase = Awaited<ReturnType<typeof createSupabaseServerClient>>;

@@ -21,7 +21,7 @@ const NAV_LINKS = [
  * itself; now that /how-it-works exists as its own page, this always
  * navigates there instead). "For couples" and "FAQ" link to their own
  * dedicated /for-couples and /faq routes the same way.
- * "Start playing" is the same single real CTA the whole app has: /create.
+ * "Start playing" is the same single real entry CTA the whole app has: /play.
  *
  * "use client" + usePathname() only to compute which nav item is active —
  * everything else here is exactly as static as before. This is a route
@@ -53,7 +53,7 @@ export function LandingHeader() {
           ))}
         </nav>
 
-        <Link href="/create" className="landing-header__cta">
+        <Link href="/play" className="landing-header__cta">
           Start playing
         </Link>
       </div>

@@ -78,7 +78,7 @@ export function QuestionnaireBuilder({
         <FinalizeForm wavelengthId={wavelength.id} shareToken={wavelength.share_token} />
       ) : (
         questions.length >= MIN_QUESTIONS && (
-          <p className="create-helper-note">Answer every question to create your Wavelength.</p>
+          <p className="create-helper-note">Answer every question to finish your questionnaire.</p>
         )
       )}
     </div>

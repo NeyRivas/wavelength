@@ -18,7 +18,7 @@ export function CreateHeader() {
     <header className="create-header">
       <Link href="/" className="create-header__logo">
         <LogoMark className="create-header__logo-mark" />
-        <span>Wavelength</span>
+        <span>Sameeeish</span>
       </Link>
       <Link href="/" className="create-header__back">
         ← Back

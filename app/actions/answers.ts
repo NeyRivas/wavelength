@@ -10,7 +10,7 @@ import { parseAnswerValue } from "@/lib/validation/schemas";
 import { GENERIC_ERROR, type ActionState } from "./shared";
 
 const LOCKED_ERROR =
-  "Nice try! This Wavelength is already locked, so nothing here can change anymore. 😄";
+  "Nice try! This questionnaire is already locked, so nothing here can change anymore. 😄";
 
 /**
  * Saves (or changes) one participant's answer to one question — an upsert,

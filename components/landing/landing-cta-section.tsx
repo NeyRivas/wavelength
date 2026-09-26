@@ -9,8 +9,8 @@ const DOT_CLASSES = [
 ];
 
 /** The dark closing CTA band (Figma reference, screenshot 4, top half —
- * the white footer below it is LandingFooter). Same /create destination
- * as every other CTA on this page. */
+ * the white footer below it is LandingFooter). Same /play entry-point
+ * destination as every other CTA on this page. */
 export function LandingCtaSection() {
   return (
     <section className="landing-dark-cta">
@@ -26,7 +26,7 @@ export function LandingCtaSection() {
           It only takes a few minutes. You might learn something new about someone you&apos;ve known
           for years.
         </p>
-        <Link href="/create" className="landing-button landing-button--light">
+        <Link href="/play" className="landing-button landing-button--light">
           Create your questionnaire <span aria-hidden="true">→</span>
         </Link>
         <div className="landing-dot-row" aria-hidden="true">
