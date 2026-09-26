@@ -1005,6 +1005,37 @@ dialog::backdrop {
   padding-inline: clamp(1.5rem, 4vw, 4rem);
 }
 
+/* Shared secondary back-navigation control (back-link.tsx) — used by
+   /ways-to-play, /play, /play/dating-couples, /play/friends, none of
+   which have a per-page slot in the shared, unmodified LandingHeader for
+   this. Sits in its own row right under the header, using the same
+   60rem content column + horizontal padding as the .landing-how section
+   that follows it, so its left edge lines up with the heading below
+   rather than the page's full-bleed edge. Deliberately plain text, no
+   background/border/pill shape — a quiet secondary control, not another
+   button competing with the page's real CTAs. */
+.landing-back-link-row {
+  position: relative;
+  z-index: 2;
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: 1.25rem clamp(1.5rem, 4vw, 4rem) 0;
+}
+
+.landing-back-link {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-nunito), system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--wl-muted);
+  text-decoration: none;
+}
+
+.landing-back-link:hover {
+  color: var(--wl-ink);
+}
+
 /* ── shared eyebrow / heading / body / button / pill primitives ──────── */
 
 .landing-eyebrow {
@@ -1801,11 +1832,17 @@ dialog::backdrop {
 
 /* Friends only has 2 games so far — its own narrower 2-up row instead of
    .landing-card-grid's 3 equal columns, so the cards stay card-sized
-   instead of stretching to fill a third empty slot. */
+   instead of stretching to fill a third empty slot. Left-aligned (no
+   margin-inline: auto) rather than centered — .play-category's heading
+   and text above are left-aligned within the same .landing-how column,
+   and Dating & Couples' own 3-card row (game-card-grid, no --two
+   modifier) already sits flush with that same left edge, so centering
+   just this one row was the actual bug: it put Friends' heading and its
+   cards on two different horizontal axes instead of the one column
+   every other .play-category screen uses. */
 .game-card-grid--two {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   max-width: 40rem;
-  margin-inline: auto;
 }
 
 /* The submit button IS the card (game-card.tsx) — display: contents keeps

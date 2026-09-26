@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Fraunces, Nunito_Sans } from "next/font/google";
 
+import { BackLink } from "@/components/landing/back-link";
 import { LandingCtaSection } from "@/components/landing/landing-cta-section";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { LandingHeader } from "@/components/landing/landing-header";
@@ -59,6 +60,7 @@ export default function WaysToPlayPage() {
     <div className={`${fraunces.variable} ${nunitoSans.variable} landing`}>
       <LandingHeader />
       <main>
+        <BackLink href="/" />
         <WaysToPlayHero />
         <WaysToPlayModes />
         <LandingCtaSection />

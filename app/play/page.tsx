@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { Fraunces, Nunito_Sans } from "next/font/google";
 
-import { CategoryCard } from "@/components/play/category-card";
+import { BackLink } from "@/components/landing/back-link";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { LandingHeader } from "@/components/landing/landing-header";
+import { CategoryCard } from "@/components/play/category-card";
 
 // /play — the landing Hero's "Let's play →" destination. A deliberately
 // simple, standalone picker screen: "What are you playing?" plus the
@@ -55,6 +56,7 @@ export default function PlayPickerPage() {
     <div className={`${fraunces.variable} ${nunitoSans.variable} landing`}>
       <LandingHeader />
       <main>
+        <BackLink href="/" />
         <section className="landing-section landing-how play-picker">
           <h1 className="landing-section__heading play-picker__heading">What are you playing?</h1>
           <div className="landing-card-grid game-card-grid">

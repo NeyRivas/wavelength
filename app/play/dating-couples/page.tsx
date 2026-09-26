@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Fraunces, Nunito_Sans } from "next/font/google";
 
+import { BackLink } from "@/components/landing/back-link";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { LandingHeader } from "@/components/landing/landing-header";
 import { GameCategorySection } from "@/components/play/game-category-section";
@@ -51,6 +52,7 @@ export default function DatingCouplesPlayPage() {
     <div className={`${fraunces.variable} ${nunitoSans.variable} landing`}>
       <LandingHeader />
       <main>
+        <BackLink href="/play" />
         <GameCategorySection
           group="dating-couples"
           heading="Dating & Couples"
