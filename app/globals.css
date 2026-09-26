@@ -697,6 +697,22 @@ dialog::backdrop {
     transform 0.15s ease;
 }
 
+/* Content-layer fix: an explicit stacking layer for the label, sitting
+   above the button's own background/box-shadow layer regardless of any
+   browser-level repaint or compositing effect applied to that background
+   (forced dark mode, backdrop-filter compositing quirks, etc.) — the
+   label's own color/opacity are declared here directly rather than relying
+   on inheriting `.result-primary-button`'s `color`, so nothing about the
+   button's surface can affect it. Purely a rendering-isolation fix: no
+   layout change (still the same single line of text, same padding on the
+   parent), no size/color/hover change. */
+.result-primary-button__label {
+  position: relative;
+  z-index: 1;
+  color: #181820;
+  opacity: 1;
+}
+
 .result-primary-button:hover {
   background: color-mix(in srgb, var(--wl-lavender) 82%, var(--wl-ink) 18%);
   box-shadow: 0 8px 18px -6px color-mix(in srgb, var(--wl-lavender) 85%, transparent);
@@ -801,10 +817,31 @@ dialog::backdrop {
   box-shadow: 0 12px 26px -14px color-mix(in srgb, var(--wl-pink) 65%, transparent);
 }
 
+/* Content-layer fix: same technique and same reasoning as
+   .result-primary-button__label above — an explicit stacking layer for
+   the icon + label together, sitting above the button's own translucent
+   gradient/backdrop-filter background regardless of any browser-level
+   repaint or compositing effect applied to that background. Color/opacity
+   are declared directly here rather than inherited from `.result-share-cta`.
+   The gradient stays exactly where it already was — the button's own
+   surface, one layer below this — never touching the icon or text. No
+   layout change: still icon + text side by side with the same gap, same
+   centering, same padding on the parent. */
+.result-share-cta__content {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  color: #181820;
+  opacity: 1;
+}
+
 .result-share-cta__icon {
   width: 18px;
   height: 18px;
   flex-shrink: 0;
+  opacity: 1;
 }
 
 /* ── "Keep this wavelength?" confirmation (create-new-wavelength-cta.tsx) ──

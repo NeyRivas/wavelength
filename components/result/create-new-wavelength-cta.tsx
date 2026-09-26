@@ -37,7 +37,7 @@ export function CreateNewWavelengthCta() {
         className="result-primary-button"
         onClick={() => dialogRef.current?.showModal()}
       >
-        Create your own Wavelength
+        <span className="result-primary-button__label">Create your own Wavelength</span>
       </button>
       <dialog ref={dialogRef} className="wavelength-dialog" aria-labelledby={headingId}>
         <svg

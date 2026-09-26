@@ -66,8 +66,10 @@ export function ResultCardsLauncher({
   return (
     <>
       <button type="button" className="result-share-cta" onClick={() => setIsOpen(true)}>
-        <ShareCtaIcon />
-        Share result
+        <span className="result-share-cta__content">
+          <ShareCtaIcon />
+          Share result
+        </span>
       </button>
       {isOpen && (
         <ResultCardsExperience data={data} shareText={shareText} onClose={() => setIsOpen(false)} />
