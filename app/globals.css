@@ -3526,118 +3526,6 @@ dialog::backdrop {
   padding: clamp(2rem, 6vw, 3.5rem) clamp(1.25rem, 5vw, 2rem) 5rem;
 }
 
-/* ── ambient background ────────────────────────────────────────────────
-   Four small, soft pastel glows anchored to the page's own edges (not to
-   .create-shell's 40rem column), one toward each corner — clearly inside
-   the empty margin beside the column, never bleeding toward it. Anchored
-   by a fixed rem offset from the viewport edge rather than a negative
-   offset that bleeds off-canvas (the previous approach: most of each
-   blob sat outside the viewport, leaving only a faint, heavily-blurred
-   sliver actually visible — barely perceptible in practice). Shown from
-   64rem up: at that narrowest width the column's own margin is 12rem,
-   and the widest glow here (6.5rem, at a 1.5rem edge offset) only
-   reaches 8rem in — a clear 4rem/64px gap, which only grows at wider
-   viewports (12rem/192px of clearance at 1280px, and more beyond). */
-.create-ambient {
-  display: none;
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.create-ambient-blob {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(26px);
-  opacity: 0.5;
-  animation: question-ambient-drift 24s ease-in-out infinite;
-}
-
-.create-ambient-blob--a {
-  width: 6rem;
-  height: 6rem;
-  top: 6rem;
-  left: 2rem;
-  background: radial-gradient(
-    circle at 40% 40%,
-    var(--wl-lavender) 0%,
-    var(--wl-blue) 65%,
-    transparent 100%
-  );
-}
-
-.create-ambient-blob--b {
-  width: 5rem;
-  height: 5rem;
-  top: 11rem;
-  right: 2rem;
-  background: radial-gradient(
-    circle at 45% 45%,
-    var(--wl-pink) 0%,
-    var(--wl-peach) 65%,
-    transparent 100%
-  );
-  animation-duration: 30s;
-  animation-direction: alternate-reverse;
-}
-
-.create-ambient-blob--c {
-  width: 5rem;
-  height: 5rem;
-  bottom: 11rem;
-  left: 1.5rem;
-  background: radial-gradient(
-    circle at 50% 50%,
-    var(--wl-mint) 0%,
-    var(--wl-lavender) 65%,
-    transparent 100%
-  );
-  animation-duration: 27s;
-}
-
-.create-ambient-blob--d {
-  width: 6.5rem;
-  height: 6.5rem;
-  bottom: 6rem;
-  right: 1.5rem;
-  background: radial-gradient(
-    circle at 55% 55%,
-    var(--wl-peach) 0%,
-    var(--wl-pink) 65%,
-    transparent 100%
-  );
-  animation-duration: 33s;
-  animation-direction: alternate-reverse;
-}
-
-@media (min-width: 64rem) {
-  .create-ambient {
-    display: block;
-  }
-}
-
-/* Gentle, continuous drift — a bigger excursion than the marketing pages'
-   own ambient blobs (hero-blob-drift) since this decoration is meant to
-   be clearly noticeable, not just barely-there atmosphere; still a slow,
-   organic loop (24–33s per cycle here), never a bounce/pulse/spin. */
-@keyframes question-ambient-drift {
-  0%,
-  100% {
-    transform: translate(0, 0) scale(1);
-  }
-  50% {
-    transform: translate(0.85rem, -1rem) scale(1.12);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .create-ambient-blob {
-    animation: none;
-  }
-}
-
 .create-shell__intro {
   text-align: center;
   margin-bottom: 2.5rem;
@@ -3819,7 +3707,19 @@ dialog::backdrop {
   flex-direction: column;
 }
 
+/* Wraps the <ol> (below) and .quiz-ambient side by side in the DOM — the
+   wrapper's own height is set entirely by the <ol>'s normal-flow content
+   (the ambient layer is absolutely positioned, so it never affects that
+   height), which is exactly what lets .quiz-ambient's `inset: 0` track
+   the card list's real, current height as it grows/shrinks with the
+   number of questions. */
+.create-card-list-wrap {
+  position: relative;
+}
+
 .create-card-list {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
@@ -3832,6 +3732,75 @@ dialog::backdrop {
   margin: 0 0 clamp(2rem, 5vw, 2.75rem);
   padding: 0;
   list-style: none;
+}
+
+/* ── ambient decoration alongside the question list ────────────────────
+   Runs the full height of the card list (see .create-card-list-wrap
+   above), not just the top of the page — buildQuestionnaireAmbient
+   (lib/wavelength/questionnaire-ambient.ts) scales how many pieces there
+   are, and how far down they reach, with the actual number of questions.
+   Every piece is positioned with a negative offset from *this column's*
+   own edge, not the viewport's — e.g. a left piece sits at
+   `-(edgeGap + size)`, so it can never cross back into the column
+   regardless of viewport width. z-index 1 on .create-card-list (above)
+   keeps the real cards painted above this z-index-0 layer. */
+.quiz-ambient {
+  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.quiz-ambient-piece {
+  position: absolute;
+  border-radius: 50%;
+  animation-name: quiz-ambient-drift;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  /* Adopts the 0% keyframe's values immediately, including during each
+     piece's own staggered animation-delay — without this, a piece would
+     flash at full, un-animated opacity until its delay elapsed. */
+  animation-fill-mode: backwards;
+}
+
+/* A small rotated-square "sparkle" accent (a minority of pieces — see
+   the generator) instead of a soft glow: a plain, solid diamond, no
+   blur, to read as a distinct little accent rather than another glow. */
+.quiz-ambient-sparkle-shape {
+  width: 100%;
+  height: 100%;
+  border-radius: 3px;
+  transform: rotate(45deg);
+}
+
+/* Slow, organic "floating" loop — a few px of drift, a light breath of
+   scale, and a gentle opacity dip, all tied to each piece's own --op/
+   --dx/--dy custom properties (set inline per piece) so every element
+   moves independently rather than in lockstep. */
+@keyframes quiz-ambient-drift {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: var(--op, 0.68);
+  }
+  50% {
+    transform: translate(var(--dx, 0.5rem), calc(-1 * var(--dy, 0.5rem))) scale(1.08);
+    opacity: calc(var(--op, 0.68) * 0.82);
+  }
+}
+
+@media (min-width: 64rem) {
+  .quiz-ambient {
+    display: block;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .quiz-ambient-piece {
+    animation: none;
+    opacity: var(--op, 0.68);
+  }
 }
 
 /* Collapsed "+ Add question" trigger (reference): a dashed, secondary

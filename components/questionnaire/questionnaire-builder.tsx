@@ -3,6 +3,7 @@ import { assignQuestionTints } from "./category-visuals";
 import { FinalizeForm } from "./finalize-form";
 import { QuestionAddForm } from "./question-add-form";
 import { QuestionCard } from "./question-card";
+import { QuestionnaireAmbient } from "./questionnaire-ambient";
 import type { QuestionRow } from "./types";
 import { MAX_QUESTIONS, MIN_QUESTIONS } from "@/lib/wavelength/categories";
 
@@ -48,21 +49,24 @@ export function QuestionnaireBuilder({
   return (
     <div className="create-builder">
       {questions.length > 0 && (
-        <AnimatedQuestionList>
-          {questions.map((question, index) => (
-            <li key={question.id} data-flip-id={question.id}>
-              <QuestionCard
-                wavelengthId={wavelength.id}
-                question={question}
-                index={index}
-                tint={tintByQuestion.get(question.id)!}
-                answerValue={answerByQuestion.get(question.id)}
-                isFirst={index === 0}
-                isLast={index === questions.length - 1}
-              />
-            </li>
-          ))}
-        </AnimatedQuestionList>
+        <div className="create-card-list-wrap">
+          <AnimatedQuestionList>
+            {questions.map((question, index) => (
+              <li key={question.id} data-flip-id={question.id}>
+                <QuestionCard
+                  wavelengthId={wavelength.id}
+                  question={question}
+                  index={index}
+                  tint={tintByQuestion.get(question.id)!}
+                  answerValue={answerByQuestion.get(question.id)}
+                  isFirst={index === 0}
+                  isLast={index === questions.length - 1}
+                />
+              </li>
+            ))}
+          </AnimatedQuestionList>
+          <QuestionnaireAmbient questionCount={questions.length} />
+        </div>
       )}
 
       {atMax ? (
