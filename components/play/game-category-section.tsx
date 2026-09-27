@@ -46,6 +46,7 @@ export function GameCategorySection({
             key={game.id}
             id={game.id}
             title={game.title}
+            subtitle={game.subtitle}
             blobClass={blobs[index]!}
             playable={game.questions !== null}
           />

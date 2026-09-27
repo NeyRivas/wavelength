@@ -161,6 +161,7 @@ export function QuestionEditForm({
   const router = useRouter();
   const [state, formAction, pending] = useActionState(updateQuestion, initialActionState);
   const [slots, setSlots] = useState<OptionSlot[]>(() => initialSlots(question.options));
+  const questionTextRef = useRef<HTMLTextAreaElement>(null);
   // Bumped once per completed submission (success or failure) — see the
   // category pill group's key below for why the failure case matters too.
   const [attempt, setAttempt] = useState(0);
@@ -180,12 +181,34 @@ export function QuestionEditForm({
     wasPending.current = pending;
   }, [pending, router]);
 
-  function submitOnBlur(event: React.FocusEvent<HTMLInputElement>) {
+  function submitOnBlur(event: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) {
     event.currentTarget.form?.requestSubmit();
   }
 
   function submitOnChange(event: React.ChangeEvent<HTMLInputElement>) {
     event.currentTarget.form?.requestSubmit();
+  }
+
+  // The question field is a `<textarea>`, not an `<input>` — its bigger,
+  // more prominent styling (create-input--question, globals.css) needs to
+  // wrap onto multiple lines rather than silently clipping/scrolling a
+  // long question sideways, especially on narrow viewports. Auto-grown to
+  // fit its content (no manual resize handle, no scrollbar) so it still
+  // reads as plain text, not an obviously multi-line form control.
+  function autoResizeQuestionText(el: HTMLTextAreaElement) {
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  }
+
+  useEffect(() => {
+    if (questionTextRef.current) autoResizeQuestionText(questionTextRef.current);
+  }, []);
+
+  function preventNewline(event: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      event.currentTarget.blur();
+    }
   }
 
   function addOption() {
@@ -233,17 +256,20 @@ export function QuestionEditForm({
         </div>
       </div>
 
-      <div className="create-field">
+      <div className="create-field create-field--question">
         <label className="create-field__label" htmlFor={`text-${question.id}`}>
           Question
         </label>
-        <input
+        <textarea
           id={`text-${question.id}`}
-          className="create-input"
-          type="text"
+          ref={questionTextRef}
+          className="create-input create-input--question"
           name="text"
+          rows={1}
           defaultValue={question.text}
           onBlur={submitOnBlur}
+          onInput={(event) => autoResizeQuestionText(event.currentTarget)}
+          onKeyDown={preventNewline}
           required
           minLength={3}
           maxLength={300}

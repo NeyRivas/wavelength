@@ -1938,6 +1938,21 @@ dialog::backdrop {
   color: var(--wl-ink);
 }
 
+/* Descriptive/SEO subtitle (e.g. "Compatibility Quiz") under a game's
+   display name — Nunito Sans, not Fraunces, so it reads as a functional
+   label rather than a second emotional headline. */
+.game-card__subtitle {
+  display: block;
+  margin-top: 0.3125rem;
+  font-family: var(--font-nunito), system-ui, sans-serif;
+  font-style: normal;
+  font-weight: 700;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--wl-muted);
+}
+
 .game-card__cta {
   position: relative;
   display: inline-flex;
@@ -3435,6 +3450,7 @@ dialog::backdrop {
    ═══════════════════════════════════════════════════════════════════════ */
 
 .wl-create {
+  position: relative;
   --wl-ink: #181820;
   --wl-lavender: #c9c3f4;
   --wl-blue: #b9ddf4;
@@ -3460,6 +3476,8 @@ dialog::backdrop {
 /* ── local product header ─────────────────────────────────────────────── */
 
 .create-header {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -3501,9 +3519,76 @@ dialog::backdrop {
 /* ── shell: title/subtitle + progress, shared by both stages ─────────── */
 
 .create-shell {
+  position: relative;
+  z-index: 1;
   max-width: 40rem;
   margin: 0 auto;
   padding: clamp(2rem, 6vw, 3.5rem) clamp(1.25rem, 5vw, 2rem) 5rem;
+}
+
+/* ── ambient background (visual-refinement pass) ──────────────────────
+   Same restrained blob technique as LandingHero's own ambient background
+   (.landing-hero__ambient) — two large, very soft, slow-drifting pastel
+   gradients, kept in the wide empty margins beside .create-shell's 40rem
+   column and never behind or near the question cards. Shown only once
+   the viewport is wide enough to guarantee that clearance; hidden
+   entirely otherwise (a clean background beats decoration that risks
+   crowding the cards). */
+.create-ambient {
+  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.create-ambient-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.22;
+  animation: hero-blob-drift 40s ease-in-out infinite;
+}
+
+.create-ambient-blob--a {
+  width: 26rem;
+  height: 26rem;
+  top: -6rem;
+  left: -14rem;
+  background: radial-gradient(
+    circle at 40% 40%,
+    var(--wl-lavender) 0%,
+    var(--wl-blue) 55%,
+    transparent 100%
+  );
+}
+
+.create-ambient-blob--b {
+  width: 24rem;
+  height: 24rem;
+  bottom: -8rem;
+  right: -12rem;
+  background: radial-gradient(
+    circle at 60% 60%,
+    var(--wl-peach) 0%,
+    var(--wl-pink) 55%,
+    transparent 100%
+  );
+  animation-duration: 46s;
+  animation-direction: alternate-reverse;
+}
+
+@media (min-width: 90rem) {
+  .create-ambient {
+    display: block;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .create-ambient-blob {
+    animation: none;
+  }
 }
 
 .create-shell__intro {
@@ -3915,6 +4000,44 @@ dialog::backdrop {
 .create-input:focus-visible {
   outline: 2px solid var(--wl-lavender);
   outline-offset: 1px;
+}
+
+/* The question itself is the card's focal point (Category → Question →
+   Answer choices): Fraunces Italic, larger and higher-contrast than the
+   surrounding functional UI, with extra breathing room above/below to
+   separate it from the category pills and the answer options. Still the
+   same editable field as every other one — no border/background change
+   beyond removing its box chrome, so a click/focus still reads as "you
+   can edit this text." A <textarea> (auto-grown by question-edit-form.tsx,
+   not manually resizable) rather than a single-line <input> — the bigger
+   type needs to wrap onto a second line instead of clipping/scrolling a
+   longer question sideways, which matters most on narrow viewports. */
+.create-field--question {
+  margin: 1.625rem 0 1.75rem;
+}
+
+.create-input--question {
+  display: block;
+  width: 100%;
+  min-height: 0;
+  padding: 0.25rem 0 0.5rem;
+  border: none;
+  border-bottom: 1.5px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  resize: none;
+  overflow: hidden;
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(1.1875rem, 1.75vw + 0.7rem, 1.5rem);
+  line-height: 1.45;
+  color: var(--wl-ink);
+}
+
+.create-input--question:focus-visible {
+  outline: none;
+  border-bottom-color: var(--wl-lavender);
 }
 
 /* ── category pills ───────────────────────────────────────────────────── */

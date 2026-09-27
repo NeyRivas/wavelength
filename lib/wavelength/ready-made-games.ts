@@ -29,6 +29,10 @@ export type ReadyMadeGameGroup = "dating-couples" | "friends";
 export interface ReadyMadeGame {
   id: string;
   title: string;
+  /** Optional descriptive/SEO line shown under `title` on the game card
+   * (GameCard) — e.g. the experience name "Are we on the same page?" with
+   * "Compatibility Quiz" as its subtitle. Omitted for every other game. */
+  subtitle?: string;
   group: ReadyMadeGameGroup;
   /** `null` = card is shown on the landing page but not wired up yet. */
   questions: ReadyMadeQuestion[] | null;
@@ -183,7 +187,8 @@ const COMPATIBILITY_QUIZ_QUESTIONS: ReadyMadeQuestion[] = [
 export const READY_MADE_GAMES: ReadyMadeGame[] = [
   {
     id: "how-well-do-you-know-each-other",
-    title: "Compatibility Quiz",
+    title: "Are we on the same page?",
+    subtitle: "Compatibility Quiz",
     group: "dating-couples",
     questions: COMPATIBILITY_QUIZ_QUESTIONS,
   },

@@ -33,10 +33,24 @@ const nunitoSans = Nunito_Sans({
   display: "swap",
 });
 
+// Ambient background only — wide viewports only (plenty of empty margin
+// beside .create-shell's 40rem column), never near the question cards
+// themselves. Hidden below the width where that margin gets tight; see
+// .create-ambient in globals.css. Same restrained blob technique as
+// LandingHero's own ambient background.
+function CreateAmbient() {
+  return (
+    <div className="create-ambient" aria-hidden="true">
+      <div className="create-ambient-blob create-ambient-blob--a" />
+      <div className="create-ambient-blob create-ambient-blob--b" />
+    </div>
+  );
+}
+
 function CreateShellIntro({ questionCount }: { questionCount: number }) {
   return (
     <div className="create-shell__intro">
-      <h1 className="create-shell__heading">Build your questionnaire</h1>
+      <h1 className="create-shell__heading">Are we on the same page?</h1>
       <p className="create-shell__text">
         Choose a few questions, answer them yourself, then invite someone to play.
       </p>
@@ -65,6 +79,7 @@ export default async function CreatePage() {
   if (!draft) {
     return (
       <div className={`${fraunces.variable} ${nunitoSans.variable} wl-create`}>
+        <CreateAmbient />
         <CreateHeader />
         <main className="create-shell">
           <CreateShellIntro questionCount={0} />
@@ -89,6 +104,7 @@ export default async function CreatePage() {
 
   return (
     <div className={`${fraunces.variable} ${nunitoSans.variable} wl-create`}>
+      <CreateAmbient />
       <CreateHeader />
       <main className="create-shell">
         <CreateShellIntro questionCount={questions?.length ?? 0} />

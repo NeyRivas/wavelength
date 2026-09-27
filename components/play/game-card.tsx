@@ -14,18 +14,23 @@ import { startReadyMadeGame } from "@/app/actions/ready-made-games";
 export function GameCard({
   id,
   title,
+  subtitle,
   blobClass,
   playable,
 }: {
   id: string;
   title: string;
+  subtitle?: string;
   blobClass: string;
   playable: boolean;
 }) {
   const inner = (
     <>
       <div className={`landing-card__blob ${blobClass}`} aria-hidden="true" />
-      <h2 className="game-card__title">{title}</h2>
+      <h2 className="game-card__title">
+        {title}
+        {subtitle && <span className="game-card__subtitle">{subtitle}</span>}
+      </h2>
       <span className="game-card__cta">
         Play <span aria-hidden="true">→</span>
       </span>
