@@ -34,145 +34,158 @@ export interface ReadyMadeGame {
   questions: ReadyMadeQuestion[] | null;
 }
 
-const HOW_WELL_DO_YOU_KNOW_EACH_OTHER: ReadyMadeQuestion[] = [
+/**
+ * The "Are we on the same page? — Compatibility Quiz" question set.
+ *
+ * The quiz's own categories (Relationship, Communication, Lifestyle,
+ * Money, Family & Future) don't map 1:1 onto the fixed `Category` enum
+ * (categories.ts, mirrored by the DB) — there is no "communication" or
+ * "family_future" value, and the schema isn't being changed for this.
+ * Communication questions are stored as "relationship" (they're about the
+ * relationship's dynamics) and Family & Future questions as "future".
+ * This only affects the category-label grouping shown for these
+ * questions elsewhere in the app — it has no effect on choice/scale
+ * scoring (lib/scoring/score.ts), which is type-driven, not
+ * category-driven.
+ */
+const COMPATIBILITY_QUIZ_QUESTIONS: ReadyMadeQuestion[] = [
   {
     type: "choice",
-    category: "lifestyle",
-    text: "What's your ideal way to spend a free Saturday?",
+    category: "relationship",
+    text: "What makes you feel most loved in a relationship?",
     options: [
-      "Staying in and doing absolutely nothing",
-      "Going out and exploring somewhere new",
-      "Seeing friends or family",
-      "Doing something active",
-      "A bit of everything",
-    ],
-  },
-  {
-    type: "choice",
-    category: "lifestyle",
-    text: "What's something small that instantly makes your day better?",
-    options: [
-      "Good food",
-      "A really good song",
-      "A funny conversation",
-      "A thoughtful message",
-      "Having some time to myself",
-    ],
-  },
-  {
-    type: "scale",
-    category: "values_priorities",
-    text: "How important is having alone time to you?",
-  },
-  {
-    type: "choice",
-    category: "lifestyle",
-    text: "If you suddenly had a completely free day tomorrow, what would you be most likely to do?",
-    options: [
-      "Make plans and go somewhere",
-      "Stay home and recharge",
-      "Call someone and make spontaneous plans",
-      "Catch up on things I've been putting off",
-      "Decide when I wake up",
-    ],
-  },
-  {
-    type: "choice",
-    category: "lifestyle",
-    text: "What's most like you when making plans?",
-    options: [
-      "I plan everything ahead",
-      "I like a rough plan but keep things flexible",
-      "I prefer to decide spontaneously",
-      "I usually let someone else make the plans",
-    ],
-  },
-  {
-    type: "choice",
-    category: "lifestyle",
-    text: "How do you usually react when plans suddenly change?",
-    options: [
-      "I'm totally fine with it — I like being spontaneous",
-      "I'm fine with it as long as there's a good reason",
-      "I need a little time to adjust",
-      "I get annoyed when things don't go as planned",
-      "It depends on the situation",
-    ],
-  },
-  {
-    type: "choice",
-    category: "lifestyle",
-    text: "What's your ideal kind of night?",
-    options: [
-      "Dinner and a good conversation",
-      "Drinks and going out",
-      "Movie, snacks, and staying in",
-      "Something spontaneous and unexpected",
-      "Early night and a good sleep",
-    ],
-  },
-  {
-    type: "choice",
-    category: "values_priorities",
-    text: "What's a completely normal thing that people do that makes you irrationally angry?",
-    options: [
-      "Being late",
-      "Chewing loudly",
-      "Leaving things messy",
-      "Taking forever to make a decision",
-      "Being on their phone while you're talking",
-    ],
-  },
-  {
-    type: "choice",
-    category: "values_priorities",
-    text: "What's something you would not like to change about yourself?",
-    options: [
-      "My sense of humor",
-      "My independence",
-      "My curiosity",
-      "My ability to care deeply",
-      "My personality",
-    ],
-  },
-  {
-    type: "choice",
-    category: "lifestyle",
-    text: "What's most likely to make you cancel plans?",
-    options: [
-      "I'm too tired",
-      "I need some alone time",
-      "Something better came up",
-      "I just don't feel like going anymore",
-      "I have too much going on",
-    ],
-  },
-  {
-    type: "choice",
-    category: "adventures_travel",
-    text: "If you had a completely free weekend and enough money to do something fun, what would you choose?",
-    options: [
-      "Take a little getaway",
-      "Go out and have a night to remember",
-      "Stay home and make it cozy",
-      "Try something I've never done before",
-      "Spend it with friends",
+      "Spending quality time together",
+      "Words of affection and appreciation",
+      "Physical affection",
+      "Thoughtful gestures",
+      "Feeling supported when I need it",
     ],
   },
   {
     type: "choice",
     category: "relationship",
-    text: "What's something you value most in the people you're closest to?",
-    options: ["Honesty", "Loyalty", "Humor", "Understanding", "Being able to completely be myself"],
+    text: "What does commitment mean to you?",
+    options: [
+      "Choosing each other and building a life together",
+      "Being loyal and emotionally dependable",
+      "Making important decisions as a team",
+      "Staying committed through difficult times",
+    ],
+  },
+  {
+    type: "choice",
+    category: "relationship",
+    text: "When something is bothering you, what are you most likely to do?",
+    options: [
+      "Talk about it right away",
+      "Take some time before bringing it up",
+      "Wait until the right moment",
+      "Try to work through it on my own first",
+      "Hope it passes on its own",
+    ],
+  },
+  {
+    type: "choice",
+    category: "relationship",
+    text: "When you disagree with your partner, what matters most to you?",
+    options: [
+      "Feeling understood",
+      "Finding a solution",
+      "Staying calm and avoiding unnecessary conflict",
+      "Being honest, even when it's uncomfortable",
+      "Reaching a compromise",
+    ],
+  },
+  {
+    type: "choice",
+    category: "relationship",
+    text: "After an argument, how much space do you usually need before talking things through?",
+    options: [
+      "I want to talk it out right away",
+      "I need a little time first",
+      "I need some space to process",
+      "I prefer to wait until I feel completely calm",
+      "I need quite a lot of time before talking",
+    ],
+  },
+  {
+    type: "choice",
+    category: "lifestyle",
+    text: "How much alone time do you need in a relationship?",
+    options: [
+      "Almost none — I love doing most things together",
+      "A little — I like having some time to myself",
+      "A fair amount — I need regular time on my own",
+      "A lot — having my own time is very important to me",
+    ],
+  },
+  {
+    type: "choice",
+    category: "lifestyle",
+    text: "How would you feel about living together before marriage?",
+    options: [
+      "I'd definitely want to",
+      "I'd probably want to",
+      "I'm not sure",
+      "I'd probably prefer not to",
+      "I'd definitely prefer not to",
+    ],
+  },
+  {
+    type: "choice",
+    category: "money",
+    text: "How would you describe your approach to money?",
+    options: [
+      "I like to save as much as I can",
+      "I like to enjoy my money while still saving",
+      "I'm somewhere in the middle",
+      "I tend to spend more than I save",
+      "I don't think about it much",
+    ],
+  },
+  {
+    type: "choice",
+    category: "money",
+    text: "How comfortable would you be combining finances with a serious partner?",
+    options: [
+      "I'd want to combine most of our finances",
+      "I'd prefer to combine some but keep some separate",
+      "I'd rather keep our finances mostly separate",
+      "I'd want to keep our finances completely separate",
+      "I'm not sure yet",
+    ],
+  },
+  {
+    type: "choice",
+    category: "future",
+    text: "Do you want children someday?",
+    options: ["Yes, definitely", "Probably", "I'm not sure", "Probably not", "No, definitely not"],
+  },
+  {
+    type: "scale",
+    category: "future",
+    text: "How important is marriage to you?",
+  },
+  {
+    type: "choice",
+    category: "future",
+    text: "How open would you be to moving somewhere new for your partner?",
+    options: [
+      "I'd be very open to it",
+      "I'd consider it for the right reasons",
+      "I'd prefer to stay where I am",
+      "I'd strongly prefer not to move",
+      "It would depend on where",
+    ],
   },
 ];
 
 export const READY_MADE_GAMES: ReadyMadeGame[] = [
   {
     id: "how-well-do-you-know-each-other",
-    title: "How Well Do You Know Each Other?",
+    title: "Compatibility Quiz",
     group: "dating-couples",
-    questions: HOW_WELL_DO_YOU_KNOW_EACH_OTHER,
+    questions: COMPATIBILITY_QUIZ_QUESTIONS,
   },
   {
     id: "getting-to-know-you",

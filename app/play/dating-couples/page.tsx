@@ -7,7 +7,7 @@ import { LandingHeader } from "@/components/landing/landing-header";
 import { GameCategorySection } from "@/components/play/game-category-section";
 
 // /play/dating-couples — one of /play's two category screens (see
-// app/play/page.tsx). Only "How Well Do You Know Each Other?" currently
+// app/play/page.tsx). Only "Compatibility Quiz" currently
 // has a real question set (lib/wavelength/ready-made-games.ts); the other
 // two render as prepared-but-inert cards, same as before this move.
 const fraunces = Fraunces({
