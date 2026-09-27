@@ -184,6 +184,164 @@ const COMPATIBILITY_QUIZ_QUESTIONS: ReadyMadeQuestion[] = [
   },
 ];
 
+/**
+ * The "Getting to know each other" question set — discovery and
+ * conversation, not compatibility. There's no scoring or interpretation
+ * specific to this experience; it uses the exact same choice/scale
+ * mechanics and per-question category as every other questionnaire, so
+ * category here is just a grouping label (never surfaced as "this is a
+ * compatibility dimension") — chosen per question from the existing
+ * enum, favoring `values_priorities` (self/identity), `lifestyle`
+ * (everyday moments), `relationship` (shared/social experiences), and
+ * `adventures_travel` (things to try or revisit).
+ */
+const GETTING_TO_KNOW_EACH_OTHER_QUESTIONS: ReadyMadeQuestion[] = [
+  {
+    type: "choice",
+    category: "values_priorities",
+    text: "What's a childhood memory you still think about sometimes?",
+    options: [
+      "A family tradition or holiday memory",
+      "A funny or embarrassing moment",
+      "A moment with a close friend",
+      "A trip or adventure I went on",
+      "A quiet, ordinary moment that just stuck with me",
+    ],
+  },
+  {
+    type: "choice",
+    category: "lifestyle",
+    text: "What's something small that can instantly make your day better?",
+    options: [
+      "Good music",
+      "A good meal",
+      "A message from someone I care about",
+      "Sunshine and being outside",
+      "A few minutes of quiet",
+    ],
+  },
+  {
+    type: "choice",
+    category: "lifestyle",
+    text: "If you had a completely free day with no responsibilities, how would you spend it?",
+    options: [
+      "Exploring somewhere new",
+      "Relaxing at home, no plans at all",
+      "Spending it with people I love",
+      "Doing something active outdoors",
+      "Working on a personal project or hobby",
+    ],
+  },
+  {
+    type: "choice",
+    category: "values_priorities",
+    text: "What's something you're really into that you could happily talk about for hours?",
+    options: [
+      "Music",
+      "Movies or shows",
+      "Food and cooking",
+      "Sports",
+      "A hobby or creative project",
+    ],
+  },
+  {
+    type: "choice",
+    category: "adventures_travel",
+    text: "What's something you've always wanted to try at least once?",
+    options: [
+      "Traveling somewhere far away",
+      "Learning a new skill",
+      "An adrenaline-filled adventure",
+      "Trying a creative pursuit like art or music",
+      "Something completely outside my comfort zone",
+    ],
+  },
+  {
+    type: "choice",
+    category: "relationship",
+    text: "What kind of memories do you love making with other people?",
+    options: [
+      "Spontaneous adventures",
+      "Deep, meaningful conversations",
+      "Laughing until it hurts",
+      "Trying new things together",
+      "Simple, cozy time together",
+    ],
+  },
+  {
+    type: "choice",
+    category: "values_priorities",
+    text: "Who has had a big influence on the person you are today?",
+    options: [
+      "A family member",
+      "A close friend",
+      "A teacher or mentor",
+      "Someone I admired from a distance",
+      "A person who challenged me",
+    ],
+  },
+  {
+    type: "choice",
+    category: "adventures_travel",
+    text: "What's a place you've been that you'd love to experience again?",
+    options: [
+      "Because of the people I was with",
+      "Because of how peaceful it felt",
+      "Because there was more to explore",
+      "Because of a specific memory tied to it",
+      "Because I'd see it differently now",
+    ],
+  },
+  {
+    type: "choice",
+    category: "values_priorities",
+    text: "What's something people tend to notice about you once they get to know you?",
+    options: [
+      "That I'm more thoughtful than I first seem",
+      "That I have a great sense of humor",
+      "That I care a lot about the people close to me",
+      "That I'm more adventurous than expected",
+      "That I notice small details others miss",
+    ],
+  },
+  {
+    type: "choice",
+    category: "lifestyle",
+    text: "If you could instantly become really good at something, what would you choose?",
+    options: [
+      "Playing an instrument",
+      "Cooking like a professional chef",
+      "Speaking another language fluently",
+      "A sport I've never mastered",
+      "A creative skill like painting or writing",
+    ],
+  },
+  {
+    type: "choice",
+    category: "values_priorities",
+    text: "What's something you've changed your mind about as you've gotten older?",
+    options: [
+      "What actually makes me happy",
+      "How I handle stress or setbacks",
+      "What I look for in relationships",
+      "How I spend my free time",
+      "What success means to me",
+    ],
+  },
+  {
+    type: "choice",
+    category: "relationship",
+    text: "What's something about you that you'd love for someone you're dating to discover?",
+    options: [
+      "A hidden talent I don't often show",
+      "How loyal I am to the people I love",
+      "A quirky passion of mine",
+      "How much I care once I let someone in",
+      "A dream I'm quietly working toward",
+    ],
+  },
+];
+
 export const READY_MADE_GAMES: ReadyMadeGame[] = [
   {
     id: "how-well-do-you-know-each-other",
@@ -194,9 +352,10 @@ export const READY_MADE_GAMES: ReadyMadeGame[] = [
   },
   {
     id: "getting-to-know-you",
-    title: "Getting to Know You",
+    title: "Getting to know each other",
+    subtitle: "Discovery & Conversation",
     group: "dating-couples",
-    questions: null,
+    questions: GETTING_TO_KNOW_EACH_OTHER_QUESTIONS,
   },
   {
     id: "date-night",

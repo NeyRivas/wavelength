@@ -6,6 +6,9 @@ import { DraftSetupForm } from "@/components/questionnaire/draft-setup-form";
 import { QuestionnaireBuilder } from "@/components/questionnaire/questionnaire-builder";
 import { requireUserId } from "@/lib/supabase/identity";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getReadyMadeGame } from "@/lib/wavelength/ready-made-games";
+
+const DEFAULT_HEADING = "Are we on the same page?";
 
 // Participant A's DRAFT flow (ARCHITECTURE.md §12 Phase 4), now including
 // finalization ("Create my Wavelength" — Phase 5). Not implemented here:
@@ -33,10 +36,10 @@ const nunitoSans = Nunito_Sans({
   display: "swap",
 });
 
-function CreateShellIntro({ questionCount }: { questionCount: number }) {
+function CreateShellIntro({ heading, questionCount }: { heading: string; questionCount: number }) {
   return (
     <div className="create-shell__intro">
-      <h1 className="create-shell__heading">Are we on the same page?</h1>
+      <h1 className="create-shell__heading">{heading}</h1>
       <p className="create-shell__text">
         Choose a few questions, answer them yourself, then invite someone to play.
       </p>
@@ -45,9 +48,24 @@ function CreateShellIntro({ questionCount }: { questionCount: number }) {
   );
 }
 
-export default async function CreatePage() {
+export default async function CreatePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ game?: string }>;
+}) {
   const userId = await requireUserId();
   const supabase = await createSupabaseServerClient();
+
+  // Ready-made games redirect here with `?game=<id>` right after seeding a
+  // brand-new draft (app/actions/ready-made-games.ts) — the one moment
+  // this heading can be sure the draft's content actually matches that
+  // game. Resuming an existing draft never carries this param (same
+  // action, unchanged), so an in-progress "Make Your Own" questionnaire —
+  // or one A has since edited away from a ready-made game's original
+  // questions — always keeps the generic heading rather than a stale or
+  // misleading one.
+  const { game: gameId } = await searchParams;
+  const heading = (gameId && getReadyMadeGame(gameId)?.title) || DEFAULT_HEADING;
 
   // Resume the most recent DRAFT if A already has one; otherwise show setup.
   // One active draft at a time is a Phase 4 engineering default (not a
@@ -67,7 +85,7 @@ export default async function CreatePage() {
       <div className={`${fraunces.variable} ${nunitoSans.variable} wl-create`}>
         <CreateHeader />
         <main className="create-shell">
-          <CreateShellIntro questionCount={0} />
+          <CreateShellIntro heading={heading} questionCount={0} />
           <DraftSetupForm />
         </main>
       </div>
@@ -91,7 +109,7 @@ export default async function CreatePage() {
     <div className={`${fraunces.variable} ${nunitoSans.variable} wl-create`}>
       <CreateHeader />
       <main className="create-shell">
-        <CreateShellIntro questionCount={questions?.length ?? 0} />
+        <CreateShellIntro heading={heading} questionCount={questions?.length ?? 0} />
         <QuestionnaireBuilder
           wavelength={draft}
           questions={questions ?? []}

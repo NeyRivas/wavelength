@@ -61,6 +61,12 @@ export async function startReadyMadeGame(formData: FormData): Promise<void> {
         })),
       );
     }
+
+    // `?game=` is how /create knows to show this game's own title instead
+    // of the generic one — only added here, the one moment the draft's
+    // content is guaranteed to actually match it. Resuming an existing
+    // draft (below) never carries it.
+    redirect(`/create?game=${gameId}`);
   }
 
   redirect("/create");
