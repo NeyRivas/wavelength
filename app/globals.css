@@ -1946,8 +1946,8 @@ dialog::backdrop {
   margin-top: 0.3125rem;
   font-family: var(--font-nunito), system-ui, sans-serif;
   font-style: normal;
-  font-weight: 700;
-  font-size: 0.75rem;
+  font-weight: 600;
+  font-size: 0.6875rem;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--wl-muted);
@@ -3528,12 +3528,15 @@ dialog::backdrop {
 
 /* ── ambient background (visual-refinement pass) ──────────────────────
    Same restrained blob technique as LandingHero's own ambient background
-   (.landing-hero__ambient) — two large, very soft, slow-drifting pastel
-   gradients, kept in the wide empty margins beside .create-shell's 40rem
-   column and never behind or near the question cards. Shown only once
-   the viewport is wide enough to guarantee that clearance; hidden
-   entirely otherwise (a clean background beats decoration that risks
-   crowding the cards). */
+   (.landing-hero__ambient) — soft, slow-drifting pastel gradients, kept
+   in the empty margins beside .create-shell's 40rem column and never
+   behind or near the question cards. Sized/positioned so their visible
+   bleed (including the blur halo) always stays several rem short of the
+   column's own edge at the narrowest width they're shown at (75rem
+   viewport → 17.5rem of margin on each side; the widest blob here only
+   bleeds to ~11.4rem) — shown only once the viewport is wide enough to
+   guarantee that clearance, hidden entirely otherwise (a clean
+   background beats decoration that risks crowding the cards). */
 .create-ambient {
   display: none;
   position: absolute;
@@ -3546,16 +3549,16 @@ dialog::backdrop {
 .create-ambient-blob {
   position: absolute;
   border-radius: 50%;
-  filter: blur(80px);
+  filter: blur(70px);
   opacity: 0.22;
-  animation: hero-blob-drift 40s ease-in-out infinite;
+  animation: hero-blob-drift 42s ease-in-out infinite;
 }
 
 .create-ambient-blob--a {
-  width: 26rem;
-  height: 26rem;
-  top: -6rem;
-  left: -14rem;
+  width: 20rem;
+  height: 20rem;
+  top: -4rem;
+  left: -13rem;
   background: radial-gradient(
     circle at 40% 40%,
     var(--wl-lavender) 0%,
@@ -3565,9 +3568,9 @@ dialog::backdrop {
 }
 
 .create-ambient-blob--b {
-  width: 24rem;
-  height: 24rem;
-  bottom: -8rem;
+  width: 19rem;
+  height: 19rem;
+  bottom: -6rem;
   right: -12rem;
   background: radial-gradient(
     circle at 60% 60%,
@@ -3575,11 +3578,30 @@ dialog::backdrop {
     var(--wl-pink) 55%,
     transparent 100%
   );
-  animation-duration: 46s;
+  animation-duration: 48s;
   animation-direction: alternate-reverse;
 }
 
-@media (min-width: 90rem) {
+/* A third, smaller point of interest further down the page (mirrors the
+   other two toward the opposite edge) — same technique, kept even
+   fainter since it sits alongside the card list rather than near the
+   page's top/bottom edge. */
+.create-ambient-blob--c {
+  width: 15rem;
+  height: 15rem;
+  top: 46rem;
+  right: -11rem;
+  opacity: 0.16;
+  background: radial-gradient(
+    circle at 50% 50%,
+    var(--wl-mint) 0%,
+    var(--wl-lavender) 55%,
+    transparent 100%
+  );
+  animation-duration: 54s;
+}
+
+@media (min-width: 75rem) {
   .create-ambient {
     display: block;
   }

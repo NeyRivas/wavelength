@@ -43,6 +43,7 @@ function CreateAmbient() {
     <div className="create-ambient" aria-hidden="true">
       <div className="create-ambient-blob create-ambient-blob--a" />
       <div className="create-ambient-blob create-ambient-blob--b" />
+      <div className="create-ambient-blob create-ambient-blob--c" />
     </div>
   );
 }
