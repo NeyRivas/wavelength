@@ -33,17 +33,18 @@ const nunitoSans = Nunito_Sans({
   display: "swap",
 });
 
-// Ambient background only — wide viewports only (plenty of empty margin
-// beside .create-shell's 40rem column), never near the question cards
-// themselves. Hidden below the width where that margin gets tight; see
-// .create-ambient in globals.css. Same restrained blob technique as
-// LandingHero's own ambient background.
+// Ambient background — four small, clearly-visible pastel glows anchored
+// toward the page's own corners (wide viewports only, plenty of empty
+// margin beside .create-shell's 40rem column), never near the question
+// cards themselves. Hidden below the width where that margin gets tight;
+// see .create-ambient in globals.css.
 function CreateAmbient() {
   return (
     <div className="create-ambient" aria-hidden="true">
       <div className="create-ambient-blob create-ambient-blob--a" />
       <div className="create-ambient-blob create-ambient-blob--b" />
       <div className="create-ambient-blob create-ambient-blob--c" />
+      <div className="create-ambient-blob create-ambient-blob--d" />
     </div>
   );
 }

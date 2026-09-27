@@ -3526,17 +3526,18 @@ dialog::backdrop {
   padding: clamp(2rem, 6vw, 3.5rem) clamp(1.25rem, 5vw, 2rem) 5rem;
 }
 
-/* ── ambient background (visual-refinement pass) ──────────────────────
-   Same restrained blob technique as LandingHero's own ambient background
-   (.landing-hero__ambient) — soft, slow-drifting pastel gradients, kept
-   in the empty margins beside .create-shell's 40rem column and never
-   behind or near the question cards. Sized/positioned so their visible
-   bleed (including the blur halo) always stays several rem short of the
-   column's own edge at the narrowest width they're shown at (75rem
-   viewport → 17.5rem of margin on each side; the widest blob here only
-   bleeds to ~11.4rem) — shown only once the viewport is wide enough to
-   guarantee that clearance, hidden entirely otherwise (a clean
-   background beats decoration that risks crowding the cards). */
+/* ── ambient background ────────────────────────────────────────────────
+   Four small, soft pastel glows anchored to the page's own edges (not to
+   .create-shell's 40rem column), one toward each corner — clearly inside
+   the empty margin beside the column, never bleeding toward it. Anchored
+   by a fixed rem offset from the viewport edge rather than a negative
+   offset that bleeds off-canvas (the previous approach: most of each
+   blob sat outside the viewport, leaving only a faint, heavily-blurred
+   sliver actually visible — barely perceptible in practice). Shown from
+   64rem up: at that narrowest width the column's own margin is 12rem,
+   and the widest glow here (6.5rem, at a 1.5rem edge offset) only
+   reaches 8rem in — a clear 4rem/64px gap, which only grows at wider
+   viewports (12rem/192px of clearance at 1280px, and more beyond). */
 .create-ambient {
   display: none;
   position: absolute;
@@ -3549,61 +3550,85 @@ dialog::backdrop {
 .create-ambient-blob {
   position: absolute;
   border-radius: 50%;
-  filter: blur(70px);
-  opacity: 0.22;
-  animation: hero-blob-drift 42s ease-in-out infinite;
+  filter: blur(26px);
+  opacity: 0.5;
+  animation: question-ambient-drift 24s ease-in-out infinite;
 }
 
 .create-ambient-blob--a {
-  width: 20rem;
-  height: 20rem;
-  top: -4rem;
-  left: -13rem;
+  width: 6rem;
+  height: 6rem;
+  top: 6rem;
+  left: 2rem;
   background: radial-gradient(
     circle at 40% 40%,
     var(--wl-lavender) 0%,
-    var(--wl-blue) 55%,
+    var(--wl-blue) 65%,
     transparent 100%
   );
 }
 
 .create-ambient-blob--b {
-  width: 19rem;
-  height: 19rem;
-  bottom: -6rem;
-  right: -12rem;
+  width: 5rem;
+  height: 5rem;
+  top: 11rem;
+  right: 2rem;
   background: radial-gradient(
-    circle at 60% 60%,
-    var(--wl-peach) 0%,
-    var(--wl-pink) 55%,
+    circle at 45% 45%,
+    var(--wl-pink) 0%,
+    var(--wl-peach) 65%,
     transparent 100%
   );
-  animation-duration: 48s;
+  animation-duration: 30s;
   animation-direction: alternate-reverse;
 }
 
-/* A third, smaller point of interest further down the page (mirrors the
-   other two toward the opposite edge) — same technique, kept even
-   fainter since it sits alongside the card list rather than near the
-   page's top/bottom edge. */
 .create-ambient-blob--c {
-  width: 15rem;
-  height: 15rem;
-  top: 46rem;
-  right: -11rem;
-  opacity: 0.16;
+  width: 5rem;
+  height: 5rem;
+  bottom: 11rem;
+  left: 1.5rem;
   background: radial-gradient(
     circle at 50% 50%,
     var(--wl-mint) 0%,
-    var(--wl-lavender) 55%,
+    var(--wl-lavender) 65%,
     transparent 100%
   );
-  animation-duration: 54s;
+  animation-duration: 27s;
 }
 
-@media (min-width: 75rem) {
+.create-ambient-blob--d {
+  width: 6.5rem;
+  height: 6.5rem;
+  bottom: 6rem;
+  right: 1.5rem;
+  background: radial-gradient(
+    circle at 55% 55%,
+    var(--wl-peach) 0%,
+    var(--wl-pink) 65%,
+    transparent 100%
+  );
+  animation-duration: 33s;
+  animation-direction: alternate-reverse;
+}
+
+@media (min-width: 64rem) {
   .create-ambient {
     display: block;
+  }
+}
+
+/* Gentle, continuous drift — a bigger excursion than the marketing pages'
+   own ambient blobs (hero-blob-drift) since this decoration is meant to
+   be clearly noticeable, not just barely-there atmosphere; still a slow,
+   organic loop (24–33s per cycle here), never a bounce/pulse/spin. */
+@keyframes question-ambient-drift {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(0.85rem, -1rem) scale(1.12);
   }
 }
 
