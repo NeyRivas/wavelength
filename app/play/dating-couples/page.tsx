@@ -7,9 +7,11 @@ import { LandingHeader } from "@/components/landing/landing-header";
 import { GameCategorySection } from "@/components/play/game-category-section";
 
 // /play/dating-couples — one of /play's two category screens (see
-// app/play/page.tsx). Only "Compatibility Quiz" currently
-// has a real question set (lib/wavelength/ready-made-games.ts); the other
-// two render as prepared-but-inert cards, same as before this move.
+// app/play/page.tsx). All three cards are wired up
+// (lib/wavelength/ready-made-games.ts): "Are we on the same page?" and
+// "Getting to know each other" seed a questionnaire draft, while "Date
+// Night" is plain navigation to its own standalone experience
+// (app/play/dating-couples/date-night) rather than a questionnaire.
 const fraunces = Fraunces({
   subsets: ["latin"],
   style: ["italic"],

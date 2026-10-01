@@ -34,8 +34,15 @@ export interface ReadyMadeGame {
    * "Compatibility Quiz" as its subtitle. Omitted for every other game. */
   subtitle?: string;
   group: ReadyMadeGameGroup;
-  /** `null` = card is shown on the landing page but not wired up yet. */
+  /** `null` = card is shown on the landing page but not wired up yet
+   * (unless `href` is set — see below). */
   questions: ReadyMadeQuestion[] | null;
+  /** Optional: when set, this card is plain navigation to a standalone
+   * experience (e.g. Date Night's conversation-starter library,
+   * app/play/dating-couples/date-night) instead of seeding a
+   * questionnaire draft via startReadyMadeGame. Takes priority over
+   * `questions`/`playable` in GameCard. */
+  href?: string;
 }
 
 /**
@@ -360,8 +367,10 @@ export const READY_MADE_GAMES: ReadyMadeGame[] = [
   {
     id: "date-night",
     title: "Date Night",
+    subtitle: "Conversation Starters",
     group: "dating-couples",
     questions: null,
+    href: "/play/dating-couples/date-night",
   },
   {
     id: "how-well-do-you-know-me",

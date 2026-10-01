@@ -1,15 +1,20 @@
+import Link from "next/link";
+
 import { startReadyMadeGame } from "@/app/actions/ready-made-games";
 
 /**
  * One ready-made game card, used on /play's category screens
- * (/play/dating-couples, /play/friends). `playable` games submit
- * `startReadyMadeGame` (app/actions/ready-made-games.ts) via a form whose
- * submit button IS the card (`display: contents` on the form itself keeps
- * the button as the actual grid item — see .game-card-form in
- * globals.css), so the whole card is clickable, not just the "Play"
- * label. Non-playable games render the identical markup/styling as a
- * plain, inert block — same card design, no second visual system, just
- * not wired to a real question set yet.
+ * (/play/dating-couples, /play/friends). Three possible renderings:
+ * - `href` set (e.g. Date Night) → plain navigation (a Link) to a
+ *   standalone experience, not a questionnaire draft — takes priority
+ *   over `playable`.
+ * - `playable` (has a real question set) → submits `startReadyMadeGame`
+ *   (app/actions/ready-made-games.ts) via a form whose submit button IS
+ *   the card (`display: contents` on the form itself keeps the button as
+ *   the actual grid item — see .game-card-form in globals.css), so the
+ *   whole card is clickable, not just the "Play" label.
+ * - neither → identical markup/styling as a plain, inert block — same
+ *   card design, no second visual system, just not wired up yet.
  */
 export function GameCard({
   id,
@@ -17,12 +22,14 @@ export function GameCard({
   subtitle,
   blobClass,
   playable,
+  href,
 }: {
   id: string;
   title: string;
   subtitle?: string;
   blobClass: string;
   playable: boolean;
+  href?: string;
 }) {
   const inner = (
     <>
@@ -36,6 +43,14 @@ export function GameCard({
       </span>
     </>
   );
+
+  if (href) {
+    return (
+      <Link href={href} className="landing-card game-card">
+        {inner}
+      </Link>
+    );
+  }
 
   if (!playable) {
     return (

@@ -49,6 +49,7 @@ export function GameCategorySection({
             subtitle={game.subtitle}
             blobClass={blobs[index]!}
             playable={game.questions !== null}
+            href={game.href}
           />
         ))}
       </div>
