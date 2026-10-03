@@ -1964,6 +1964,115 @@ dialog::backdrop {
   color: var(--wl-ink);
 }
 
+/* ── Dating & Couples "vivid" cards ───────────────────────────────────────
+   Opt-in modifier (game-card.tsx only applies it when
+   GameCategorySection's group is "dating-couples" — see
+   VIVID_GRADIENTS_BY_GROUP) layering a visible pastel gradient, two soft
+   translucent shapes, and a glass CTA onto the existing .landing-card/
+   .game-card structure. Nothing here touches the bare .landing-card/
+   .game-card rules those classes still apply first, so Friends — which
+   never receives a `--vivid*` class — renders exactly as it did before
+   this pass. */
+.game-card--vivid {
+  border-color: transparent;
+}
+
+.game-card--vivid-a {
+  background: linear-gradient(135deg, var(--wl-lavender) 0%, var(--wl-blue) 100%);
+}
+
+.game-card--vivid-b {
+  background: linear-gradient(135deg, var(--wl-pink) 0%, var(--wl-peach) 100%);
+}
+
+.game-card--vivid-c {
+  background: linear-gradient(135deg, var(--wl-mint) 0%, var(--wl-lavender) 100%);
+}
+
+/* A second, smaller soft shape in the opposite corner from the existing
+   .landing-card__blob — a plain CSS pseudo-element, no extra markup — so
+   each vivid card carries two translucent accents instead of one, both
+   strictly decorative (aria-hidden isn't needed; ::before/::after are
+   never exposed to assistive tech) and both behind the real content
+   (painted before the card's own children in source order, and further
+   pinned under them via z-index). */
+.game-card--vivid::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  bottom: -2.25rem;
+  left: -2rem;
+  width: 7rem;
+  height: 7rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  filter: blur(16px);
+  pointer-events: none;
+  transition: transform 0.4s ease;
+}
+
+@media (hover: hover) {
+  .game-card--vivid:hover::before {
+    transform: translate(0.375rem, -0.375rem) scale(1.08);
+  }
+}
+
+/* The existing corner blob reads as a soft highlight (translucent white)
+   rather than another flat pastel block competing with the gradient
+   underneath it — overrides every .landing-card__blob--* color/border
+   variant uniformly via one higher-specificity, descendant-scoped rule. */
+.game-card--vivid .landing-card__blob {
+  background: rgba(255, 255, 255, 0.4);
+  border: none;
+  filter: blur(2px);
+}
+
+.game-card--vivid .game-card__title,
+.game-card--vivid .game-card__subtitle {
+  position: relative;
+  z-index: 1;
+}
+
+/* Solid ink (not the usual muted gray) for the subtitle here specifically
+   — every vivid gradient is light enough that --wl-muted's gray drops
+   below comfortable contrast; full ink keeps it clearly readable on all
+   three, with size/weight/case (not color) still doing the job of making
+   it read as secondary to the title. */
+.game-card--vivid .game-card__subtitle {
+  color: var(--wl-ink);
+}
+
+/* The CTA becomes an actual glass pill instead of plain inline text —
+   visible unconditionally (mobile included), not only on hover. */
+.game-card--vivid .game-card__cta {
+  position: relative;
+  z-index: 1;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 6px 16px -8px rgba(24, 24, 32, 0.22);
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+}
+
+@media (hover: hover) {
+  .game-card--vivid:hover .game-card__cta {
+    background: rgba(255, 255, 255, 0.6);
+    box-shadow: 0 10px 22px -8px rgba(24, 24, 32, 0.28);
+    transform: translateY(-2px);
+  }
+}
+
+.game-card--vivid:focus-visible {
+  outline: 2px solid var(--wl-ink);
+  outline-offset: 2px;
+}
+
 /* ── "The experience" ────────────────────────────────────────────────── */
 
 .landing-experience {

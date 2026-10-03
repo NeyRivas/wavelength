@@ -15,6 +15,12 @@ import { startReadyMadeGame } from "@/app/actions/ready-made-games";
  *   whole card is clickable, not just the "Play" label.
  * - neither → identical markup/styling as a plain, inert block — same
  *   card design, no second visual system, just not wired up yet.
+ *
+ * `vividClass` (Dating & Couples visual-refresh pass): an explicit,
+ * opt-in modifier — e.g. "game-card--vivid-a" — that layers a pastel
+ * gradient + soft decorative shapes + a glass CTA onto the card. Only
+ * GameCategorySection's "dating-couples" group ever passes this; Friends
+ * cards never receive it and render exactly as before.
  */
 export function GameCard({
   id,
@@ -23,6 +29,7 @@ export function GameCard({
   blobClass,
   playable,
   href,
+  vividClass,
 }: {
   id: string;
   title: string;
@@ -30,7 +37,10 @@ export function GameCard({
   blobClass: string;
   playable: boolean;
   href?: string;
+  vividClass?: string;
 }) {
+  const cardClassName = `landing-card game-card${vividClass ? ` game-card--vivid ${vividClass}` : ""}`;
+
   const inner = (
     <>
       <div className={`landing-card__blob ${blobClass}`} aria-hidden="true" />
@@ -46,7 +56,7 @@ export function GameCard({
 
   if (href) {
     return (
-      <Link href={href} className="landing-card game-card">
+      <Link href={href} className={cardClassName}>
         {inner}
       </Link>
     );
@@ -54,7 +64,7 @@ export function GameCard({
 
   if (!playable) {
     return (
-      <div className="landing-card game-card game-card--inert" aria-disabled="true">
+      <div className={`${cardClassName} game-card--inert`} aria-disabled="true">
         {inner}
       </div>
     );
@@ -63,7 +73,7 @@ export function GameCard({
   return (
     <form action={startReadyMadeGame} className="game-card-form">
       <input type="hidden" name="gameId" value={id} />
-      <button type="submit" className="landing-card game-card">
+      <button type="submit" className={cardClassName}>
         {inner}
       </button>
     </form>

@@ -10,6 +10,14 @@ const BLOBS_BY_GROUP: Record<ReadyMadeGameGroup, string[]> = {
   friends: ["landing-card__blob--lavender", "landing-card__blob--peach"],
 };
 
+/** Dating & Couples visual-refresh pass: one pastel gradient per card,
+ * in display order — lavender→blue, pink→peach, mint→lavender. Explicit
+ * opt-in modifiers (see GameCard) scoped to this one group only; Friends
+ * never receives a vivid class and keeps its existing plain-white cards. */
+const VIVID_GRADIENTS_BY_GROUP: Partial<Record<ReadyMadeGameGroup, string[]>> = {
+  "dating-couples": ["game-card--vivid-a", "game-card--vivid-b", "game-card--vivid-c"],
+};
+
 /**
  * One /play category screen's game list (/play/dating-couples,
  * /play/friends) — reuses the exact section/heading/grid/card primitives
@@ -31,6 +39,7 @@ export function GameCategorySection({
 }) {
   const games = READY_MADE_GAMES.filter((game) => game.group === group);
   const blobs = BLOBS_BY_GROUP[group];
+  const vividGradients = VIVID_GRADIENTS_BY_GROUP[group];
   const gridClassName =
     games.length === 2
       ? "landing-card-grid game-card-grid game-card-grid--two"
@@ -50,6 +59,7 @@ export function GameCategorySection({
             blobClass={blobs[index]!}
             playable={game.questions !== null}
             href={game.href}
+            vividClass={vividGradients?.[index]}
           />
         ))}
       </div>
