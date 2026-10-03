@@ -58,14 +58,19 @@ export default async function CreatePage({
 
   // Ready-made games redirect here with `?game=<id>` right after seeding a
   // brand-new draft (app/actions/ready-made-games.ts) — the one moment
-  // this heading can be sure the draft's content actually matches that
-  // game. Resuming an existing draft never carries this param (same
-  // action, unchanged), so an in-progress "Make Your Own" questionnaire —
-  // or one A has since edited away from a ready-made game's original
-  // questions — always keeps the generic heading rather than a stale or
-  // misleading one.
+  // this page can be sure the draft's content actually matches that game.
+  // Resuming an existing draft never carries this param (same action,
+  // unchanged), so an in-progress "Make Your Own" questionnaire — or one
+  // A has since edited away from a ready-made game's original questions —
+  // always keeps the generic heading/back-link rather than a stale or
+  // misleading one. Same game also decides where CreateHeader's "← Back"
+  // actually goes: a Dating & Couples game sends A back to
+  // /play/dating-couples (the screen they picked it from) instead of the
+  // generic /play.
   const { game: gameId } = await searchParams;
-  const heading = (gameId && getReadyMadeGame(gameId)?.title) || DEFAULT_HEADING;
+  const resolvedGame = gameId ? getReadyMadeGame(gameId) : undefined;
+  const heading = resolvedGame?.title || DEFAULT_HEADING;
+  const backHref = resolvedGame?.group === "dating-couples" ? "/play/dating-couples" : "/play";
 
   // Resume the most recent DRAFT if A already has one; otherwise show setup.
   // One active draft at a time is a Phase 4 engineering default (not a
@@ -83,7 +88,7 @@ export default async function CreatePage({
   if (!draft) {
     return (
       <div className={`${fraunces.variable} ${nunitoSans.variable} wl-create`}>
-        <CreateHeader />
+        <CreateHeader backHref={backHref} />
         <main className="create-shell">
           <CreateShellIntro heading={heading} questionCount={0} />
           <DraftSetupForm />
@@ -107,7 +112,7 @@ export default async function CreatePage({
 
   return (
     <div className={`${fraunces.variable} ${nunitoSans.variable} wl-create`}>
-      <CreateHeader />
+      <CreateHeader backHref={backHref} />
       <main className="create-shell">
         <CreateShellIntro heading={heading} questionCount={questions?.length ?? 0} />
         <QuestionnaireBuilder

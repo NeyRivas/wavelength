@@ -2028,17 +2028,22 @@ dialog::backdrop {
 }
 
 .game-card--vivid .game-card__title,
-.game-card--vivid .game-card__subtitle {
+.game-card--vivid .game-card__subtitle,
+.game-card--vivid .category-card__text {
   position: relative;
   z-index: 1;
 }
 
-/* Solid ink (not the usual muted gray) for the subtitle here specifically
-   — every vivid gradient is light enough that --wl-muted's gray drops
-   below comfortable contrast; full ink keeps it clearly readable on all
-   three, with size/weight/case (not color) still doing the job of making
-   it read as secondary to the title. */
-.game-card--vivid .game-card__subtitle {
+/* Solid ink (not the usual muted gray) for the subtitle/description here
+   specifically — every vivid gradient is light enough that --wl-muted's
+   gray drops below comfortable contrast; full ink keeps it clearly
+   readable on all of them, with size/weight/case (not color) still doing
+   the job of making it read as secondary to the title. Shared by
+   GameCard's subtitle (e.g. "Compatibility Quiz") and CategoryCard's own
+   description line (e.g. "For the two of you.") — the two places vivid
+   cards show supporting text. */
+.game-card--vivid .game-card__subtitle,
+.game-card--vivid .category-card__text {
   color: var(--wl-ink);
 }
 
@@ -5676,15 +5681,52 @@ dialog::backdrop {
   justify-content: center;
 }
 
+/* A Sameeeish "conversation card" — same family as the Dating & Couples
+   nav cards (visible pastel gradient, soft decorative shapes, gentle
+   depth) but its own composition: a big focal question, not a
+   navigation target, so there's no glass CTA here — the gradient/
+   decoration exist only to make the card itself feel premium and
+   playful, never to compete with the question's own legibility. */
 .dn-card {
   position: relative;
+  overflow: hidden;
   width: 100%;
   max-width: 36rem;
   padding: clamp(2.5rem, 6vw, 3.5rem) clamp(1.75rem, 5vw, 3rem);
-  border: 1px solid var(--color-border);
+  border: 1px solid transparent;
   border-radius: 1.5rem;
-  background: #ffffff;
+  background: linear-gradient(135deg, var(--wl-mint) 0%, var(--wl-lavender) 100%);
+  box-shadow: 0 24px 48px -30px rgba(24, 24, 32, 0.22);
   text-align: center;
+}
+
+/* Two small, soft translucent shapes behind the content (z-index 0 vs.
+   the content's z-index 1 below) — top-left and bottom-right, well clear
+   of the favorite heart (top-right) and the tags (bottom, centered). */
+.dn-card::before,
+.dn-card::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  pointer-events: none;
+}
+
+.dn-card::before {
+  top: -3rem;
+  left: -2.5rem;
+  width: 8rem;
+  height: 8rem;
+  filter: blur(20px);
+}
+
+.dn-card::after {
+  bottom: -3.5rem;
+  right: -2rem;
+  width: 6rem;
+  height: 6rem;
+  filter: blur(16px);
 }
 
 .dn-card--empty {
@@ -5693,6 +5735,7 @@ dialog::backdrop {
 
 .dn-card__favorite {
   position: absolute;
+  z-index: 1;
   top: 1.25rem;
   right: 1.25rem;
   display: inline-flex;
@@ -5710,10 +5753,12 @@ dialog::backdrop {
 }
 
 .dn-card__favorite:hover {
-  background: color-mix(in srgb, var(--wl-pink) 20%, white);
+  background: rgba(255, 255, 255, 0.45);
 }
 
 .dn-card__text {
+  position: relative;
+  z-index: 1;
   margin: 0.5rem 0 1.5rem;
   font-family: var(--font-fraunces), serif;
   font-style: italic;
@@ -5725,17 +5770,19 @@ dialog::backdrop {
 
 .dn-card__text--empty {
   font-size: clamp(1.25rem, 2.6vw, 1.5rem);
-  color: var(--wl-muted);
+  color: var(--wl-ink);
 }
 
 .dn-card__tags {
+  position: relative;
+  z-index: 1;
   margin: 0;
   font-family: var(--font-nunito), system-ui, sans-serif;
   font-size: 0.8125rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--wl-muted);
+  color: var(--wl-ink);
 }
 
 /* ── Next / Shuffle ────────────────────────────────────────────────────── */

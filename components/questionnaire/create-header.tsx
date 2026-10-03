@@ -11,18 +11,24 @@ import { LogoMark } from "@/components/landing/logo-mark";
  * marketing header must stay untouched, so this is its own small
  * component instead of a variant bolted onto LandingHeader. It reuses
  * LogoMark (the same ring-and-dot icon) so the wordmark still reads as
- * the same brand, just without the marketing nav around it. Back now
- * goes to /play (the mode-selection screen this flow is actually
- * reached from), not straight to "/".
+ * the same brand, just without the marketing nav around it.
+ *
+ * `backHref` defaults to /play (Make Your Own, or no ready-made-game
+ * context) — app/create/page.tsx passes "/play/dating-couples" instead
+ * whenever the current draft was just seeded from one of that group's
+ * ready-made games, so Back returns to the screen the user actually came
+ * from rather than always landing on the generic mode-selection screen.
+ * Always an explicit href (never router.back()), so it's deterministic
+ * regardless of prior browser history.
  */
-export function CreateHeader() {
+export function CreateHeader({ backHref = "/play" }: { backHref?: string }) {
   return (
     <header className="create-header">
       <Link href="/" className="create-header__logo">
         <LogoMark className="create-header__logo-mark" />
         <span>Sameeeish</span>
       </Link>
-      <Link href="/play" className="create-header__back">
+      <Link href={backHref} className="create-header__back">
         ← Back
       </Link>
     </header>

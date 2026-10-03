@@ -65,18 +65,21 @@ export default function PlayPickerPage() {
               title="Dating & Couples"
               description="For the two of you."
               blobClass="landing-card__blob--pink"
+              vividClass="game-card--vivid-a"
             />
             <CategoryCard
               href="/play/friends"
               title="Friends"
               description="For your favorite people."
               blobClass="landing-card__blob--blue"
+              vividClass="game-card--vivid-b"
             />
             <CategoryCard
               href="/create"
               title="Make Your Own"
               description="Create your own questions."
               blobClass="landing-card__blob--mint"
+              vividClass="game-card--vivid-c"
             />
           </div>
         </section>
