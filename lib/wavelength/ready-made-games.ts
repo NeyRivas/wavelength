@@ -33,6 +33,13 @@ export interface ReadyMadeGame {
    * (GameCard) — e.g. the experience name "Are we on the same page?" with
    * "Compatibility Quiz" as its subtitle. Omitted for every other game. */
   subtitle?: string;
+  /** Optional longer line shown under the heading on /create's builder
+   * screen specifically (app/create/page.tsx's CreateShellIntro) —
+   * distinct from `subtitle` above (the short GameCard label): this one
+   * describes the experience itself once A is actually answering it.
+   * Omitted for games with no builder (e.g. Date Night, which never
+   * reaches /create) or no ready-made questions yet. */
+  builderSubtitle?: string;
   group: ReadyMadeGameGroup;
   /** `null` = card is shown on the landing page but not wired up yet
    * (unless `href` is set — see below). */
@@ -354,6 +361,7 @@ export const READY_MADE_GAMES: ReadyMadeGame[] = [
     id: "how-well-do-you-know-each-other",
     title: "Are we on the same page?",
     subtitle: "Compatibility Quiz",
+    builderSubtitle: "A relationship compatibility quiz to see where you align.",
     group: "dating-couples",
     questions: COMPATIBILITY_QUIZ_QUESTIONS,
   },
@@ -361,6 +369,7 @@ export const READY_MADE_GAMES: ReadyMadeGame[] = [
     id: "getting-to-know-you",
     title: "Getting to know each other",
     subtitle: "Discovery & Conversation",
+    builderSubtitle: "A conversation quiz to discover more about each other.",
     group: "dating-couples",
     questions: GETTING_TO_KNOW_EACH_OTHER_QUESTIONS,
   },

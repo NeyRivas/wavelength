@@ -6,9 +6,28 @@ import { DraftSetupForm } from "@/components/questionnaire/draft-setup-form";
 import { QuestionnaireBuilder } from "@/components/questionnaire/questionnaire-builder";
 import { requireUserId } from "@/lib/supabase/identity";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { getReadyMadeGame } from "@/lib/wavelength/ready-made-games";
+import { getReadyMadeGame, READY_MADE_GAMES } from "@/lib/wavelength/ready-made-games";
 
-const DEFAULT_HEADING = "Are we on the same page?";
+const MAKE_YOUR_OWN_HEADING = "Make Your Own";
+const MAKE_YOUR_OWN_SUBTITLE = "Create your own relationship quiz with questions that matter.";
+
+// Precomputed once: the exact question-text set for each ready-made game
+// that has real questions — used only below, to recognize "this draft's
+// content is a ready-made game's" when resolving which draft Make Your
+// Own should resume. Never used to decide which *ready-made* draft to
+// show (that's the `game` query param + the scoped source_game_id lookup
+// right below, both unchanged from the existing draft-separation fix).
+const READY_MADE_TEXT_SETS = READY_MADE_GAMES.filter((game) => game.questions).map(
+  (game) => new Set(game.questions!.map((question) => question.text)),
+);
+
+function looksLikeReadyMadeDraft(questionTexts: string[]): boolean {
+  if (questionTexts.length === 0) return false;
+  return READY_MADE_TEXT_SETS.some(
+    (textSet) =>
+      questionTexts.length === textSet.size && questionTexts.every((text) => textSet.has(text)),
+  );
+}
 
 // Participant A's DRAFT flow (ARCHITECTURE.md §12 Phase 4), now including
 // finalization ("Create my Wavelength" — Phase 5). Not implemented here:
@@ -36,13 +55,19 @@ const nunitoSans = Nunito_Sans({
   display: "swap",
 });
 
-function CreateShellIntro({ heading, questionCount }: { heading: string; questionCount: number }) {
+function CreateShellIntro({
+  heading,
+  subtitle,
+  questionCount,
+}: {
+  heading: string;
+  subtitle: string;
+  questionCount: number;
+}) {
   return (
     <div className="create-shell__intro">
       <h1 className="create-shell__heading">{heading}</h1>
-      <p className="create-shell__text">
-        Choose a few questions, answer them yourself, then invite someone to play.
-      </p>
+      <p className="create-shell__text">{subtitle}</p>
       <CreateProgress current={questionCount} />
     </div>
   );
@@ -57,19 +82,21 @@ export default async function CreatePage({
   const supabase = await createSupabaseServerClient();
   const { game: gameId } = await searchParams;
 
+  // Which ready-made game (if any) was just picked, straight from the
+  // query param app/actions/ready-made-games.ts always attaches on its
+  // redirect — fresh seed or resume alike, so this is reliable regardless
+  // of source_game_id's own persistence. Drives the heading/subtitle/
+  // "← Back" below directly; it has nothing to do with *which draft's
+  // questions* load (that's the scoped source_game_id lookup right below,
+  // completely unchanged from the existing draft-separation fix).
+  const resolvedGame = gameId ? getReadyMadeGame(gameId) : undefined;
+  const heading = resolvedGame?.title || MAKE_YOUR_OWN_HEADING;
+  const subtitle = resolvedGame?.builderSubtitle || MAKE_YOUR_OWN_SUBTITLE;
+  const backHref = resolvedGame?.group === "dating-couples" ? "/play/dating-couples" : "/play";
+
   // A given account can have more than one concurrent DRAFT (one per
-  // ready-made game — see app/actions/ready-made-games.ts), so "most
-  // recent draft overall" is no longer enough to find the *right* one:
-  // when we know which game was just picked, resume that game's own
-  // draft specifically. No `game` param (direct navigation, Make Your
-  // Own) falls back to the previous "most recent draft overall" lookup,
-  // completely unchanged.
-  //
-  // Deliberately NOT selecting `source_game_id` in either query below:
-  // both gate everything that follows (the draft itself and its
-  // questions), and must always succeed regardless of whether that column
-  // is migrated onto this database yet — see the separate, isolated
-  // lookup further down.
+  // ready-made game — see app/actions/ready-made-games.ts). With a `game`
+  // param, resume that game's own draft specifically.
   let draft: { id: string; share_token: string } | null = null;
 
   if (gameId) {
@@ -83,47 +110,40 @@ export default async function CreatePage({
       .limit(1)
       .maybeSingle();
     draft = data ?? null;
-  }
-
-  if (!draft) {
-    const { data } = await supabase
+  } else {
+    // Make Your Own / direct navigation: must never resume a ready-made
+    // game's draft here. source_game_id can't reliably tell them apart at
+    // the database level, so check each of the account's most recent
+    // drafts' actual question content against the known ready-made sets,
+    // and resume the first one that doesn't match. An account with only
+    // ready-made drafts (or none at all) falls through to the empty
+    // DraftSetupForm below, exactly as intended.
+    const { data: candidates } = await supabase
       .from("wavelengths")
       .select("id, share_token")
       .eq("participant_a_id", userId)
       .eq("state", "DRAFT")
       .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    draft = data ?? null;
-  }
+      .limit(10);
 
-  // `source_game_id` is set once, at creation, by
-  // app/actions/ready-made-games.ts, for the heading/"← Back" destination
-  // below. Looked up in its own query, isolated from the draft lookup
-  // above on purpose: if this column isn't there yet, this just comes back
-  // empty and heading/backHref fall back to their defaults — exactly like
-  // any other "Make Your Own" draft — instead of taking the whole page
-  // (and the draft's actual questions) down with it.
-  let sourceGameId: string | null = null;
-  if (draft) {
-    const { data: gameRow } = await supabase
-      .from("wavelengths")
-      .select("source_game_id")
-      .eq("id", draft.id)
-      .maybeSingle();
-    sourceGameId = gameRow?.source_game_id ?? null;
+    for (const candidate of candidates ?? []) {
+      const { data: candidateQuestions } = await supabase
+        .from("questions")
+        .select("text")
+        .eq("wavelength_id", candidate.id);
+      if (!looksLikeReadyMadeDraft((candidateQuestions ?? []).map((question) => question.text))) {
+        draft = candidate;
+        break;
+      }
+    }
   }
-
-  const resolvedGame = sourceGameId ? getReadyMadeGame(sourceGameId) : undefined;
-  const heading = resolvedGame?.title || DEFAULT_HEADING;
-  const backHref = resolvedGame?.group === "dating-couples" ? "/play/dating-couples" : "/play";
 
   if (!draft) {
     return (
       <div className={`${fraunces.variable} ${nunitoSans.variable} wl-create`}>
         <CreateHeader backHref={backHref} />
         <main className="create-shell">
-          <CreateShellIntro heading={heading} questionCount={0} />
+          <CreateShellIntro heading={heading} subtitle={subtitle} questionCount={0} />
           <DraftSetupForm />
         </main>
       </div>
@@ -147,7 +167,11 @@ export default async function CreatePage({
     <div className={`${fraunces.variable} ${nunitoSans.variable} wl-create`}>
       <CreateHeader backHref={backHref} />
       <main className="create-shell">
-        <CreateShellIntro heading={heading} questionCount={questions?.length ?? 0} />
+        <CreateShellIntro
+          heading={heading}
+          subtitle={subtitle}
+          questionCount={questions?.length ?? 0}
+        />
         <QuestionnaireBuilder
           wavelength={draft}
           questions={questions ?? []}
