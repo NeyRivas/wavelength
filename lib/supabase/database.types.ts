@@ -46,12 +46,16 @@ export interface Database {
           waiting_at: string | null;
           in_progress_at: string | null;
           completed_at: string | null;
+          source_game_id: string | null;
         };
         // A only ever creates its own DRAFT row directly (an INSERT, not a
         // state transition). Every later mutation goes through the three
         // RPCs in Functions below — there is no client-facing Update type.
         // No question count or category is declared upfront (progressive
         // creation, resolved decision) — this insert is just the row's owner.
+        // `source_game_id` is set once here, only when a ready-made game
+        // seeds a brand-new draft (app/actions/ready-made-games.ts); every
+        // other draft (including "Make Your Own") leaves it null.
         Insert: {
           id?: string;
           share_token?: string;
@@ -64,6 +68,7 @@ export interface Database {
           waiting_at?: null;
           in_progress_at?: null;
           completed_at?: null;
+          source_game_id?: string | null;
         };
         Update: never;
         Relationships: [];

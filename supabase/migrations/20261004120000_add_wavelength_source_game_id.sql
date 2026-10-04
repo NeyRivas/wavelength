@@ -1,0 +1,17 @@
+-- Wavelength — persist which ready-made game (if any) seeded a draft.
+--
+-- app/create previously learned this only from a `?game=<id>` query param
+-- that app/actions/ready-made-games.ts attached to the redirect URL, but
+-- only in the single moment right after seeding a brand-new draft. Every
+-- later visit to /create — including re-clicking the same ready-made game
+-- card to resume an already-existing DRAFT — redirects with no query param
+-- at all, so the heading and the "← Back" destination silently fell back
+-- to the generic "Are we on the same page?" / /play, even for a Dating &
+-- Couples draft the user is actively resuming. Storing the game id on the
+-- row itself, set once at creation, makes that context durable across any
+-- number of future page loads instead of surviving only one redirect.
+--
+-- Nullable: "Make Your Own" drafts (and any draft created before this
+-- column existed) simply have no source game, which is the correct,
+-- already-handled fallback case everywhere this column is read.
+alter table wavelengths add column source_game_id text;

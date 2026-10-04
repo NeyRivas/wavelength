@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 
+import { getDateNightGradientClass } from "@/lib/date-night/gradients";
 import {
   DATE_NIGHT_QUESTIONS,
   DATE_NIGHT_QUESTIONS_BY_ID,
@@ -12,15 +13,35 @@ import {
 
 type MoodFilter = "all" | Mood;
 
+// Shared by the mood-filter tabs (active-tab highlight) and the Browse
+// Questions group pills below, so both reuse the same color vocabulary
+// instead of two separate mappings drifting apart.
+const MOOD_TINTS: Record<Mood, string> = {
+  flirty: "pink",
+  funny: "peach",
+  romantic: "pink",
+  random: "blue",
+  deep: "lavender",
+  hypothetical: "mint",
+};
+
 const MOOD_FILTERS: { id: MoodFilter; label: string; tint: string }[] = [
   { id: "all", label: "All", tint: "lavender" },
-  { id: "flirty", label: MOOD_LABELS.flirty, tint: "pink" },
-  { id: "funny", label: MOOD_LABELS.funny, tint: "peach" },
-  { id: "romantic", label: MOOD_LABELS.romantic, tint: "pink" },
-  { id: "random", label: MOOD_LABELS.random, tint: "blue" },
-  { id: "deep", label: MOOD_LABELS.deep, tint: "lavender" },
-  { id: "hypothetical", label: MOOD_LABELS.hypothetical, tint: "mint" },
+  { id: "flirty", label: MOOD_LABELS.flirty, tint: MOOD_TINTS.flirty },
+  { id: "funny", label: MOOD_LABELS.funny, tint: MOOD_TINTS.funny },
+  { id: "romantic", label: MOOD_LABELS.romantic, tint: MOOD_TINTS.romantic },
+  { id: "random", label: MOOD_LABELS.random, tint: MOOD_TINTS.random },
+  { id: "deep", label: MOOD_LABELS.deep, tint: MOOD_TINTS.deep },
+  { id: "hypothetical", label: MOOD_LABELS.hypothetical, tint: MOOD_TINTS.hypothetical },
 ];
+
+// Browse Questions groups by each question's *primary* mood (moods[0])
+// rather than every mood it carries — a multi-tag question (e.g. flirty +
+// romantic) appears exactly once, under whichever mood it was authored to
+// lead with, instead of being listed again under every matching category.
+// The mood-filter tabs above are unaffected: they still filter by any
+// matching tag (`question.moods.includes(mood)`), never just the primary.
+const BROWSE_MOOD_ORDER: Mood[] = ["romantic", "flirty", "funny", "random", "deep", "hypothetical"];
 
 const FAVORITES_STORAGE_KEY = "sameeeish:date-night:favorites";
 
@@ -55,6 +76,29 @@ function filterQuestions(mood: MoodFilter, query: string): DateNightQuestion[] {
     const matchesSearch = q === "" || question.text.toLowerCase().includes(q);
     return matchesMood && matchesSearch;
   });
+}
+
+interface BrowseGroup {
+  mood: Mood;
+  questions: DateNightQuestion[];
+}
+
+/** Browse Questions' own grouping: every question, under its primary mood
+ * only (see BROWSE_MOOD_ORDER above), optionally narrowed by the same
+ * search text as the main search box — independent of the mood-filter
+ * tabs, since the point of this list is to stay skimmable across every
+ * category at once. Empty groups (no match for the current search) are
+ * left out rather than rendered as a bare heading. */
+function groupQuestionsForBrowse(query: string): BrowseGroup[] {
+  const q = query.trim().toLowerCase();
+  const matches =
+    q === ""
+      ? DATE_NIGHT_QUESTIONS
+      : DATE_NIGHT_QUESTIONS.filter((question) => question.text.toLowerCase().includes(q));
+  return BROWSE_MOOD_ORDER.map((mood) => ({
+    mood,
+    questions: matches.filter((question) => question.moods[0] === mood),
+  })).filter((group) => group.questions.length > 0);
 }
 
 /** Picks a random question from `pool`, avoiding `excludeId` when there's
@@ -118,6 +162,18 @@ export function DateNightExperience() {
     if (next) setCurrentId(next.id);
   }
 
+  // Used by Favorites and Browse Questions: both let you jump straight to
+  // a specific question, so this also resets the mood filter to "all" and
+  // clears any search text — without that, picking a question that the
+  // currently active mood/search happens to exclude would silently fall
+  // back to showing a different one (see `displayedQuestion` above),
+  // which would make "click a question to open it" unreliable.
+  function handleSelectQuestion(id: string) {
+    setActiveMood("all");
+    setSearch("");
+    setCurrentId(id);
+  }
+
   function toggleFavorite(id: string) {
     setFavoriteIds((previous) => {
       const next = previous.includes(id)
@@ -132,6 +188,7 @@ export function DateNightExperience() {
   const favoriteQuestions = favoriteIds
     .map((id) => DATE_NIGHT_QUESTIONS_BY_ID.get(id))
     .filter((q): q is DateNightQuestion => q !== undefined);
+  const browseGroups = useMemo(() => groupQuestionsForBrowse(search), [search]);
 
   return (
     <div className="dn-experience">
@@ -217,7 +274,7 @@ export function DateNightExperience() {
                 <button
                   type="button"
                   className="dn-favorite-item__main"
-                  onClick={() => setCurrentId(question.id)}
+                  onClick={() => handleSelectQuestion(question.id)}
                 >
                   <span className="dn-favorite-item__text">{question.text}</span>
                   <span className="dn-favorite-item__tags">
@@ -237,6 +294,51 @@ export function DateNightExperience() {
           </ul>
         )}
       </section>
+
+      <section className="dn-browse">
+        <h2 className="dn-browse__heading">Browse Questions</h2>
+        <p className="dn-browse__subtitle">Skim the full library, grouped by mood.</p>
+        {browseGroups.length === 0 ? (
+          <p className="dn-browse__empty">No questions match that search.</p>
+        ) : (
+          browseGroups.map((group) => (
+            <div key={group.mood} className="dn-browse-group">
+              <h3 className="dn-browse-group__heading">
+                <span
+                  className={`dn-browse-group__pill dn-browse-group__pill--${MOOD_TINTS[group.mood]}`}
+                >
+                  {MOOD_LABELS[group.mood]}
+                </span>
+              </h3>
+              <ul className="dn-browse-group__list">
+                {group.questions.map((question) => {
+                  const isFavorite = favoriteIds.includes(question.id);
+                  return (
+                    <li key={question.id} className="dn-browse-item">
+                      <button
+                        type="button"
+                        className="dn-browse-item__main"
+                        onClick={() => handleSelectQuestion(question.id)}
+                      >
+                        <span className="dn-browse-item__text">{question.text}</span>
+                      </button>
+                      <button
+                        type="button"
+                        className={`dn-browse-item__heart${isFavorite ? " dn-browse-item__heart--active" : ""}`}
+                        aria-pressed={isFavorite}
+                        aria-label={isFavorite ? "Remove from favorites" : "Save to favorites"}
+                        onClick={() => toggleFavorite(question.id)}
+                      >
+                        {isFavorite ? "♥" : "♡"}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))
+        )}
+      </section>
     </div>
   );
 }
@@ -251,7 +353,10 @@ function DateNightCard({
   onToggleFavorite: () => void;
 }) {
   return (
-    <article className="dn-card" aria-label={`Question: ${question.text}`}>
+    <article
+      className={`dn-card ${getDateNightGradientClass(question.id)}`}
+      aria-label={`Question: ${question.text}`}
+    >
       <button
         type="button"
         className="dn-card__favorite"

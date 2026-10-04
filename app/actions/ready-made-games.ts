@@ -45,7 +45,7 @@ export async function startReadyMadeGame(formData: FormData): Promise<void> {
   if (!existingDraft) {
     const { data: created, error } = await supabase
       .from("wavelengths")
-      .insert({ participant_a_id: userId })
+      .insert({ participant_a_id: userId, source_game_id: gameId })
       .select("id")
       .single();
 
@@ -61,13 +61,12 @@ export async function startReadyMadeGame(formData: FormData): Promise<void> {
         })),
       );
     }
-
-    // `?game=` is how /create knows to show this game's own title instead
-    // of the generic one — only added here, the one moment the draft's
-    // content is guaranteed to actually match it. Resuming an existing
-    // draft (below) never carries it.
-    redirect(`/create?game=${gameId}`);
   }
 
+  // `source_game_id` lives on the row itself (set above, once, only at
+  // creation), so /create can always re-derive the right heading and
+  // "← Back" destination from the draft it loads — including every time
+  // this same card is clicked again to resume an already-existing draft,
+  // not just the one redirect right after seeding it.
   redirect("/create");
 }

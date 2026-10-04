@@ -48,29 +48,9 @@ function CreateShellIntro({ heading, questionCount }: { heading: string; questio
   );
 }
 
-export default async function CreatePage({
-  searchParams,
-}: {
-  searchParams: Promise<{ game?: string }>;
-}) {
+export default async function CreatePage() {
   const userId = await requireUserId();
   const supabase = await createSupabaseServerClient();
-
-  // Ready-made games redirect here with `?game=<id>` right after seeding a
-  // brand-new draft (app/actions/ready-made-games.ts) — the one moment
-  // this page can be sure the draft's content actually matches that game.
-  // Resuming an existing draft never carries this param (same action,
-  // unchanged), so an in-progress "Make Your Own" questionnaire — or one
-  // A has since edited away from a ready-made game's original questions —
-  // always keeps the generic heading/back-link rather than a stale or
-  // misleading one. Same game also decides where CreateHeader's "← Back"
-  // actually goes: a Dating & Couples game sends A back to
-  // /play/dating-couples (the screen they picked it from) instead of the
-  // generic /play.
-  const { game: gameId } = await searchParams;
-  const resolvedGame = gameId ? getReadyMadeGame(gameId) : undefined;
-  const heading = resolvedGame?.title || DEFAULT_HEADING;
-  const backHref = resolvedGame?.group === "dating-couples" ? "/play/dating-couples" : "/play";
 
   // Resume the most recent DRAFT if A already has one; otherwise show setup.
   // One active draft at a time is a Phase 4 engineering default (not a
@@ -78,12 +58,25 @@ export default async function CreatePage({
   // questionnaire, and this keeps the flow simple without a draft-picker UI.
   const { data: draft } = await supabase
     .from("wavelengths")
-    .select("id, share_token")
+    .select("id, share_token, source_game_id")
     .eq("participant_a_id", userId)
     .eq("state", "DRAFT")
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
+
+  // `source_game_id` is set once, at creation, by
+  // app/actions/ready-made-games.ts — it lives on the draft row itself, so
+  // it's there on every load that resumes this draft, not just the one
+  // redirect right after seeding it. A "Make Your Own" draft (or one
+  // created before this column existed) has no source game and keeps the
+  // generic heading/back-link. Same game also decides where CreateHeader's
+  // "← Back" actually goes: a Dating & Couples game sends A back to
+  // /play/dating-couples (the screen they picked it from) instead of the
+  // generic /play.
+  const resolvedGame = draft?.source_game_id ? getReadyMadeGame(draft.source_game_id) : undefined;
+  const heading = resolvedGame?.title || DEFAULT_HEADING;
+  const backHref = resolvedGame?.group === "dating-couples" ? "/play/dating-couples" : "/play";
 
   if (!draft) {
     return (
