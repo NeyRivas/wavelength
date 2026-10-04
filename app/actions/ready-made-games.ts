@@ -15,12 +15,16 @@ import { getReadyMadeGame } from "@/lib/wavelength/ready-made-games";
  * existing flow: A answers on /create, finalizes, shares the link, B
  * answers, both see the same Result screen.
  *
- * If A already has an in-progress DRAFT (their own "Make Your Own"
- * questionnaire, or a previous ready-made game), this never touches or
- * adds to it — it just resumes that draft as-is, the same way navigating
- * straight to /create always has. Seeding only ever happens for a brand
- * new draft, so this can't silently overwrite or extend a questionnaire
- * A is already partway through.
+ * If A already has an in-progress DRAFT for this *specific* ready-made
+ * game, this never touches or adds to it — it just resumes that draft as
+ * -is, the same way navigating straight to /create always has. Seeding
+ * only ever happens the first time a given game is picked, so this can't
+ * silently overwrite or extend a questionnaire A is already partway
+ * through. Scoped to this one game (not "any DRAFT at all") on purpose:
+ * "Are we on the same page?" and "Getting to know each other" are
+ * distinct experiences and must stay independently resumable, each
+ * keeping its own in-progress answers, rather than all ready-made games
+ * (and "Make Your Own") sharing one single global draft slot.
  */
 export async function startReadyMadeGame(formData: FormData): Promise<void> {
   const gameId = String(formData.get("gameId") ?? "");
@@ -33,16 +37,17 @@ export async function startReadyMadeGame(formData: FormData): Promise<void> {
   const userId = await requireUserId();
   const supabase = await createSupabaseServerClient();
 
-  const { data: existingDraft } = await supabase
+  const { data: existingDraftForGame } = await supabase
     .from("wavelengths")
     .select("id")
     .eq("participant_a_id", userId)
     .eq("state", "DRAFT")
+    .eq("source_game_id", gameId)
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
 
-  if (!existingDraft) {
+  if (!existingDraftForGame) {
     const { data: created, error } = await supabase
       .from("wavelengths")
       .insert({ participant_a_id: userId })
@@ -73,5 +78,9 @@ export async function startReadyMadeGame(formData: FormData): Promise<void> {
     }
   }
 
-  redirect("/create");
+  // Tells /create which game's draft to resume — needed now that a given
+  // account can have more than one concurrent DRAFT (one per ready-made
+  // game). Only used for this one redirect; /create falls back to "most
+  // recent draft overall" (unchanged) when it's absent, e.g. Make Your Own.
+  redirect(`/create?game=${encodeURIComponent(gameId)}`);
 }

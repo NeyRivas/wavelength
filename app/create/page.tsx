@@ -48,27 +48,54 @@ function CreateShellIntro({ heading, questionCount }: { heading: string; questio
   );
 }
 
-export default async function CreatePage() {
+export default async function CreatePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ game?: string }>;
+}) {
   const userId = await requireUserId();
   const supabase = await createSupabaseServerClient();
+  const { game: gameId } = await searchParams;
 
-  // Resume the most recent DRAFT if A already has one; otherwise show setup.
-  // One active draft at a time is a Phase 4 engineering default (not a
-  // product-behavior decision) — the spec describes building exactly one
-  // questionnaire, and this keeps the flow simple without a draft-picker UI.
+  // A given account can have more than one concurrent DRAFT (one per
+  // ready-made game — see app/actions/ready-made-games.ts), so "most
+  // recent draft overall" is no longer enough to find the *right* one:
+  // when we know which game was just picked, resume that game's own
+  // draft specifically. No `game` param (direct navigation, Make Your
+  // Own) falls back to the previous "most recent draft overall" lookup,
+  // completely unchanged.
   //
-  // Deliberately NOT selecting `source_game_id` here: this query gates
-  // everything below (the draft itself and its questions), and must always
-  // succeed regardless of whether that column is migrated onto this
-  // database yet — see the separate, isolated lookup right after.
-  const { data: draft } = await supabase
-    .from("wavelengths")
-    .select("id, share_token")
-    .eq("participant_a_id", userId)
-    .eq("state", "DRAFT")
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  // Deliberately NOT selecting `source_game_id` in either query below:
+  // both gate everything that follows (the draft itself and its
+  // questions), and must always succeed regardless of whether that column
+  // is migrated onto this database yet — see the separate, isolated
+  // lookup further down.
+  let draft: { id: string; share_token: string } | null = null;
+
+  if (gameId) {
+    const { data } = await supabase
+      .from("wavelengths")
+      .select("id, share_token")
+      .eq("participant_a_id", userId)
+      .eq("state", "DRAFT")
+      .eq("source_game_id", gameId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    draft = data ?? null;
+  }
+
+  if (!draft) {
+    const { data } = await supabase
+      .from("wavelengths")
+      .select("id, share_token")
+      .eq("participant_a_id", userId)
+      .eq("state", "DRAFT")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    draft = data ?? null;
+  }
 
   // `source_game_id` is set once, at creation, by
   // app/actions/ready-made-games.ts, for the heading/"← Back" destination
