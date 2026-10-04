@@ -66,15 +66,21 @@ export async function startReadyMadeGame(formData: FormData): Promise<void> {
         })),
       );
 
-      // Best-effort only: records which ready-made game seeded this draft
-      // (app/create reads it for the heading/"← Back" destination). Its
-      // result is intentionally ignored — if `source_game_id` isn't
-      // migrated onto this database yet, this call fails harmlessly and
-      // the draft + its ready-made questions above are unaffected either
-      // way. This must never be folded back into the insert above: the
-      // draft and its questions have to be created regardless of whether
-      // this column exists.
-      await supabase.from("wavelengths").update({ source_game_id: gameId }).eq("id", created.id);
+      // Records which ready-made game seeded this draft — /create reads it
+      // (scoped by this exact value) to find this game's own draft again,
+      // not some other ready-made game's or "Make Your Own"'s. There is no
+      // general UPDATE policy on `wavelengths` (by design — see
+      // 20260904120200_rls_policies.sql), so this goes through the one
+      // narrowly-scoped RPC that exists for it
+      // (20261004130000_set_wavelength_source_game_rpc.sql): own row only,
+      // DRAFT only, and only once. Its result is intentionally ignored —
+      // if it fails for any reason, the draft + its ready-made questions
+      // above are still created; only the ability to re-find this exact
+      // draft by game later is affected, never this request.
+      await supabase.rpc("set_wavelength_source_game", {
+        p_id: created.id,
+        p_source_game_id: gameId,
+      });
     }
   }
 

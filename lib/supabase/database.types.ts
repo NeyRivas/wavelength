@@ -70,13 +70,10 @@ export interface Database {
           completed_at?: null;
           source_game_id?: string | null;
         };
-        // Still no general client-facing Update (every state transition is
-        // one of the RPCs below) — this one field is the sole exception:
-        // app/actions/ready-made-games.ts sets it, best-effort, right after
-        // creating a brand-new draft from a ready-made game.
-        Update: {
-          source_game_id?: string | null;
-        };
+        // No client-facing Update at all — every post-creation mutation,
+        // source_game_id included, goes through one of the RPCs in
+        // Functions below (set_wavelength_source_game for that one field).
+        Update: never;
         Relationships: [];
       };
       questions: {
@@ -160,6 +157,10 @@ export interface Database {
       };
       reorder_questions: {
         Args: { p_wavelength_id: string; p_question_ids: string[] };
+        Returns: void;
+      };
+      set_wavelength_source_game: {
+        Args: { p_id: string; p_source_game_id: string };
         Returns: void;
       };
     };
