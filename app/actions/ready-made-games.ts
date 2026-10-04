@@ -45,7 +45,7 @@ export async function startReadyMadeGame(formData: FormData): Promise<void> {
   if (!existingDraft) {
     const { data: created, error } = await supabase
       .from("wavelengths")
-      .insert({ participant_a_id: userId, source_game_id: gameId })
+      .insert({ participant_a_id: userId })
       .select("id")
       .single();
 
@@ -60,13 +60,18 @@ export async function startReadyMadeGame(formData: FormData): Promise<void> {
           order_index: index,
         })),
       );
+
+      // Best-effort only: records which ready-made game seeded this draft
+      // (app/create reads it for the heading/"← Back" destination). Its
+      // result is intentionally ignored — if `source_game_id` isn't
+      // migrated onto this database yet, this call fails harmlessly and
+      // the draft + its ready-made questions above are unaffected either
+      // way. This must never be folded back into the insert above: the
+      // draft and its questions have to be created regardless of whether
+      // this column exists.
+      await supabase.from("wavelengths").update({ source_game_id: gameId }).eq("id", created.id);
     }
   }
 
-  // `source_game_id` lives on the row itself (set above, once, only at
-  // creation), so /create can always re-derive the right heading and
-  // "← Back" destination from the draft it loads — including every time
-  // this same card is clicked again to resume an already-existing draft,
-  // not just the one redirect right after seeding it.
   redirect("/create");
 }

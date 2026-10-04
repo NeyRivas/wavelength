@@ -56,9 +56,14 @@ export default async function CreatePage() {
   // One active draft at a time is a Phase 4 engineering default (not a
   // product-behavior decision) — the spec describes building exactly one
   // questionnaire, and this keeps the flow simple without a draft-picker UI.
+  //
+  // Deliberately NOT selecting `source_game_id` here: this query gates
+  // everything below (the draft itself and its questions), and must always
+  // succeed regardless of whether that column is migrated onto this
+  // database yet — see the separate, isolated lookup right after.
   const { data: draft } = await supabase
     .from("wavelengths")
-    .select("id, share_token, source_game_id")
+    .select("id, share_token")
     .eq("participant_a_id", userId)
     .eq("state", "DRAFT")
     .order("created_at", { ascending: false })
@@ -66,15 +71,23 @@ export default async function CreatePage() {
     .maybeSingle();
 
   // `source_game_id` is set once, at creation, by
-  // app/actions/ready-made-games.ts — it lives on the draft row itself, so
-  // it's there on every load that resumes this draft, not just the one
-  // redirect right after seeding it. A "Make Your Own" draft (or one
-  // created before this column existed) has no source game and keeps the
-  // generic heading/back-link. Same game also decides where CreateHeader's
-  // "← Back" actually goes: a Dating & Couples game sends A back to
-  // /play/dating-couples (the screen they picked it from) instead of the
-  // generic /play.
-  const resolvedGame = draft?.source_game_id ? getReadyMadeGame(draft.source_game_id) : undefined;
+  // app/actions/ready-made-games.ts, for the heading/"← Back" destination
+  // below. Looked up in its own query, isolated from the draft lookup
+  // above on purpose: if this column isn't there yet, this just comes back
+  // empty and heading/backHref fall back to their defaults — exactly like
+  // any other "Make Your Own" draft — instead of taking the whole page
+  // (and the draft's actual questions) down with it.
+  let sourceGameId: string | null = null;
+  if (draft) {
+    const { data: gameRow } = await supabase
+      .from("wavelengths")
+      .select("source_game_id")
+      .eq("id", draft.id)
+      .maybeSingle();
+    sourceGameId = gameRow?.source_game_id ?? null;
+  }
+
+  const resolvedGame = sourceGameId ? getReadyMadeGame(sourceGameId) : undefined;
   const heading = resolvedGame?.title || DEFAULT_HEADING;
   const backHref = resolvedGame?.group === "dating-couples" ? "/play/dating-couples" : "/play";
 

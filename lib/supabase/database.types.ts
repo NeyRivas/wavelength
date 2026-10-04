@@ -70,7 +70,13 @@ export interface Database {
           completed_at?: null;
           source_game_id?: string | null;
         };
-        Update: never;
+        // Still no general client-facing Update (every state transition is
+        // one of the RPCs below) — this one field is the sole exception:
+        // app/actions/ready-made-games.ts sets it, best-effort, right after
+        // creating a brand-new draft from a ready-made game.
+        Update: {
+          source_game_id?: string | null;
+        };
         Relationships: [];
       };
       questions: {
