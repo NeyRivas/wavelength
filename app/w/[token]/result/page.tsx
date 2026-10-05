@@ -2,12 +2,15 @@ import { Fraunces, Nunito_Sans } from "next/font/google";
 import { redirect } from "next/navigation";
 
 import { CreateHeader } from "@/components/questionnaire/create-header";
+import { CreateNewWavelengthCta } from "@/components/result/create-new-wavelength-cta";
+import { GuessAccuracySummary } from "@/components/result/guess-accuracy-summary";
 import { ResultReveal } from "@/components/result/result-reveal";
 import { ResultView } from "@/components/result/result-view";
 import { ResultNotAvailableNotice } from "@/components/wavelength/result-not-available-notice";
 import { requireUserId } from "@/lib/supabase/identity";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { buildWavelengthResultView, ResultDataError } from "@/lib/wavelength/result";
+import { getReadyMadeGame } from "@/lib/wavelength/ready-made-games";
 
 /**
  * Fonts are instantiated here — same per-page pattern as app/create/page.tsx
@@ -68,7 +71,7 @@ export default async function ResultPage({ params }: { params: Promise<{ token: 
   const { data: wavelength } = await supabase
     .from("wavelengths")
     .select(
-      "id, state, participant_a_id, participant_b_id, participant_a_alias, participant_b_alias",
+      "id, state, participant_a_id, participant_b_id, participant_a_alias, participant_b_alias, source_game_id",
     )
     .eq("share_token", token)
     .maybeSingle();
@@ -134,6 +137,31 @@ export default async function ResultPage({ params }: { params: Promise<{ token: 
   // — the fallback strings are just defensive, never expected to render.
   const aliasA = wavelength.participant_a_alias ?? "Participant A";
   const aliasB = wavelength.participant_b_alias ?? "Participant B";
+
+  // "How Well Do You Know Me?" (resultMode: "guess-accuracy" — see
+  // lib/wavelength/ready-made-games.ts) is a friendship trivia game, not a
+  // compatibility quiz: it gets its own, isolated result headline
+  // (GuessAccuracySummary) instead of the normal ResultView, which is
+  // built entirely around compatibility/alignment framing. Every other
+  // game (source_game_id null/anything else) renders exactly as before —
+  // this branch adds nothing to their path.
+  const resolvedGame = wavelength.source_game_id
+    ? getReadyMadeGame(wavelength.source_game_id)
+    : undefined;
+
+  if (resolvedGame?.resultMode === "guess-accuracy") {
+    return (
+      <div className={`${fraunces.variable} ${nunitoSans.variable} wl-create`}>
+        <CreateHeader />
+        <main className="create-shell result-shell">
+          <ResultReveal>
+            <GuessAccuracySummary view={view} aliasA={aliasA} aliasB={aliasB} />
+            <CreateNewWavelengthCta />
+          </ResultReveal>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className={`${fraunces.variable} ${nunitoSans.variable} wl-create`}>

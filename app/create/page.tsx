@@ -92,7 +92,12 @@ export default async function CreatePage({
   const resolvedGame = gameId ? getReadyMadeGame(gameId) : undefined;
   const heading = resolvedGame?.title || MAKE_YOUR_OWN_HEADING;
   const subtitle = resolvedGame?.builderSubtitle || MAKE_YOUR_OWN_SUBTITLE;
-  const backHref = resolvedGame?.group === "dating-couples" ? "/play/dating-couples" : "/play";
+  const backHref =
+    resolvedGame?.group === "dating-couples"
+      ? "/play/dating-couples"
+      : resolvedGame?.group === "friends"
+        ? "/play/friends"
+        : "/play";
 
   // A given account can have more than one concurrent DRAFT (one per
   // ready-made game — see app/actions/ready-made-games.ts). With a `game`
