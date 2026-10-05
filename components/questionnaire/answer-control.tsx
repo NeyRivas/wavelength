@@ -112,8 +112,12 @@ export function AnswerControl({
                   <span className="create-answer-pill">{SCALE_LABELS[v]}</span>
                 </label>
               ))
-            : question.options?.map((option, index) => (
-                <label key={option} className="create-answer-pill-option">
+            : // Keyed by index, not option text: a brand-new ready-made
+              // question (e.g. "How Well Do You Know Me?") can briefly have
+              // two identical empty-string options before A has typed
+              // anything in — a text-based key would collide there.
+              question.options?.map((option, index) => (
+                <label key={index} className="create-answer-pill-option">
                   <input
                     id={answerInputId(question.id, index)}
                     type="radio"

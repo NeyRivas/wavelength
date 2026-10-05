@@ -1,4 +1,4 @@
-import type { Category, QuestionType } from "./categories";
+import { UNWRITTEN_OPTION, type Category, type QuestionType } from "./categories";
 
 /**
  * "Pick a game" (landing page) data. A ready-made game is not a new game
@@ -378,124 +378,94 @@ const GETTING_TO_KNOW_EACH_OTHER_QUESTIONS: ReadyMadeQuestion[] = [
  *
  * Question wording below is approved, verbatim — do not reword it.
  *
- * ⚠️ PLACEHOLDER OPTIONS — NOT APPROVED CONTENT. The 12 questions' real
- * answer options have not been approved yet. Each question below carries
- * two clearly-labeled `[Placeholder …]` options only so the existing
- * `choice` question type (which requires >=2 options — see
- * lib/validation/schemas.ts's optionsSchema/MIN_CHOICE_OPTIONS) has
- * something structurally valid to seed, and so the experience can be
- * built end-to-end and tested. These must be replaced with the real,
- * approved options before this experience is considered finished — see
- * the implementation notes called out alongside this change.
+ * Answer options are intentionally NOT pre-filled here — there is no
+ * approved option content for this game, and there never will be any we
+ * invent. Each question seeds with two UNWRITTEN_OPTION slots (see
+ * lib/wavelength/categories.ts's doc comment: the DB's own
+ * questions_validate_options trigger rejects a genuinely empty option
+ * string, so this is the smallest valid stand-in that still reads and
+ * behaves as empty everywhere the UI/validation looks at it). From here
+ * it's the existing, unmodified builder flow: A types their own options
+ * into these slots (components/questionnaire/question-edit-form.tsx,
+ * reused as-is, already renders an UNWRITTEN_OPTION slot as a blank,
+ * placeholder-hinted field) and picks the correct one (AnswerControl,
+ * reused as-is, only shown once components/questionnaire/question-card.tsx
+ * sees enough real options to pick from); B later sees exactly what A
+ * wrote and guesses it — no invented or reused content from any other
+ * experience ever appears here.
  */
 const HOW_WELL_DO_YOU_KNOW_ME_QUESTIONS: ReadyMadeQuestion[] = [
   {
     type: "choice",
     category: "values_priorities",
     text: "What's a song that will instantly make me think of a specific memory?",
-    options: [
-      "[Placeholder option A — pending approval]",
-      "[Placeholder option B — pending approval]",
-    ],
+    options: [UNWRITTEN_OPTION, UNWRITTEN_OPTION],
   },
   {
     type: "choice",
     category: "lifestyle",
     text: "Which artist or band could I listen to over and over?",
-    options: [
-      "[Placeholder option A — pending approval]",
-      "[Placeholder option B — pending approval]",
-    ],
+    options: [UNWRITTEN_OPTION, UNWRITTEN_OPTION],
   },
   {
     type: "choice",
     category: "values_priorities",
     text: "What's a random thing I'm weirdly passionate about?",
-    options: [
-      "[Placeholder option A — pending approval]",
-      "[Placeholder option B — pending approval]",
-    ],
+    options: [UNWRITTEN_OPTION, UNWRITTEN_OPTION],
   },
   {
     type: "choice",
     category: "lifestyle",
     text: "What's something I always say when I'm annoyed?",
-    options: [
-      "[Placeholder option A — pending approval]",
-      "[Placeholder option B — pending approval]",
-    ],
+    options: [UNWRITTEN_OPTION, UNWRITTEN_OPTION],
   },
   {
     type: "choice",
     category: "values_priorities",
     text: "Which fictional character would I defend with my life?",
-    options: [
-      "[Placeholder option A — pending approval]",
-      "[Placeholder option B — pending approval]",
-    ],
+    options: [UNWRITTEN_OPTION, UNWRITTEN_OPTION],
   },
   {
     type: "choice",
     category: "values_priorities",
     text: "What's something I would absolutely judge someone for?",
-    options: [
-      "[Placeholder option A — pending approval]",
-      "[Placeholder option B — pending approval]",
-    ],
+    options: [UNWRITTEN_OPTION, UNWRITTEN_OPTION],
   },
   {
     type: "choice",
     category: "lifestyle",
     text: "Which celebrity would I probably have a crush on?",
-    options: [
-      "[Placeholder option A — pending approval]",
-      "[Placeholder option B — pending approval]",
-    ],
+    options: [UNWRITTEN_OPTION, UNWRITTEN_OPTION],
   },
   {
     type: "choice",
     category: "lifestyle",
     text: "What's a celebrity or public figure we both agree is overrated?",
-    options: [
-      "[Placeholder option A — pending approval]",
-      "[Placeholder option B — pending approval]",
-    ],
+    options: [UNWRITTEN_OPTION, UNWRITTEN_OPTION],
   },
   {
     type: "choice",
     category: "values_priorities",
     text: "What's the kind of person I instantly dislike?",
-    options: [
-      "[Placeholder option A — pending approval]",
-      "[Placeholder option B — pending approval]",
-    ],
+    options: [UNWRITTEN_OPTION, UNWRITTEN_OPTION],
   },
   {
     type: "choice",
     category: "values_priorities",
     text: "What's my most irrational opinion?",
-    options: [
-      "[Placeholder option A — pending approval]",
-      "[Placeholder option B — pending approval]",
-    ],
+    options: [UNWRITTEN_OPTION, UNWRITTEN_OPTION],
   },
   {
     type: "choice",
     category: "lifestyle",
     text: "If we made a playlist that represents me, what song would have to be on it?",
-    options: [
-      "[Placeholder option A — pending approval]",
-      "[Placeholder option B — pending approval]",
-    ],
+    options: [UNWRITTEN_OPTION, UNWRITTEN_OPTION],
   },
   {
     type: "choice",
     category: "values_priorities",
     text: "What's something you could mention and immediately know I'd have an opinion about?",
-    options: [
-      "[Placeholder option A — pending approval]",
-      "[Placeholder option B — pending approval]",
-    ],
+    options: [UNWRITTEN_OPTION, UNWRITTEN_OPTION],
   },
 ];
 

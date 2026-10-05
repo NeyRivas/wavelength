@@ -55,6 +55,29 @@ export const MIN_CHOICE_OPTIONS = 2;
 export const MAX_CHOICE_OPTIONS = 5;
 
 /**
+ * A `choice` question's `options` column has a hard DB-level floor: the
+ * `questions_validate_options` trigger (20260904120300_functions_and_triggers.sql)
+ * rejects any option whose *trimmed* text is empty — there is no such thing
+ * as a stored, genuinely blank choice option. That trigger is shared,
+ * production-applied validation and is not something this constant works
+ * around or weakens.
+ *
+ * A ready-made game whose question text is fixed in advance but whose
+ * *options* A has not written yet (see lib/wavelength/ready-made-games.ts's
+ * "How Well Do You Know Me?") still needs something structurally valid to
+ * seed those two required option slots with. U+00A0 (no-break space) is
+ * that placeholder: it satisfies the trigger (Postgres' `btrim` only strips
+ * the plain ASCII space, so it isn't trimmed away to nothing), while
+ * reading as empty everywhere the UI or validation actually cares — JS's
+ * `.trim()` (used by question-edit-form.tsx's slot rendering,
+ * question-card.tsx's "has A written real options yet" check, and
+ * lib/validation/schemas.ts's own option parsing) *does* strip it, so it's
+ * never mistaken for real, A-authored content, never shown as visible text,
+ * and never reaches B.
+ */
+export const UNWRITTEN_OPTION = " ";
+
+/**
  * Fixed 5-level scale, used verbatim for every `scale` question — never
  * per-question data. The stored/compared value IS the percentage (0, 25,
  * 50, 75, 100), not a 1-5 index — see lib/scoring/score.ts, whose scale

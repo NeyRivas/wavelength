@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { saveAnswerA } from "@/app/actions/answers";
 import { deleteQuestion, moveQuestion } from "@/app/actions/questions";
+import { MIN_CHOICE_OPTIONS } from "@/lib/wavelength/categories";
 
 import { AnswerControl } from "./answer-control";
 import type { CategoryTint } from "./category-visuals";
@@ -76,6 +77,18 @@ export function QuestionCard({
 
   const isReady = optimisticAnswer !== undefined;
 
+  // Scale questions have no options to wait on. Choice questions need at
+  // least MIN_CHOICE_OPTIONS real (non-blank) options before there's
+  // anything meaningful to pick a "correct" one from — see the empty
+  // option slots lib/wavelength/ready-made-games.ts now seeds for "How
+  // Well Do You Know Me?"; every other existing question (pre-approved
+  // ready-made content, or anything added via Make Your Own's own
+  // required-field form) already always has real option text, so this is
+  // always true for them.
+  const hasEnoughOptionsToAnswer =
+    question.type !== "choice" ||
+    (question.options ?? []).filter((o) => o.trim().length > 0).length >= MIN_CHOICE_OPTIONS;
+
   return (
     <article
       className={`create-card${isReady ? " create-card--ready" : ""}`}
@@ -143,14 +156,27 @@ export function QuestionCard({
             actually edited. A plain re-answer never changes this key (it
             doesn't touch text/options), so the existing select-and-auto-save
             flow is untouched. */}
-        <AnswerControl
-          key={JSON.stringify([question.text, question.options])}
-          action={saveAnswerA}
-          wavelengthId={wavelengthId}
-          question={question}
-          currentValue={optimisticAnswer}
-          onSelect={setOptimisticAnswer}
-        />
+        {hasEnoughOptionsToAnswer ? (
+          <AnswerControl
+            key={JSON.stringify([question.text, question.options])}
+            action={saveAnswerA}
+            wavelengthId={wavelengthId}
+            question={question}
+            currentValue={optimisticAnswer}
+            onSelect={setOptimisticAnswer}
+          />
+        ) : (
+          // A ready-made question (e.g. "How Well Do You Know Me?") can
+          // start with empty option slots — see lib/wavelength/
+          // ready-made-games.ts. Same hint/condition QuestionAddForm
+          // already uses for a not-yet-submitted question with too few
+          // typed options, so A writes real options here first and can't
+          // pick a blank one as their "correct" answer.
+          <div className="create-answer">
+            <span className="create-field__label">Your answer</span>
+            <p className="create-answer__hint">Add your options above first.</p>
+          </div>
+        )}
       </div>
     </article>
   );

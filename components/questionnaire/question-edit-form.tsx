@@ -10,6 +10,7 @@ import {
   CATEGORY_LABELS,
   MAX_CHOICE_OPTIONS,
   MIN_CHOICE_OPTIONS,
+  UNWRITTEN_OPTION,
 } from "@/lib/wavelength/categories";
 
 import { answerInputId } from "./answer-control";
@@ -142,7 +143,14 @@ function newSlotKey(): string {
 
 function initialSlots(options: string[] | null): OptionSlot[] {
   const values = options ?? [];
-  const slots = values.map((initialValue) => ({ key: newSlotKey(), initialValue }));
+  // UNWRITTEN_OPTION (see lib/wavelength/categories.ts) is a ready-made
+  // game's DB-valid stand-in for "A hasn't written this option yet" — it
+  // renders as a genuinely blank, placeholder-hinted field, same as a
+  // freshly added slot below, not as visible text.
+  const slots = values.map((initialValue) => ({
+    key: newSlotKey(),
+    initialValue: initialValue === UNWRITTEN_OPTION ? "" : initialValue,
+  }));
   while (slots.length < MIN_CHOICE_OPTIONS) {
     slots.push({ key: newSlotKey(), initialValue: "" });
   }
