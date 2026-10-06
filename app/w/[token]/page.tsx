@@ -11,6 +11,7 @@ import { WavelengthInProgressNotice } from "@/components/wavelength/wavelength-i
 import { requireUserId } from "@/lib/supabase/identity";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { absoluteUrl } from "@/lib/wavelength/absolute-url";
+import { getExperienceCopy } from "@/lib/wavelength/experience-copy";
 
 /**
  * The entry router for a Wavelength link (ARCHITECTURE.md §12 Phase 5).
@@ -27,6 +28,20 @@ import { absoluteUrl } from "@/lib/wavelength/absolute-url";
  * on before claiming their spot. Every other branch on this page
  * (DRAFT/COMPLETED redirects, B's post-claim flow, not-found/taken) is
  * untouched, still the same bare markup as before.
+ *
+ * QA follow-up pass: B's invitation screen is now contextual per
+ * ready-made game (lib/wavelength/experience-copy.ts) wherever possible —
+ * but `get_wavelength_preview` (the RPC a not-yet-participant visitor is
+ * restricted to; see the doc comment above its definition) deliberately
+ * never returns `source_game_id`, and this pass doesn't touch Supabase
+ * schema/RPCs just to add it. Instead, the game id already known to A at
+ * share time (A is a participant, so reading `source_game_id` off their
+ * own row is an ordinary RLS-scoped SELECT, not a schema change) rides
+ * along as a `?game=` query param on the link A copies — decorative only,
+ * never trusted for anything security-relevant (the token alone still
+ * decides access, exactly as before). A link shared before this pass, or
+ * with the param stripped, falls back to `getExperienceCopy(undefined)`'s
+ * generic-but-still-warm copy, same as Make Your Own.
  */
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -42,7 +57,13 @@ const nunitoSans = Nunito_Sans({
   variable: "--font-nunito",
   display: "swap",
 });
-export default async function WavelengthPage({ params }: { params: Promise<{ token: string }> }) {
+export default async function WavelengthPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ token: string }>;
+  searchParams: Promise<{ game?: string }>;
+}) {
   const { token } = await params;
   const userId = await requireUserId();
   const supabase = await createSupabaseServerClient();
@@ -50,7 +71,7 @@ export default async function WavelengthPage({ params }: { params: Promise<{ tok
   const { data: wavelength } = await supabase
     .from("wavelengths")
     .select(
-      "id, state, participant_a_id, participant_b_id, participant_a_alias, participant_b_alias",
+      "id, state, participant_a_id, participant_b_id, participant_a_alias, participant_b_alias, source_game_id",
     )
     .eq("share_token", token)
     .maybeSingle();
@@ -63,7 +84,13 @@ export default async function WavelengthPage({ params }: { params: Promise<{ tok
     if (wavelength.state === "COMPLETED") {
       redirect(`/w/${token}/result`);
     }
-    const link = await absoluteUrl(`/w/${token}`);
+    // See this file's own doc comment above: carries the already-known
+    // game id along as a decorative query param so B's invitation screen
+    // (below) can show contextual copy, without any schema/RPC change.
+    const sharePath = wavelength.source_game_id
+      ? `/w/${token}?game=${encodeURIComponent(wavelength.source_game_id)}`
+      : `/w/${token}`;
+    const link = await absoluteUrl(sharePath);
     // QA fix: A can no longer see their own questions/answers at all once
     // the questionnaire is locked (shared). Read-only by construction — no
     // edit controls, no way to change an answer — and additive only: it
@@ -107,6 +134,8 @@ export default async function WavelengthPage({ params }: { params: Promise<{ tok
     p_token: token,
   });
   const preview = previewRows?.[0];
+  const { game: gameId } = await searchParams;
+  const inviteCopy = getExperienceCopy(gameId);
 
   if (!preview) {
     return (
@@ -132,7 +161,7 @@ export default async function WavelengthPage({ params }: { params: Promise<{ tok
     <div className={`${fraunces.variable} ${nunitoSans.variable} wl-create`}>
       <CreateHeader />
       <main className="create-shell invite-shell">
-        <InviteIntro aAlias={preview.participant_a_alias} />
+        <InviteIntro aAlias={preview.participant_a_alias} copy={inviteCopy} />
         <JoinForm token={token} />
       </main>
     </div>

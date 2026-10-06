@@ -98,11 +98,16 @@ dialog::backdrop {
    loading transition entirely — global QA/copy pass item #8.)
    ═══════════════════════════════════════════════════════════════════════ */
 
-/* ── result reveal transition: SAMEEEISH → (SAME! or SAMEEEISH again) ──── */
-/* Global QA/copy pass item #8 — replaces the old two-dots-converge motif
-   and its "Finding your wavelength…" copy with the brand word itself,
-   popping in letter by letter. See components/result/result-reveal.tsx
-   for the phase timing (unchanged) and when `celebrate` shows "SAME!". */
+/* ── the SAMEEEISH! wordmark reaction ─────────────────────────────────── */
+/* QA follow-up pass: one shared system (components/result/
+   sameeeish-reveal.tsx's SameeeishWordmark) for both the full-screen
+   result-reveal transition (.sameeeish-word--hero, inside
+   .sameeeish-reveal below) and the small flourish sitting inside each
+   result card (.sameeeish-word--inline) — replaces both the old
+   "SAMEEEISH/SAME!" transition text and the separate result-sparkles
+   particle system entirely. Typography is the whole reaction: no
+   confetti, no floating particles, nothing that reads as a generic
+   celebration library. */
 
 .sameeeish-reveal {
   display: flex;
@@ -113,37 +118,44 @@ dialog::backdrop {
   text-align: center;
 }
 
-.sameeeish-reveal__word {
+.sameeeish-word {
   margin: 0;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 0.03em;
+  gap: 0.02em;
   font-family: var(--font-fraunces), serif;
   font-style: italic;
   font-weight: 600;
-  font-size: clamp(2.25rem, 9vw, 4rem);
   color: var(--wl-ink);
 }
 
-.sameeeish-reveal__letter {
+.sameeeish-word--hero {
+  font-size: clamp(2.25rem, 9vw, 4rem);
+}
+
+/* The small reaction inside a result card (GuessAccuracySummary/
+   FriendshipMemorySummary/GlobalSummary) — a flourish under the real
+   headline/interpretation text, never competing with it for attention. */
+.sameeeish-word--inline {
+  margin-top: 1.5rem;
+  font-size: clamp(1.1rem, 4vw, 1.5rem);
+}
+
+.sameeeish-word__letter {
   display: inline-block;
   opacity: 0;
   transform: translateY(14px) scale(0.85);
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .sameeeish-reveal__letter {
-    animation: sameeeish-letter-in 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.3) forwards;
-  }
-
-  .sameeeish-reveal--same .sameeeish-reveal__word {
-    animation: sameeeish-same-pop 0.5s ease 0.4s both;
+  .sameeeish-word__letter {
+    animation: sameeeish-letter-in 0.42s cubic-bezier(0.2, 0.9, 0.3, 1.3) forwards;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sameeeish-reveal__letter {
+  .sameeeish-word__letter {
     opacity: 1;
     transform: none;
   }
@@ -156,32 +168,77 @@ dialog::backdrop {
   }
 }
 
-@keyframes sameeeish-same-pop {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.18);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-/* "SAME!" — the celebratory culmination (high-tier results only): the
-   approved pastel palette as a gradient fill instead of plain ink, same
-   "special, not just bigger" treatment as the result reaction sparkles
-   (components/result/result-sparkles.tsx) use for their richest tier. */
-.sameeeish-reveal--same .sameeeish-reveal__word {
-  background: linear-gradient(90deg, var(--wl-lavender), var(--wl-pink), var(--wl-mint));
+/* The trailing "ISH" (SameeeishWordmark marks exactly those 3 letters,
+   never the celebratory shorter "SAMEEE!" word, which has no "ISH" at
+   all) — a subtle lift: a touch bigger and bolder, the same approved-
+   palette gradient fill "SAMEEE!" below uses, plus a faint, slow glow
+   once it's settled. Still one word, same baseline, same gap as every
+   other letter — nothing about layout/spacing singles it out, only
+   color/weight/scale/motion do. */
+.sameeeish-word__letter--ish {
+  font-size: 1.08em;
+  font-weight: 700;
+  background: linear-gradient(
+    180deg,
+    var(--wl-ink),
+    color-mix(in srgb, var(--wl-lavender) 55%, var(--wl-ink) 45%)
+  );
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  .sameeeish-word__letter--ish {
+    animation:
+      sameeeish-letter-in 0.42s cubic-bezier(0.2, 0.9, 0.3, 1.3) forwards,
+      sameeeish-ish-glow 2.2s ease-in-out 0.5s infinite;
+  }
+}
+
+@keyframes sameeeish-ish-glow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 0 transparent);
+  }
+  50% {
+    filter: drop-shadow(0 0 5px color-mix(in srgb, var(--wl-lavender) 55%, transparent));
+  }
+}
+
+/* SAMEEE! — the celebratory culmination (high-tier/high-alignment results
+   only): every letter gets the same gradient-fill treatment "ISH" uses
+   above, reusing that one "this moment is special" visual language
+   instead of inventing a second one. */
+/* QA follow-up pass: mixed with ink at the same 55/45 ratio as the "ISH"
+   emphasis above (not the raw, pastel --wl-lavender/pink/mint stops) —
+   visual QA found the raw palette nearly illegible as a text fill against
+   the result card's light/white background, which defeats the point of
+   this being the result's own protagonist moment. Still clearly the same
+   three-color brand gradient, just dark enough to read. */
+.sameeeish-word--celebrate .sameeeish-word__letter {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--wl-lavender) 55%, var(--wl-ink) 45%),
+    color-mix(in srgb, var(--wl-pink) 55%, var(--wl-ink) 45%),
+    color-mix(in srgb, var(--wl-mint) 55%, var(--wl-ink) 45%)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .sameeeish-word--celebrate .sameeeish-word__letter {
+    animation:
+      sameeeish-letter-in 0.42s cubic-bezier(0.2, 0.9, 0.3, 1.3) forwards,
+      sameeeish-ish-glow 2.2s ease-in-out 0.5s infinite;
+  }
+}
+
 /* Visually hidden but still announced — the one thing a screen reader
-   gets for this whole transition (the big word itself is aria-hidden,
-   purely decorative brand motion). */
+   gets for the full-screen transition (the big word itself is
+   aria-hidden, purely decorative brand motion). */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -376,71 +433,6 @@ dialog::backdrop {
   font-size: 1.25rem;
   line-height: 1.5;
   color: var(--wl-ink);
-}
-
-/* ── result reaction sparkles (components/result/result-sparkles.tsx) ──── */
-/* Scattered inside .global-summary__glass, which already has
-   position:relative — absolutely positioned, zero layout height, so this
-   never pushes the real heading/score/interpretation text and never
-   covers it (every slot sits in the panel's own margin area, not its
-   center). Decorative only (aria-hidden in the component). */
-
-.result-sparkles {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-  overflow: visible;
-}
-
-.result-sparkles__item {
-  position: absolute;
-  display: block;
-  transform: translate(-50%, -50%) scale(0.6);
-  opacity: 0;
-  filter: drop-shadow(0 2px 6px rgba(24, 24, 32, 0.12));
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .result-sparkles__item {
-    animation:
-      result-sparkle-in 0.6s ease forwards,
-      result-sparkle-float 3.6s ease-in-out infinite;
-    /* Per-item stagger set inline (animationDelay) by the component — one
-       value per listed animation, same delay for both. */
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .result-sparkles__item {
-    opacity: 0.9;
-    transform: translate(-50%, -50%) scale(1);
-  }
-}
-
-@keyframes result-sparkle-in {
-  0% {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(0.3) rotate(-10deg);
-  }
-  60% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1.15) rotate(4deg);
-  }
-  100% {
-    opacity: 0.9;
-    transform: translate(-50%, -50%) scale(1) rotate(0deg);
-  }
-}
-
-@keyframes result-sparkle-float {
-  0%,
-  100% {
-    translate: 0 0;
-  }
-  50% {
-    translate: 0 -6px;
-  }
 }
 
 /* ── alignment level badge ─────────────────────────────────────────────── */
@@ -749,7 +741,18 @@ dialog::backdrop {
    needs) is kept as ordinary, unrelated good practice for a custom-styled
    button — this text/background were already solid CSS-side either way. */
 .result-primary-button {
-  display: inline-flex;
+  /* QA follow-up pass: self-centers regardless of parent layout context.
+     `inline-flex` made this an inline-level box, so it sat at the start
+     of normal flow whenever its parent wasn't itself a centering flex
+     container (true for every Friends result page, where this button is
+     a direct child of .create-shell/.result-shell, not .result-actions).
+     `display: flex` + `width: fit-content` + `margin-inline: auto` makes
+     it a block-level box that centers itself horizontally no matter what
+     its parent does — fixes the left-aligned CTA everywhere this button
+     appears, without touching its text, destination, or visual style. */
+  display: flex;
+  width: fit-content;
+  margin-inline: auto;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;

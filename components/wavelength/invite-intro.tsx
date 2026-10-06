@@ -1,3 +1,5 @@
+import type { ExperienceCopy } from "@/lib/wavelength/experience-copy";
+
 /**
  * B's entry screen (app/w/[token]/page.tsx, not-yet-a-participant branch).
  * Purely emotional/contextual framing — no scores, no comparison, no
@@ -10,13 +12,21 @@
  * to read as "about to begin" rather than passive waiting. Abstract only
  * — no percentage, no scale, no implied result before either side has
  * answered.
+ *
+ * QA follow-up pass: heading/body now come from `copy`
+ * (lib/wavelength/experience-copy.ts), resolved by app/w/[token]/page.tsx
+ * from the share link's own `?game=` param (a best-effort, decorative
+ * hint — falls back to the same warm, generic copy Make Your Own uses
+ * when it's absent). Never security-relevant and never the only thing
+ * a screen reader gets — see that file's doc comment for why this
+ * couldn't just read `source_game_id` directly at this point in the flow.
  */
-export function InviteIntro({ aAlias }: { aAlias: string | null }) {
+export function InviteIntro({ aAlias, copy }: { aAlias: string | null; copy: ExperienceCopy }) {
   return (
     <div className="invite-intro">
       <p className="invite-intro__eyebrow">You&apos;ve been invited</p>
 
-      <h1 className="invite-intro__heading">Ready to jump in?</h1>
+      <h1 className="invite-intro__heading">{copy.inviteHeading}</h1>
 
       <svg className="invite-intro__motif" viewBox="0 0 260 56" fill="none" aria-hidden="true">
         <path
@@ -31,10 +41,7 @@ export function InviteIntro({ aAlias }: { aAlias: string | null }) {
         <path d="M254 19.5l1.7 4 4 1.7-4 1.7-1.7 4-1.7-4-4-1.7 4-1.7z" fill="var(--wl-blue)" />
       </svg>
 
-      <p className="invite-intro__text">
-        {aAlias ?? "Someone"} invited you to answer the same questions and see where your answers
-        meet.
-      </p>
+      <p className="invite-intro__text">{copy.inviteText(aAlias ?? "Someone")}</p>
     </div>
   );
 }

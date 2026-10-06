@@ -86,7 +86,7 @@ export default async function AnswerPage({ params }: { params: Promise<{ token: 
 
   const { data: wavelength } = await supabase
     .from("wavelengths")
-    .select("id, state, participant_b_id, source_game_id")
+    .select("id, state, participant_b_id, source_game_id, participant_a_alias")
     .eq("share_token", token)
     .maybeSingle();
 
@@ -136,6 +136,7 @@ export default async function AnswerPage({ params }: { params: Promise<{ token: 
   const answeredCount = questionList.filter((q) => answerByQuestion.has(q.id)).length;
   const allAnswered = questionList.length > 0 && answeredCount === questionList.length;
   const experienceCopy = getExperienceCopy(wavelength.source_game_id ?? undefined);
+  const aliasA = wavelength.participant_a_alias ?? "they";
 
   return (
     <div className={`${fraunces.variable} ${nunitoSans.variable} wl-create`}>
@@ -145,7 +146,7 @@ export default async function AnswerPage({ params }: { params: Promise<{ token: 
           answered={answeredCount}
           total={questionList.length}
           heading={experienceCopy.answerHeading}
-          text={experienceCopy.answerText}
+          text={experienceCopy.answerText(aliasA)}
         />
 
         {questionList.length > 0 && (

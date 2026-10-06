@@ -4,7 +4,7 @@ import {
   friendshipMemoryMessageForA,
 } from "@/lib/wavelength/friendship-memory";
 
-import { ResultSparkles } from "./result-sparkles";
+import { SameeeishWordmark } from "./sameeeish-reveal";
 
 /**
  * The Result page's headline for "Friendship Check" — a shared-history
@@ -21,9 +21,21 @@ import { ResultSparkles } from "./result-sparkles";
  * guesses about the shared friendship matched A's, so it needs its own
  * framing: a count out of the total, never a percentage, never "aligned".
  *
+ * QA follow-up pass: dropped the standalone "{aliasB} got X out of Y
+ * right." line (the exact redundancy this pass was asked to fix) —
+ * `interpretation` just below it already said the same count
+ * ("{aliasB} got X of {aliasA}'s Y friendship moments right."), so two
+ * consecutive lines were saying the same thing. `correctCount`/
+ * `totalQuestions` still come straight from computeFriendshipMemory,
+ * untouched — only the redundant line is gone.
+ *
  * Reuses the exact same `.global-summary*` glass-card CSS as every other
  * Result headline (app/globals.css) — same visual language, no new
- * styles — just with different content and no badge/wave indicator.
+ * styles — just with different content and no badge/wave indicator. The
+ * reaction below the interpretation line is the shared SameeeishWordmark
+ * (components/result/sameeeish-reveal.tsx) — the same brand moment the
+ * result-reveal transition just showed, not a separate sparkle/confetti
+ * system.
  */
 export function FriendshipMemorySummary({
   view,
@@ -48,10 +60,6 @@ export function FriendshipMemorySummary({
     view.allQuestions.map((question) => question.score),
   );
   const headline = viewer === "A" ? friendshipMemoryMessageForA(tier, aliasB) : message;
-  const scoreLine =
-    viewer === "A"
-      ? `${aliasB} got ${correctCount} out of ${totalQuestions} right.`
-      : `You got ${correctCount} out of ${totalQuestions} right.`;
 
   return (
     <section className="global-summary" aria-labelledby="friendship-memory-heading">
@@ -61,15 +69,14 @@ export function FriendshipMemorySummary({
       </div>
 
       <div className="global-summary__glass">
-        <ResultSparkles tier={tier} />
         <p className="global-summary__eyebrow">Friendship Check</p>
         <h1 id="friendship-memory-heading" className="global-summary__heading">
           {headline}
         </h1>
-        <p className="global-summary__score">{scoreLine}</p>
         <p className="global-summary__interpretation">
           {aliasB} got {correctCount} of {aliasA}&apos;s {totalQuestions} friendship moments right.
         </p>
+        <SameeeishWordmark celebrate={tier === "excellent"} size="inline" />
       </div>
     </section>
   );
