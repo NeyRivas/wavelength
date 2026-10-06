@@ -17,6 +17,12 @@ import Link from "next/link";
  * stroke fades to transparent at both ends instead of terminating in a
  * dot, still marching gently via the same shared `.wl-connector` flow
  * used everywhere else.
+ *
+ * QA follow-up pass: "Create your own quiz" points at `/play` (the game
+ * picker), not `/create` (Make Your Own's empty builder) — same reasoning
+ * and destination as every other generic "start fresh" CTA (the Result
+ * page's own, WavelengthInProgressNotice's own): this viewer landed here
+ * via a dead/foreign link, never having chosen Make Your Own specifically.
  */
 export function ResultNotAvailableNotice() {
   return (
@@ -54,7 +60,7 @@ export function ResultNotAvailableNotice() {
         This link either doesn&apos;t exist, or you&apos;re not one of its two participants.
       </p>
 
-      <Link href="/create" className="result-unavailable__button">
+      <Link href="/play" className="result-unavailable__button">
         Create your own quiz
       </Link>
     </div>

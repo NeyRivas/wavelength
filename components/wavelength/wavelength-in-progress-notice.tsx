@@ -16,12 +16,18 @@ import Link from "next/link";
  * soft strike-through, reading as "no third spot" without any new copy or
  * logic, just this screen's own spin on the shared motif.
  *
- * Action: reuses the same plain `<Link href="/create">` pattern
- * ResultNotAvailableNotice uses (not CreateNewWavelengthAction's confirm
- * dialog) — this viewer is a non-participant with no session or result at
- * stake here, so a "you may lose access to this completed result" warning
- * would be both untrue and confusing. Same destination, same underlying
- * navigation, nothing new invented.
+ * Action: reuses the same plain `<Link>` pattern ResultNotAvailableNotice
+ * uses (not CreateNewWavelengthAction's confirm dialog) — this viewer is a
+ * non-participant with no session or result at stake here, so a "you may
+ * lose access to this completed result" warning would be both untrue and
+ * confusing.
+ *
+ * QA follow-up pass: points at `/play` (the game picker), not `/create`
+ * (Make Your Own's empty builder) — same reasoning and same destination as
+ * the Result page's own "Create your own quiz" (components/result/
+ * create-new-wavelength-cta.tsx): this viewer never chose Make Your Own
+ * specifically, so "create your own" should offer the same choice of
+ * experience anyone starting fresh gets, not assume one.
  */
 export function WavelengthInProgressNotice() {
   return (
@@ -81,7 +87,7 @@ export function WavelengthInProgressNotice() {
       <h1 className="wavelength-in-progress__heading">This link is already in progress</h1>
       <p className="wavelength-in-progress__text">It already has two participants.</p>
 
-      <Link href="/create" className="wavelength-in-progress__button">
+      <Link href="/play" className="wavelength-in-progress__button">
         Create your own quiz
       </Link>
     </div>
