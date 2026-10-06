@@ -78,6 +78,25 @@ export const MAX_CHOICE_OPTIONS = 5;
 export const UNWRITTEN_OPTION = " ";
 
 /**
+ * The one place that decides what an option field should *display* for a
+ * given stored option value: the sentinel reads as a genuinely blank,
+ * editable field (same as a freshly added slot); real, A-authored text
+ * (anything else) is shown exactly as stored, unchanged. Bug fix: this
+ * used to be inlined as a ternary inside question-edit-form.tsx's
+ * `initialSlots`, computed once at mount and fed into an *uncontrolled*
+ * `defaultValue` — which meant a value this function correctly produced
+ * could still end up visually discarded later (see that file's own doc
+ * comment on why the field must be controlled, not this function). Having
+ * one named, exported, pure function for the sentinel-to-blank mapping —
+ * rather than re-deriving it ad hoc wherever an option is displayed —
+ * is what keeps "is this option still unwritten?" consistent and
+ * unit-testable on its own, independent of how/when it gets rendered.
+ */
+export function optionDisplayValue(storedValue: string): string {
+  return storedValue === UNWRITTEN_OPTION ? "" : storedValue;
+}
+
+/**
  * Fixed 5-level scale, used verbatim for every `scale` question — never
  * per-question data. The stored/compared value IS the percentage (0, 25,
  * 50, 75, 100), not a 1-5 index — see lib/scoring/score.ts, whose scale

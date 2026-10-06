@@ -10,7 +10,7 @@ import {
   CATEGORY_LABELS,
   MAX_CHOICE_OPTIONS,
   MIN_CHOICE_OPTIONS,
-  UNWRITTEN_OPTION,
+  optionDisplayValue,
 } from "@/lib/wavelength/categories";
 
 import { answerInputId } from "./answer-control";
@@ -128,11 +128,30 @@ import type { QuestionRow } from "./types";
  * added/removed option's own blur-save resolves) the row could
  * transiently point at the wrong index, the same pre-existing,
  * self-correcting caveat the decorative indicator already carried.
+ *
+ * Bug fix: each option `<input>` is a *controlled* field (`value` +
+ * `onChange` into `slots` state), not `defaultValue`. React's own
+ * `<form action={...}>` handling (used here via `useActionState`) resets
+ * every uncontrolled field in a form back to its `defaultValue` once that
+ * form's action settles — by design, the same way a plain HTML form
+ * reset would behave after a real submit. For an always-saved-on-blur
+ * form like this one, that meant every option field snapped back to
+ * whatever it showed at this component's *first* mount (often "" for a
+ * ready-made game's still-unwritten UNWRITTEN_OPTION slots) right after
+ * each successful save — even though the just-typed text really had been
+ * persisted (still correctly reflected below in "Your answer", which
+ * reads straight from the server-confirmed `question`/`answerValue`
+ * props, not from this form's own fields). A required-but-visually-blank
+ * field then blocked this form's *next* submission entirely. Making the
+ * field controlled means React itself owns its displayed value on every
+ * render, so that reset has nothing to overwrite — the field keeps
+ * showing exactly what was typed (or loaded) throughout the whole
+ * type → blur → save cycle, with no separate resync step needed.
  */
 
 interface OptionSlot {
   key: string;
-  initialValue: string;
+  value: string;
 }
 
 let slotIdCounter = 0;
@@ -143,16 +162,15 @@ function newSlotKey(): string {
 
 function initialSlots(options: string[] | null): OptionSlot[] {
   const values = options ?? [];
-  // UNWRITTEN_OPTION (see lib/wavelength/categories.ts) is a ready-made
-  // game's DB-valid stand-in for "A hasn't written this option yet" — it
-  // renders as a genuinely blank, placeholder-hinted field, same as a
-  // freshly added slot below, not as visible text.
-  const slots = values.map((initialValue) => ({
+  // optionDisplayValue (lib/wavelength/categories.ts) maps a ready-made
+  // game's UNWRITTEN_OPTION sentinel to a genuinely blank, placeholder-
+  // hinted field, same as a freshly added slot below, not as visible text.
+  const slots = values.map((value) => ({
     key: newSlotKey(),
-    initialValue: initialValue === UNWRITTEN_OPTION ? "" : initialValue,
+    value: optionDisplayValue(value),
   }));
   while (slots.length < MIN_CHOICE_OPTIONS) {
-    slots.push({ key: newSlotKey(), initialValue: "" });
+    slots.push({ key: newSlotKey(), value: "" });
   }
   return slots;
 }
@@ -225,7 +243,7 @@ export function QuestionEditForm({
     // validation before it ever reaches the server. Its own `onBlur` (once
     // the user actually types something in) is what saves it.
     setSlots((prev) =>
-      prev.length >= MAX_CHOICE_OPTIONS ? prev : [...prev, { key: newSlotKey(), initialValue: "" }],
+      prev.length >= MAX_CHOICE_OPTIONS ? prev : [...prev, { key: newSlotKey(), value: "" }],
     );
   }
 
@@ -235,6 +253,10 @@ export function QuestionEditForm({
       prev.length <= MIN_CHOICE_OPTIONS ? prev : prev.filter((slot) => slot.key !== key),
     );
     setTimeout(() => form?.requestSubmit(), 0);
+  }
+
+  function updateOptionValue(key: string, value: string) {
+    setSlots((prev) => prev.map((slot) => (slot.key === key ? { ...slot, value } : slot)));
   }
 
   return (
@@ -307,7 +329,8 @@ export function QuestionEditForm({
                   type="text"
                   name="options"
                   className="create-input"
-                  defaultValue={slot.initialValue}
+                  value={slot.value}
+                  onChange={(event) => updateOptionValue(slot.key, event.target.value)}
                   placeholder={`Option ${i + 1}`}
                   onBlur={submitOnBlur}
                   required
