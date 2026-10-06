@@ -59,8 +59,13 @@ export interface ReadyMadeGame {
    * components/result/guess-accuracy-summary.tsx instead of the normal
    * GlobalSummary/AlignmentBadge, reusing the exact same per-question
    * choice scores lib/scoring/score.ts already computes (same option =
-   * correct), just interpreted differently. */
-  resultMode?: "guess-accuracy";
+   * correct), just interpreted differently. `"friendship-memory"` is the
+   * same idea for "Friendship Check" — A's answers are their own memory of
+   * a shared moment, B is scored on how many they guessed right — with its
+   * own isolated tiers/message copy (lib/wavelength/friendship-memory.ts,
+   * components/result/friendship-memory-summary.tsx), not shared with
+   * `"guess-accuracy"`'s. */
+  resultMode?: "guess-accuracy" | "friendship-memory";
 }
 
 /**
@@ -469,6 +474,102 @@ const HOW_WELL_DO_YOU_KNOW_ME_QUESTIONS: ReadyMadeQuestion[] = [
   },
 ];
 
+/**
+ * The "Friendship Check" question set (Friends group). NOT "how well do
+ * you know your friend?" — that's "How Well Do You Know Me?" above. This
+ * one is about how well two friends know the *friendship itself*: the
+ * shared memories, stories, inside jokes, places, and moments that belong
+ * to both of them. Same answer mechanic as "How Well Do You Know Me?": A
+ * answers each question with their own memory (the "correct" answer), B
+ * tries to guess it — see resultMode: "friendship-memory" on this game's
+ * READY_MADE_GAMES entry below, and lib/wavelength/friendship-memory.ts /
+ * components/result/friendship-memory-summary.tsx for how the result is
+ * framed (count correct, never a compatibility percentage) — fully
+ * isolated from "How Well Do You Know Me?"'s own result copy.
+ *
+ * Question wording below is approved, verbatim — do not reword it.
+ *
+ * Answer options are intentionally NOT pre-filled here, same reasoning as
+ * "How Well Do You Know Me?" above: each question seeds with two
+ * UNWRITTEN_OPTION slots (lib/wavelength/categories.ts) so the existing
+ * builder has valid, editable slots to render, and A writes their own
+ * options from scratch — no invented or reused content.
+ */
+const FRIENDSHIP_CHECK_QUESTIONS: ReadyMadeQuestion[] = [
+  {
+    type: "choice",
+    category: "relationship",
+    text: "Where did we first meet?",
+    options: [UNWRITTEN_OPTION, UNWRITTEN_OPTION],
+  },
+  {
+    type: "choice",
+    category: "relationship",
+    text: "What was the first thing we ever did together?",
+    options: [UNWRITTEN_OPTION, UNWRITTEN_OPTION],
+  },
+  {
+    type: "choice",
+    category: "lifestyle",
+    text: "What’s the dumbest thing we’ve ever laughed about together?",
+    options: [UNWRITTEN_OPTION, UNWRITTEN_OPTION],
+  },
+  {
+    type: "choice",
+    category: "adventures_travel",
+    text: "What’s something we’ve done together that sounded like a good idea at the time?",
+    options: [UNWRITTEN_OPTION, UNWRITTEN_OPTION],
+  },
+  {
+    type: "choice",
+    category: "lifestyle",
+    text: "What’s the most embarrassing thing we’ve experienced together?",
+    options: [UNWRITTEN_OPTION, UNWRITTEN_OPTION],
+  },
+  {
+    type: "choice",
+    category: "relationship",
+    text: "What’s an inside joke between us that would make absolutely no sense to anyone else?",
+    options: [UNWRITTEN_OPTION, UNWRITTEN_OPTION],
+  },
+  {
+    type: "choice",
+    category: "relationship",
+    text: "What’s something that happened between us that we still randomly bring up?",
+    options: [UNWRITTEN_OPTION, UNWRITTEN_OPTION],
+  },
+  {
+    type: "choice",
+    category: "adventures_travel",
+    text: "What’s a place, trip, or night out that instantly makes me think of you?",
+    options: [UNWRITTEN_OPTION, UNWRITTEN_OPTION],
+  },
+  {
+    type: "choice",
+    category: "relationship",
+    text: "What’s the most “us” thing we’ve ever done?",
+    options: [UNWRITTEN_OPTION, UNWRITTEN_OPTION],
+  },
+  {
+    type: "choice",
+    category: "lifestyle",
+    text: "What’s a phrase, song, place, or random thing that will always remind us of each other?",
+    options: [UNWRITTEN_OPTION, UNWRITTEN_OPTION],
+  },
+  {
+    type: "choice",
+    category: "relationship",
+    text: "What’s a moment between us that I would happily relive?",
+    options: [UNWRITTEN_OPTION, UNWRITTEN_OPTION],
+  },
+  {
+    type: "choice",
+    category: "relationship",
+    text: "What’s one story about us that we’ll probably still be telling years from now?",
+    options: [UNWRITTEN_OPTION, UNWRITTEN_OPTION],
+  },
+];
+
 export const READY_MADE_GAMES: ReadyMadeGame[] = [
   {
     id: "how-well-do-you-know-each-other",
@@ -505,8 +606,10 @@ export const READY_MADE_GAMES: ReadyMadeGame[] = [
   {
     id: "friendship-check",
     title: "Friendship Check",
+    builderSubtitle: "The ultimate friendship test.",
     group: "friends",
-    questions: null,
+    questions: FRIENDSHIP_CHECK_QUESTIONS,
+    resultMode: "friendship-memory",
   },
 ];
 

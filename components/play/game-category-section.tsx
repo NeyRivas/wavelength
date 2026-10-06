@@ -11,16 +11,16 @@ const BLOBS_BY_GROUP: Record<ReadyMadeGameGroup, string[]> = {
 };
 
 /** Dating & Couples visual-refresh pass, extended (by game id rather than
- * by position) to the one Friends game that's actually playable now too —
- * same approved gradient classes (game-card--vivid-a/b/c — see
- * app/globals.css), no new styles. Explicit opt-in per game id: a game
- * absent from this map (e.g. "friendship-check", still unplayable) keeps
- * rendering as a plain, inert card exactly as before. */
+ * by position) to both Friends games now that they're playable too — same
+ * approved gradient classes (game-card--vivid-a/b/c — see app/globals.css),
+ * no new styles. Explicit opt-in per game id: a game absent from this map
+ * keeps rendering as a plain, inert card exactly as before. */
 const VIVID_GRADIENT_BY_GAME_ID: Partial<Record<string, string>> = {
   "how-well-do-you-know-each-other": "game-card--vivid-a",
   "getting-to-know-you": "game-card--vivid-b",
   "date-night": "game-card--vivid-c",
   "how-well-do-you-know-me": "game-card--vivid-a",
+  "friendship-check": "game-card--vivid-b",
 };
 
 /**

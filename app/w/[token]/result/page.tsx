@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { CreateHeader } from "@/components/questionnaire/create-header";
 import { CreateNewWavelengthCta } from "@/components/result/create-new-wavelength-cta";
+import { FriendshipMemorySummary } from "@/components/result/friendship-memory-summary";
 import { GuessAccuracySummary } from "@/components/result/guess-accuracy-summary";
 import { ResultReveal } from "@/components/result/result-reveal";
 import { ResultView } from "@/components/result/result-view";
@@ -156,6 +157,25 @@ export default async function ResultPage({ params }: { params: Promise<{ token: 
         <main className="create-shell result-shell">
           <ResultReveal>
             <GuessAccuracySummary view={view} aliasA={aliasA} aliasB={aliasB} />
+            <CreateNewWavelengthCta />
+          </ResultReveal>
+        </main>
+      </div>
+    );
+  }
+
+  // "Friendship Check" (resultMode: "friendship-memory") — its own
+  // isolated result headline, same pattern as "guess-accuracy" above but
+  // a fully separate module/component and message copy (see
+  // lib/wavelength/friendship-memory.ts). Every other game (including
+  // "guess-accuracy") is unaffected by this branch.
+  if (resolvedGame?.resultMode === "friendship-memory") {
+    return (
+      <div className={`${fraunces.variable} ${nunitoSans.variable} wl-create`}>
+        <CreateHeader />
+        <main className="create-shell result-shell">
+          <ResultReveal>
+            <FriendshipMemorySummary view={view} aliasA={aliasA} aliasB={aliasB} />
             <CreateNewWavelengthCta />
           </ResultReveal>
         </main>
