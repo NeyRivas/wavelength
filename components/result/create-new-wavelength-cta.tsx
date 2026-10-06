@@ -4,26 +4,28 @@ import { useId, useRef } from "react";
 import { useRouter } from "next/navigation";
 
 /**
- * The Result page's primary CTA — "Create your own Wavelength" (feedback
- * pass: this replaces the old top-right "Wavelength" home-nav link as the
- * one and only "start another questionnaire" affordance, and is now
- * styled as the page's strongest action).
+ * The Result page's primary CTA — "Create your own quiz" (feedback pass:
+ * this replaces the old top-right "Wavelength" home-nav link as the one
+ * and only "start another questionnaire" affordance, and is now styled
+ * as the page's strongest action).
  *
- * Confirms first via a bespoke, Wavelength-branded dialog rather than the
- * generic ConfirmDialog (components/ui/confirm-dialog.tsx) — that
- * component is also used by B's locked "Nice try!" page, which this pass
- * must not visually change, so this screen gets its own small dialog
- * instead of restyling the shared one. Same reasoning as before: the
- * current participant session may be the only way back to this completed
- * result, so leaving always confirms first.
+ * Confirms first via a bespoke dialog rather than the generic
+ * ConfirmDialog (components/ui/confirm-dialog.tsx) — that component is
+ * also used by B's locked "Nice try!" page, which this pass must not
+ * visually change, so this screen gets its own small dialog instead of
+ * restyling the shared one. Same reasoning as before: the current
+ * participant session may be the only way back to this completed result,
+ * so leaving always confirms first.
  *
- * Behavior is unchanged from the previous "Create your own Wavelength"
- * action: confirming is a plain client-side navigation into the existing
- * /create flow (app/create/page.tsx). It takes no id or reference to the
- * wavelength being left — createDraft (app/actions/draft.ts) only ever
- * inserts a brand-new row scoped to the caller's own id, so there is
- * nothing here that could reopen, modify, or delete it. Choosing "Stay
- * here" just closes the dialog — no navigation, no state change.
+ * Global QA/copy pass item #12: this now goes to `/play` (the game
+ * picker), not straight into `/create` (Make Your Own's empty form) —
+ * the result someone just saw could be any of the ready-made games, so
+ * "create your own" should offer the same choice of experience they
+ * started from, not assume Make Your Own. Confirming is still nothing
+ * more than a plain client-side navigation; it takes no id or reference
+ * to the wavelength being left — nothing here could reopen, modify, or
+ * delete it. Choosing "Stay here" just closes the dialog — no
+ * navigation, no state change.
  */
 export function CreateNewWavelengthCta() {
   const router = useRouter();
@@ -37,7 +39,7 @@ export function CreateNewWavelengthCta() {
         className="result-primary-button"
         onClick={() => dialogRef.current?.showModal()}
       >
-        <span className="result-primary-button__label">Create your own Wavelength</span>
+        <span className="result-primary-button__label">Create your own quiz</span>
       </button>
       <dialog ref={dialogRef} className="wavelength-dialog" aria-labelledby={headingId}>
         <svg
@@ -63,11 +65,11 @@ export function CreateNewWavelengthCta() {
           <circle cx="158" cy="32" r="7" fill="#ffffff" stroke="var(--wl-blue)" strokeWidth="3.5" />
         </svg>
         <h2 id={headingId} className="wavelength-dialog__heading">
-          Keep this wavelength?
+          Leave this result?
         </h2>
         <p className="wavelength-dialog__text">
           This result lives here for now. Make sure you&apos;ve saved or shared what you want to
-          keep — once you start a new Wavelength, you may not be able to come back to this one.
+          keep — once you start a new one, you may not be able to come back to this result.
         </p>
         <div className="wavelength-dialog__actions">
           <button
@@ -82,10 +84,10 @@ export function CreateNewWavelengthCta() {
             className="wavelength-dialog__button wavelength-dialog__button--primary"
             onClick={() => {
               dialogRef.current?.close();
-              router.push("/create");
+              router.push("/play");
             }}
           >
-            Create a new Wavelength
+            Continue
           </button>
         </div>
       </dialog>

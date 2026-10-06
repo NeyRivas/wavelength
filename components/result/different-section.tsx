@@ -19,7 +19,7 @@ export function DifferentSection({
   return (
     <section className="result-section" aria-labelledby="different-heading">
       <h2 id="different-heading" className="result-section__heading">
-        Different Wavelengths
+        Where You Differ
       </h2>
       {questions.length === 0 ? (
         <p className="result-section__intro">

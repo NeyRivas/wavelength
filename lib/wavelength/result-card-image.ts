@@ -42,10 +42,10 @@ const SCALE = EXPORT_W / DESIGN_W;
 const EXPORT_H = Math.round(DESIGN_H * SCALE);
 
 export const CARD_SLUGS = [
-  "your-wavelength",
+  "your-result",
   "you-really-clicked",
-  "different-wavelengths",
-  "share-your-wavelength",
+  "different-rhythms",
+  "share-your-result",
 ] as const;
 
 // ---------- color helpers ----------
@@ -381,7 +381,7 @@ function drawChrome(
   ctx.font = `800 10px ${fonts.nunito}`;
   ctx.fillStyle = MUTED;
   ctx.textBaseline = "middle";
-  fillTrackedText(ctx, "WAVELENGTH", iconCx + 12, iconCy, 1.3);
+  fillTrackedText(ctx, "SAMEEEISH", iconCx + 12, iconCy, 1.3);
 }
 
 function drawCardOne(
@@ -399,7 +399,7 @@ function drawCardOne(
           ctx.font = `800 11px ${fonts.nunito}`;
           ctx.fillStyle = MUTED;
           ctx.textBaseline = "top";
-          fillTrackedTextCentered(ctx, "YOUR WAVELENGTH", CARD_CENTER_X, y, 1.5);
+          fillTrackedTextCentered(ctx, "YOUR RESULT", CARD_CENTER_X, y, 1.5);
         },
       },
       {
@@ -429,7 +429,7 @@ function drawCardOne(
           ctx.font = `800 13px ${fonts.nunito}`;
           ctx.fillStyle = MUTED;
           ctx.textBaseline = "top";
-          fillTrackedTextCentered(ctx, "ON THE SAME WAVELENGTH", CARD_CENTER_X, y, 1.4);
+          fillTrackedTextCentered(ctx, "IN SYNC", CARD_CENTER_X, y, 1.4);
         },
       },
       {
@@ -561,7 +561,7 @@ function drawCardThree(
             ctx.font = `800 11px ${fonts.nunito}`;
             ctx.fillStyle = MUTED;
             ctx.textBaseline = "top";
-            fillTrackedTextCentered(ctx, "DIFFERENT WAVELENGTHS", CARD_CENTER_X, y, 1.5);
+            fillTrackedTextCentered(ctx, "DIFFERENT RHYTHMS", CARD_CENTER_X, y, 1.5);
           },
         },
         {
@@ -600,7 +600,7 @@ function drawCardThree(
           ctx.font = `800 11px ${fonts.nunito}`;
           ctx.fillStyle = MUTED;
           ctx.textBaseline = "top";
-          fillTrackedTextCentered(ctx, "DIFFERENT WAVELENGTHS", CARD_CENTER_X, y, 1.5);
+          fillTrackedTextCentered(ctx, "DIFFERENT RHYTHMS", CARD_CENTER_X, y, 1.5);
         },
       },
       {
@@ -649,7 +649,7 @@ function drawCardFour(
           ctx.font = `800 15px ${fonts.nunito}`;
           ctx.fillStyle = INK;
           ctx.textBaseline = "top";
-          fillTrackedTextCentered(ctx, "WAVELENGTH", CARD_CENTER_X, y, 3);
+          fillTrackedTextCentered(ctx, "SAMEEEISH", CARD_CENTER_X, y, 3);
         },
       },
       {
@@ -679,7 +679,7 @@ function drawCardFour(
           ctx.font = `800 13px ${fonts.nunito}`;
           ctx.fillStyle = MUTED;
           ctx.textBaseline = "top";
-          fillTrackedTextCentered(ctx, "ON THE SAME WAVELENGTH", CARD_CENTER_X, y, 1.4);
+          fillTrackedTextCentered(ctx, "IN SYNC", CARD_CENTER_X, y, 1.4);
         },
       },
       {
@@ -691,7 +691,7 @@ function drawCardFour(
         height: 36,
         gapBefore: 36,
         draw: (y) => {
-          const label = "wavelength.zone";
+          const label = "sameeeish";
           ctx.font = `700 12px ${fonts.nunito}`;
           const textWidth = ctx.measureText(label).width;
           const padX = 18;
@@ -783,5 +783,5 @@ export function resultCardFileName(data: ResultCardsData, cardIndex: number): st
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)/g, "");
-  return `wavelength-${names}-${slug}.png`;
+  return `sameeeish-${names}-${slug}.png`;
 }

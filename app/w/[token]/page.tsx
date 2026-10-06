@@ -111,7 +111,7 @@ export default async function WavelengthPage({ params }: { params: Promise<{ tok
   if (!preview) {
     return (
       <main>
-        <h1>Wavelength not found</h1>
+        <h1>Link not found</h1>
         <p>This link isn&apos;t valid, or the questionnaire hasn&apos;t been shared yet.</p>
       </main>
     );

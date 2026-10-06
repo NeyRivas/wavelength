@@ -125,9 +125,9 @@ test("B resubmitting from the stale answer form lands on the locked state, not a
   await expect(bPage.getByRole("heading", { name: "Nice try! 😄" })).toBeVisible();
   await expect(bPage.getByRole("link", { name: "See your result" })).toBeVisible();
   // Product decision (confirmation-before-navigating): "Create your own
-  // Wavelength" is now a button that opens a confirm dialog, not a plain
+  // quiz" is now a button that opens a confirm dialog, not a plain
   // link — see tests/e2e/result-actions.spec.ts for the dialog itself.
-  await expect(bPage.getByRole("button", { name: "Create your own Wavelength" })).toBeVisible();
+  await expect(bPage.getByRole("button", { name: "Create your own quiz" })).toBeVisible();
 
   await expect(bPage.getByText("not in IN_PROGRESS state")).not.toBeVisible();
   await expect(bPage.getByText("Something went wrong. Please try again.")).not.toBeVisible();

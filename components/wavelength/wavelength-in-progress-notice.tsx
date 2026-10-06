@@ -78,11 +78,11 @@ export function WavelengthInProgressNotice() {
         />
       </svg>
 
-      <h1 className="wavelength-in-progress__heading">This Wavelength is already in progress</h1>
+      <h1 className="wavelength-in-progress__heading">This link is already in progress</h1>
       <p className="wavelength-in-progress__text">It already has two participants.</p>
 
       <Link href="/create" className="wavelength-in-progress__button">
-        Create your own Wavelength
+        Create your own quiz
       </Link>
     </div>
   );

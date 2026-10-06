@@ -6,6 +6,7 @@ import { DraftSetupForm } from "@/components/questionnaire/draft-setup-form";
 import { QuestionnaireBuilder } from "@/components/questionnaire/questionnaire-builder";
 import { requireUserId } from "@/lib/supabase/identity";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getExperienceCopy } from "@/lib/wavelength/experience-copy";
 import { getReadyMadeGame, READY_MADE_GAMES } from "@/lib/wavelength/ready-made-games";
 
 const MAKE_YOUR_OWN_HEADING = "Make Your Own";
@@ -58,16 +59,19 @@ const nunitoSans = Nunito_Sans({
 function CreateShellIntro({
   heading,
   subtitle,
+  intro,
   questionCount,
 }: {
   heading: string;
   subtitle: string;
+  intro: string;
   questionCount: number;
 }) {
   return (
     <div className="create-shell__intro">
       <h1 className="create-shell__heading">{heading}</h1>
       <p className="create-shell__text">{subtitle}</p>
+      <p className="create-shell__description">{intro}</p>
       <CreateProgress current={questionCount} />
     </div>
   );
@@ -92,6 +96,7 @@ export default async function CreatePage({
   const resolvedGame = gameId ? getReadyMadeGame(gameId) : undefined;
   const heading = resolvedGame?.title || MAKE_YOUR_OWN_HEADING;
   const subtitle = resolvedGame?.builderSubtitle || MAKE_YOUR_OWN_SUBTITLE;
+  const experienceCopy = getExperienceCopy(gameId);
   const backHref =
     resolvedGame?.group === "dating-couples"
       ? "/play/dating-couples"
@@ -148,7 +153,12 @@ export default async function CreatePage({
       <div className={`${fraunces.variable} ${nunitoSans.variable} wl-create`}>
         <CreateHeader backHref={backHref} />
         <main className="create-shell">
-          <CreateShellIntro heading={heading} subtitle={subtitle} questionCount={0} />
+          <CreateShellIntro
+            heading={heading}
+            subtitle={subtitle}
+            intro={experienceCopy.builderIntro}
+            questionCount={0}
+          />
           <DraftSetupForm />
         </main>
       </div>
@@ -175,12 +185,14 @@ export default async function CreatePage({
         <CreateShellIntro
           heading={heading}
           subtitle={subtitle}
+          intro={experienceCopy.builderIntro}
           questionCount={questions?.length ?? 0}
         />
         <QuestionnaireBuilder
           wavelength={draft}
           questions={questions ?? []}
           answers={answers ?? []}
+          finalizeButtonLabel={experienceCopy.finalizeButtonLabel}
         />
       </main>
     </div>

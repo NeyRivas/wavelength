@@ -23,6 +23,28 @@ export const GUESS_ACCURACY_MESSAGES: Record<GuessAccuracyTier, string> = {
   poor: "Do you even know me? \u{1F602}",
 };
 
+/** A's own version of GUESS_ACCURACY_MESSAGES — same four tiers, same
+ * approved meaning, recast from A's point of view reading about B's score
+ * instead of B's own first-person result (global QA/copy pass). Not a
+ * mechanical "you" → "{bAlias}" string replace: each line is its own
+ * natural sentence, e.g. "We might need to hang out more." (B, mutual
+ * framing) becomes "{bAlias} might need to hang out more." (A, centered
+ * on B), the same recasting approved for Friendship Check's tiers. A
+ * strictly presentational, additive export — GUESS_ACCURACY_MESSAGES,
+ * computeGuessAccuracy, and every tier threshold above are unchanged. */
+export function guessAccuracyMessageForA(tier: GuessAccuracyTier, bAlias: string): string {
+  switch (tier) {
+    case "excellent":
+      return `${bAlias} basically lives in your head.`;
+    case "good":
+      return `Okay, ${bAlias} knows you pretty well.`;
+    case "fair":
+      return `${bAlias} might need to hang out with you more.`;
+    case "poor":
+      return `Does ${bAlias} even know you? \u{1F602}`;
+  }
+}
+
 export interface GuessAccuracyResult {
   correctCount: number;
   totalQuestions: number;

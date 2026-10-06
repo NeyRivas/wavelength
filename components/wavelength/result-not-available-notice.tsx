@@ -55,7 +55,7 @@ export function ResultNotAvailableNotice() {
       </p>
 
       <Link href="/create" className="result-unavailable__button">
-        Create your own Wavelength
+        Create your own quiz
       </Link>
     </div>
   );

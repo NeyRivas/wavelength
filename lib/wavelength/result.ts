@@ -234,7 +234,7 @@ export function buildWavelengthResultView(
  * scientific, predictive, diagnostic, or statistically validated (approved
  * constraint). Differences are framed as information, not a verdict. */
 export const ALIGNMENT_INTERPRETATION: Record<AlignmentLevel, string> = {
-  "High Alignment": "You see most things the same way — you're clearly on the same wavelength.",
+  "High Alignment": "You see most things the same way — you're clearly on the same page.",
   "Mixed Alignment":
     "You're aligned on plenty and see some things differently — a mix worth exploring together.",
   "Low Alignment":

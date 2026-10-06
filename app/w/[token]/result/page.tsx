@@ -10,6 +10,8 @@ import { ResultView } from "@/components/result/result-view";
 import { ResultNotAvailableNotice } from "@/components/wavelength/result-not-available-notice";
 import { requireUserId } from "@/lib/supabase/identity";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { computeFriendshipMemory } from "@/lib/wavelength/friendship-memory";
+import { computeGuessAccuracy } from "@/lib/wavelength/guess-accuracy";
 import { buildWavelengthResultView, ResultDataError } from "@/lib/wavelength/result";
 import { getReadyMadeGame } from "@/lib/wavelength/ready-made-games";
 
@@ -138,6 +140,12 @@ export default async function ResultPage({ params }: { params: Promise<{ token: 
   // — the fallback strings are just defensive, never expected to render.
   const aliasA = wavelength.participant_a_alias ?? "Participant A";
   const aliasB = wavelength.participant_b_alias ?? "Participant B";
+  // Which of the two participants is looking at this page right now — A
+  // and B see the same tier/score but different, perspective-appropriate
+  // copy for it (global QA/copy pass item #9/#10). Purely presentational:
+  // doesn't affect `view`, scoring, or which data either side can read
+  // (the participant check above already gated that).
+  const viewer: "A" | "B" = wavelength.participant_a_id === userId ? "A" : "B";
 
   // "How Well Do You Know Me?" (resultMode: "guess-accuracy" — see
   // lib/wavelength/ready-made-games.ts) is a friendship trivia game, not a
@@ -151,12 +159,13 @@ export default async function ResultPage({ params }: { params: Promise<{ token: 
     : undefined;
 
   if (resolvedGame?.resultMode === "guess-accuracy") {
+    const { tier } = computeGuessAccuracy(view.allQuestions.map((q) => q.score));
     return (
       <div className={`${fraunces.variable} ${nunitoSans.variable} wl-create`}>
         <CreateHeader />
         <main className="create-shell result-shell">
-          <ResultReveal>
-            <GuessAccuracySummary view={view} aliasA={aliasA} aliasB={aliasB} />
+          <ResultReveal celebrate={tier === "excellent"}>
+            <GuessAccuracySummary view={view} aliasA={aliasA} aliasB={aliasB} viewer={viewer} />
             <CreateNewWavelengthCta />
           </ResultReveal>
         </main>
@@ -170,12 +179,13 @@ export default async function ResultPage({ params }: { params: Promise<{ token: 
   // lib/wavelength/friendship-memory.ts). Every other game (including
   // "guess-accuracy") is unaffected by this branch.
   if (resolvedGame?.resultMode === "friendship-memory") {
+    const { tier } = computeFriendshipMemory(view.allQuestions.map((q) => q.score));
     return (
       <div className={`${fraunces.variable} ${nunitoSans.variable} wl-create`}>
         <CreateHeader />
         <main className="create-shell result-shell">
-          <ResultReveal>
-            <FriendshipMemorySummary view={view} aliasA={aliasA} aliasB={aliasB} />
+          <ResultReveal celebrate={tier === "excellent"}>
+            <FriendshipMemorySummary view={view} aliasA={aliasA} aliasB={aliasB} viewer={viewer} />
             <CreateNewWavelengthCta />
           </ResultReveal>
         </main>
@@ -187,8 +197,8 @@ export default async function ResultPage({ params }: { params: Promise<{ token: 
     <div className={`${fraunces.variable} ${nunitoSans.variable} wl-create`}>
       <CreateHeader />
       <main className="create-shell result-shell">
-        <ResultReveal>
-          <ResultView view={view} aliasA={aliasA} aliasB={aliasB} />
+        <ResultReveal celebrate={view.global.level === "High Alignment"}>
+          <ResultView view={view} aliasA={aliasA} aliasB={aliasB} gameId={resolvedGame?.id} />
         </ResultReveal>
       </main>
     </div>

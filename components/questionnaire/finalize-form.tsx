@@ -14,12 +14,16 @@ import { initialActionState } from "@/app/actions/shared";
  * flow (`/w/[token]`) on success — this form still does nothing but call
  * it, just restyled to match the rest of the create flow.
  */
+const DEFAULT_BUTTON_LABEL = "Answer. Share. See how much you're on the same page.";
+
 export function FinalizeForm({
   wavelengthId,
   shareToken,
+  buttonLabel = DEFAULT_BUTTON_LABEL,
 }: {
   wavelengthId: string;
   shareToken: string;
+  buttonLabel?: string;
 }) {
   const [state, formAction, pending] = useActionState(finalizeDraft, initialActionState);
 
@@ -54,7 +58,7 @@ export function FinalizeForm({
       )}
 
       <button type="submit" className="create-button create-button--primary" disabled={pending}>
-        {pending ? "Creating…" : "Answer. Share. See how much you're on the same page."}
+        {pending ? "Creating…" : buttonLabel}
       </button>
     </form>
   );

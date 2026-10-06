@@ -82,4 +82,9 @@ describe("buildShareSummaryText (share — privacy-safe, may reach a non-partici
       expect(text).not.toContain(`${q.score}% match`);
     }
   });
+
+  it("never mentions the old 'Wavelength' branding (global QA/copy pass item #1)", () => {
+    const text = buildShareSummaryText(view, aliasA, aliasB);
+    expect(text.toLowerCase()).not.toContain("wavelength");
+  });
 });

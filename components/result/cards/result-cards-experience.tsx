@@ -152,7 +152,7 @@ export function ResultCardsExperience({
 
       if (typeof navigator.canShare === "function" && navigator.canShare({ files: [file] })) {
         try {
-          await navigator.share({ files: [file], title: "Wavelength", text: shareText });
+          await navigator.share({ files: [file], title: "Sameeeish", text: shareText });
           setIsBusy(false);
           return;
         } catch {
@@ -187,7 +187,7 @@ export function ResultCardsExperience({
       ref={overlayRef}
       role="dialog"
       aria-modal="true"
-      aria-label="Wavelength result cards"
+      aria-label="Sameeeish result cards"
     >
       <button type="button" className={styles.closeButton} onClick={onClose} aria-label="Close">
         ×
@@ -205,7 +205,7 @@ export function ResultCardsExperience({
             <div className={styles.top}>
               <div className={styles.brand}>
                 <BrandMark className={styles.brandMark} />
-                Wavelength
+                Sameeeish
               </div>
               <ProgressDots current={index} />
             </div>

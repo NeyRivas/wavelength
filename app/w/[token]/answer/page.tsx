@@ -7,6 +7,7 @@ import { SubmitFinalForm } from "@/components/wavelength/submit-final-form";
 import { WavelengthLockedNotice } from "@/components/wavelength/wavelength-locked-notice";
 import { requireUserId } from "@/lib/supabase/identity";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getExperienceCopy } from "@/lib/wavelength/experience-copy";
 
 /**
  * Participant B's answering flow (ARCHITECTURE.md §12 Phase 5). Only
@@ -43,15 +44,22 @@ const nunitoSans = Nunito_Sans({
   display: "swap",
 });
 
-function AnswerShellIntro({ answered, total }: { answered: number; total: number }) {
+function AnswerShellIntro({
+  answered,
+  total,
+  heading,
+  text,
+}: {
+  answered: number;
+  total: number;
+  heading: string;
+  text: string;
+}) {
   const fraction = total > 0 ? answered / total : 0;
   return (
     <div className="create-shell__intro">
-      <h1 className="create-shell__heading">Time to answer</h1>
-      <p className="create-shell__text">
-        Go with your gut — there are no wrong answers, and you can change any answer any time before
-        you submit.
-      </p>
+      <h1 className="create-shell__heading">{heading}</h1>
+      <p className="create-shell__text">{text}</p>
       <div className="create-progress">
         <div
           className="create-progress__track"
@@ -78,7 +86,7 @@ export default async function AnswerPage({ params }: { params: Promise<{ token: 
 
   const { data: wavelength } = await supabase
     .from("wavelengths")
-    .select("id, state, participant_b_id")
+    .select("id, state, participant_b_id, source_game_id")
     .eq("share_token", token)
     .maybeSingle();
 
@@ -127,12 +135,18 @@ export default async function AnswerPage({ params }: { params: Promise<{ token: 
   const questionList = questions ?? [];
   const answeredCount = questionList.filter((q) => answerByQuestion.has(q.id)).length;
   const allAnswered = questionList.length > 0 && answeredCount === questionList.length;
+  const experienceCopy = getExperienceCopy(wavelength.source_game_id ?? undefined);
 
   return (
     <div className={`${fraunces.variable} ${nunitoSans.variable} wl-create`}>
       <CreateHeader />
       <main className="create-shell answer-shell">
-        <AnswerShellIntro answered={answeredCount} total={questionList.length} />
+        <AnswerShellIntro
+          answered={answeredCount}
+          total={questionList.length}
+          heading={experienceCopy.answerHeading}
+          text={experienceCopy.answerText}
+        />
 
         {questionList.length > 0 && (
           <ol className="create-card-list">
@@ -150,7 +164,11 @@ export default async function AnswerPage({ params }: { params: Promise<{ token: 
         )}
 
         {allAnswered ? (
-          <SubmitFinalForm wavelengthId={wavelength.id} shareToken={token} />
+          <SubmitFinalForm
+            wavelengthId={wavelength.id}
+            shareToken={token}
+            finalText={experienceCopy.finalText}
+          />
         ) : (
           questionList.length > 0 && (
             <p className="create-helper-note">Answer every question to see your results.</p>

@@ -1,5 +1,7 @@
 import type { WavelengthResultView } from "@/lib/wavelength/result";
-import { computeGuessAccuracy } from "@/lib/wavelength/guess-accuracy";
+import { computeGuessAccuracy, guessAccuracyMessageForA } from "@/lib/wavelength/guess-accuracy";
+
+import { ResultSparkles } from "./result-sparkles";
 
 /**
  * The Result page's headline for "How Well Do You Know Me?" — a
@@ -21,14 +23,27 @@ export function GuessAccuracySummary({
   view,
   aliasA,
   aliasB,
+  viewer,
 }: {
   view: WavelengthResultView;
   aliasA: string;
   aliasB: string;
+  /** Which participant is looking at this result right now — B (the
+   * guesser) sees the original, first-person approved copy; A sees a
+   * perspective-matched version of the same four tiers (global QA/copy
+   * pass item #9), e.g. "You basically live in my head." (B) vs.
+   * "{aliasB} basically lives in your head." (A). Neither the tier nor
+   * the underlying score changes — computeGuessAccuracy is untouched. */
+  viewer: "A" | "B";
 }) {
-  const { correctCount, totalQuestions, message } = computeGuessAccuracy(
+  const { correctCount, totalQuestions, tier, message } = computeGuessAccuracy(
     view.allQuestions.map((question) => question.score),
   );
+  const headline = viewer === "A" ? guessAccuracyMessageForA(tier, aliasB) : message;
+  const scoreLine =
+    viewer === "A"
+      ? `${aliasB} got ${correctCount} out of ${totalQuestions} right.`
+      : `You got ${correctCount} out of ${totalQuestions} right.`;
 
   return (
     <section className="global-summary" aria-labelledby="guess-accuracy-heading">
@@ -38,13 +53,12 @@ export function GuessAccuracySummary({
       </div>
 
       <div className="global-summary__glass">
+        <ResultSparkles tier={tier} />
         <p className="global-summary__eyebrow">How Well Do You Know Me?</p>
         <h1 id="guess-accuracy-heading" className="global-summary__heading">
-          {message}
+          {headline}
         </h1>
-        <p className="global-summary__score">
-          You got {correctCount} out of {totalQuestions} right.
-        </p>
+        <p className="global-summary__score">{scoreLine}</p>
         <p className="global-summary__interpretation">
           {aliasB} guessed {correctCount} of {aliasA}&apos;s {totalQuestions} answers correctly.
         </p>

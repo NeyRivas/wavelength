@@ -24,9 +24,9 @@ export function CreateNewWavelengthAction() {
 
   return (
     <ConfirmDialog
-      triggerLabel="Create your own Wavelength"
-      title="Start a new Wavelength?"
-      description="Make sure you've saved or shared your current result first. You may lose access to this completed result when you start a new Wavelength."
+      triggerLabel="Create your own quiz"
+      title="Start a new quiz?"
+      description="Make sure you've saved or shared your current result first. You may lose access to this completed result when you start a new one."
       onConfirm={() => router.push("/create")}
     />
   );

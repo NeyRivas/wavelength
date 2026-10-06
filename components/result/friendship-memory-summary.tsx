@@ -1,5 +1,10 @@
 import type { WavelengthResultView } from "@/lib/wavelength/result";
-import { computeFriendshipMemory } from "@/lib/wavelength/friendship-memory";
+import {
+  computeFriendshipMemory,
+  friendshipMemoryMessageForA,
+} from "@/lib/wavelength/friendship-memory";
+
+import { ResultSparkles } from "./result-sparkles";
 
 /**
  * The Result page's headline for "Friendship Check" — a shared-history
@@ -24,14 +29,29 @@ export function FriendshipMemorySummary({
   view,
   aliasA,
   aliasB,
+  viewer,
 }: {
   view: WavelengthResultView;
   aliasA: string;
   aliasB: string;
+  /** Which participant is looking at this result right now — same
+   * perspective split as GuessAccuracySummary (global QA/copy pass item
+   * #10): B (the guesser) sees the original, first-person approved copy;
+   * A sees a perspective-matched version of the same four tiers, e.g.
+   * "We might need to make more memories." (B) vs. "{aliasB} might need
+   * to make more memories." (A) — the approved example for this pair.
+   * Neither the tier nor the score changes — computeFriendshipMemory is
+   * untouched. */
+  viewer: "A" | "B";
 }) {
-  const { correctCount, totalQuestions, message } = computeFriendshipMemory(
+  const { correctCount, totalQuestions, tier, message } = computeFriendshipMemory(
     view.allQuestions.map((question) => question.score),
   );
+  const headline = viewer === "A" ? friendshipMemoryMessageForA(tier, aliasB) : message;
+  const scoreLine =
+    viewer === "A"
+      ? `${aliasB} got ${correctCount} out of ${totalQuestions} right.`
+      : `You got ${correctCount} out of ${totalQuestions} right.`;
 
   return (
     <section className="global-summary" aria-labelledby="friendship-memory-heading">
@@ -41,13 +61,12 @@ export function FriendshipMemorySummary({
       </div>
 
       <div className="global-summary__glass">
+        <ResultSparkles tier={tier} />
         <p className="global-summary__eyebrow">Friendship Check</p>
         <h1 id="friendship-memory-heading" className="global-summary__heading">
-          {message}
+          {headline}
         </h1>
-        <p className="global-summary__score">
-          You got {correctCount} out of {totalQuestions} right.
-        </p>
+        <p className="global-summary__score">{scoreLine}</p>
         <p className="global-summary__interpretation">
           {aliasB} got {correctCount} of {aliasA}&apos;s {totalQuestions} friendship moments right.
         </p>

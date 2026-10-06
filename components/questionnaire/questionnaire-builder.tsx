@@ -35,10 +35,12 @@ export function QuestionnaireBuilder({
   wavelength,
   questions,
   answers,
+  finalizeButtonLabel,
 }: {
   wavelength: { id: string; share_token: string };
   questions: QuestionRow[];
   answers: { question_id: string; value: number }[];
+  finalizeButtonLabel?: string;
 }) {
   const answerByQuestion = new Map(answers.map((a) => [a.question_id, a.value]));
   const answeredCount = questions.filter((q) => answerByQuestion.has(q.id)).length;
@@ -79,7 +81,11 @@ export function QuestionnaireBuilder({
       )}
 
       {canFinalize ? (
-        <FinalizeForm wavelengthId={wavelength.id} shareToken={wavelength.share_token} />
+        <FinalizeForm
+          wavelengthId={wavelength.id}
+          shareToken={wavelength.share_token}
+          buttonLabel={finalizeButtonLabel}
+        />
       ) : (
         questions.length >= MIN_QUESTIONS && (
           <p className="create-helper-note">Answer every question to finish your questionnaire.</p>

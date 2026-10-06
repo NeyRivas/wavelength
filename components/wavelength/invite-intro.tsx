@@ -16,7 +16,7 @@ export function InviteIntro({ aAlias }: { aAlias: string | null }) {
     <div className="invite-intro">
       <p className="invite-intro__eyebrow">You&apos;ve been invited</p>
 
-      <h1 className="invite-intro__heading">Ready to find your wavelength?</h1>
+      <h1 className="invite-intro__heading">Ready to jump in?</h1>
 
       <svg className="invite-intro__motif" viewBox="0 0 260 56" fill="none" aria-hidden="true">
         <path

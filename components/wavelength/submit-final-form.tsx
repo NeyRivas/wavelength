@@ -9,7 +9,7 @@ import { initialActionState } from "@/app/actions/shared";
  * B's final CTA — only rendered by the answer page once every question has
  * been answered (a UX gate; `submit_final_b` re-validates completeness
  * itself regardless). On success this redirects straight to the result
- * page, which shows the "Finding your wavelength…" transition itself.
+ * page, which shows the result-reveal transition itself.
  *
  * Presentation only — same wiring as before (useActionState(submitFinalB),
  * the same two hidden fields, the same pending/error handling). Reuses
@@ -18,21 +18,23 @@ import { initialActionState } from "@/app/actions/shared";
  * lavender CTA (.answer-submit-button — the same recipe as the approved
  * Copy link/Start answering buttons) instead of a flat ink/white button.
  */
+const DEFAULT_FINAL_TEXT = "Every question is answered. Submit to see your result.";
+
 export function SubmitFinalForm({
   wavelengthId,
   shareToken,
+  finalText = DEFAULT_FINAL_TEXT,
 }: {
   wavelengthId: string;
   shareToken: string;
+  finalText?: string;
 }) {
   const [state, formAction, pending] = useActionState(submitFinalB, initialActionState);
 
   return (
     <form action={formAction} className="create-finalize">
       <h2 className="create-finalize__heading">All set!</h2>
-      <p className="create-finalize__text">
-        Every question is answered. Submit to see where your wavelengths meet.
-      </p>
+      <p className="create-finalize__text">{finalText}</p>
 
       <input type="hidden" name="wavelengthId" value={wavelengthId} />
       <input type="hidden" name="shareToken" value={shareToken} />

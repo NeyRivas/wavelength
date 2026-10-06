@@ -47,10 +47,10 @@ test("the shared result shows both participants' real aliases, never bare 'A'/'B
   await submitFinal(bPage);
   await expectResultVisible(bPage);
 
-  // Header names both aliases.
-  await expect(
-    bPage.getByRole("heading", { name: "Are Ney and Sarah on the same wavelength?" }),
-  ).toBeVisible();
+  // Header names both aliases (global QA/copy pass item #2: the default
+  // compatibility-style heading — no ready-made game here — is now "How X
+  // and Y compare", not the old "on the same wavelength?" copy).
+  await expect(bPage.getByRole("heading", { name: "How Ney and Sarah compare" })).toBeVisible();
 
   // Question-level comparisons show the aliases, not "A"/"B".
   await expect(bPage.getByText("Ney", { exact: true }).first()).toBeVisible();

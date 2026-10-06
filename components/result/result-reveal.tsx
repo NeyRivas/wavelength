@@ -7,20 +7,41 @@ const READY_PHASE_MS = 550;
 
 type Phase = "finding" | "ready" | "revealed";
 
+const SAMEEEISH_LETTERS = "SAMEEEISH".split("");
+const SAME_LETTERS = "SAME!".split("");
+
 /**
- * "Finding your wavelength…" → "See your results" → the already-fully-
- * computed result. `children` is the real result content, already
- * rendered server-side (scored via lib/scoring/score.ts, nothing computed
- * here); this component does nothing but hold off showing it for a short,
- * two-beat moment before revealing it. No AI, no recomputation, no data
- * fetching of its own — total delay (~1.55s) is close to the original
- * single-phase version's 1.4s, just split into a short "finding" beat and
- * a shorter "found it" beat, matching the approved two-line transition
- * copy. `children` is never rendered until `phase === "revealed"`, so
- * nothing about the result — including whether either side even
- * answered — is ever visible before that.
+ * The brand's own reveal moment → the already-fully-computed result.
+ * `children` is the real result content, already rendered server-side
+ * (scored via lib/scoring/score.ts, nothing computed here); this
+ * component does nothing but hold off showing it for a short, two-beat
+ * moment before revealing it. No AI, no recomputation, no data fetching
+ * of its own — total delay (~1.55s) is unchanged from the original
+ * two-phase timing, just re-themed. `children` is never rendered until
+ * `phase === "revealed"`, so nothing about the result — including
+ * whether either side even answered — is ever visible before that.
+ *
+ * Global QA/copy pass item #8: replaces "Finding your wavelength…" with
+ * the word SAMEEEISH itself, its letters popping in one by one (a small
+ * brand reaction, not a literal progress message) — then, only when
+ * `celebrate` is true (a high-tier/high-alignment result — see the three
+ * call sites in app/w/[token]/result/page.tsx, each deriving it from
+ * their own already-computed tier/level, never a new calculation),
+ * playfully collapses into "SAME!" for the second beat. Any other result
+ * keeps showing SAMEEEISH throughout — never a lesser or sadder word, the
+ * full brand name is already the warm, playful default. Letter pop-in is
+ * wrapped in `@media (prefers-reduced-motion: no-preference)`
+ * (app/globals.css) — reduced-motion users see the same two words, fully
+ * formed, with no motion at all; the two-phase *timing* itself (unrelated
+ * to motion) is unchanged for everyone, same as before this pass.
  */
-export function ResultReveal({ children }: { children: React.ReactNode }) {
+export function ResultReveal({
+  children,
+  celebrate = false,
+}: {
+  children: React.ReactNode;
+  celebrate?: boolean;
+}) {
   const [phase, setPhase] = useState<Phase>("finding");
 
   useEffect(() => {
@@ -36,52 +57,29 @@ export function ResultReveal({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
   }
 
+  const showSame = phase === "ready" && celebrate;
+  const letters = showSame ? SAME_LETTERS : SAMEEEISH_LETTERS;
+
   return (
     <div
-      className={`wavelength-loading${phase === "ready" ? " wavelength-loading--ready" : ""}`}
-      role="status"
-      aria-live="polite"
+      className={`sameeeish-reveal${phase === "ready" ? " sameeeish-reveal--ready" : ""}${showSame ? " sameeeish-reveal--same" : ""}`}
     >
-      <svg
-        className="wavelength-loading__motif"
-        viewBox="0 0 200 80"
-        fill="none"
-        aria-hidden="true"
-      >
-        <path
-          d="M20 40c30-24 60-24 80 0s50 24 80 0"
-          stroke="var(--wl-muted)"
-          strokeWidth="1.5"
-          strokeDasharray="5 6"
-        />
-        <circle
-          className="wavelength-loading__glow"
-          cx="100"
-          cy="40"
-          r="16"
-          fill="var(--wl-mint)"
-        />
-        <circle
-          className="wavelength-loading__dot wavelength-loading__dot--a"
-          cx="20"
-          cy="40"
-          r="9"
-          fill="#ffffff"
-          stroke="var(--wl-lavender)"
-          strokeWidth="4"
-        />
-        <circle
-          className="wavelength-loading__dot wavelength-loading__dot--b"
-          cx="180"
-          cy="40"
-          r="9"
-          fill="#ffffff"
-          stroke="var(--wl-blue)"
-          strokeWidth="4"
-        />
-      </svg>
-      <p className="wavelength-loading__text">
-        {phase === "finding" ? "Finding your wavelength…" : "See your results"}
+      <p className="sameeeish-reveal__word" aria-hidden="true">
+        {letters.map((letter, i) => (
+          <span
+            key={`${showSame}-${i}`}
+            className="sameeeish-reveal__letter"
+            style={{ animationDelay: `${i * 45}ms` }}
+          >
+            {letter}
+          </span>
+        ))}
+      </p>
+      {/* The real accessible status — the big word above is purely
+          decorative brand motion, aria-hidden, so this is the only thing
+          a screen reader announces for the whole transition. */}
+      <p className="sr-only" role="status" aria-live="polite">
+        {phase === "finding" ? "Finding your result…" : "Here it is…"}
       </p>
     </div>
   );

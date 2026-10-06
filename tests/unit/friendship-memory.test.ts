@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 
 import {
   computeFriendshipMemory,
+  friendshipMemoryMessageForA,
   FRIENDSHIP_MEMORY_MESSAGES,
+  type FriendshipMemoryTier,
 } from "../../lib/wavelength/friendship-memory";
 
 function scoresFor(correctCount: number, total: number): number[] {
@@ -75,5 +77,47 @@ describe("computeFriendshipMemory", () => {
     expect(Object.values(FRIENDSHIP_MEMORY_MESSAGES)).not.toContain(
       "Okay, you know me pretty well.",
     );
+  });
+});
+
+describe("friendshipMemoryMessageForA (A's own perspective on B's result)", () => {
+  const tiers: FriendshipMemoryTier[] = ["excellent", "good", "fair", "poor"];
+
+  it("returns the approved example exactly: 'We might need to make more memories.' -> '{bAlias} might need to make more memories.'", () => {
+    expect(friendshipMemoryMessageForA("fair", "Bailey")).toBe(
+      "Bailey might need to make more memories with you.",
+    );
+  });
+
+  it("returns a distinct, perspective-matched sentence per tier, naming B by alias", () => {
+    expect(friendshipMemoryMessageForA("excellent", "Bailey")).toBe(
+      "Bailey basically knows your friendship by heart.",
+    );
+    expect(friendshipMemoryMessageForA("good", "Bailey")).toBe(
+      "Okay, Bailey knows your friendship pretty well.",
+    );
+    expect(friendshipMemoryMessageForA("poor", "Bailey")).toBe("Was Bailey even there? \u{1F602}");
+  });
+
+  it("is never identical to B's own message for the same tier", () => {
+    for (const tier of tiers) {
+      expect(friendshipMemoryMessageForA(tier, "Bailey")).not.toBe(
+        FRIENDSHIP_MEMORY_MESSAGES[tier],
+      );
+    }
+  });
+
+  it("always names the given alias", () => {
+    for (const tier of tiers) {
+      expect(friendshipMemoryMessageForA(tier, "Riley")).toContain("Riley");
+    }
+  });
+
+  it("has no High/Mixed/Low, wavelength, or percentage-style wording for any tier", () => {
+    for (const tier of tiers) {
+      expect(friendshipMemoryMessageForA(tier, "Bailey").toLowerCase()).not.toMatch(
+        /alignment|compatib|wavelength|same page|%/,
+      );
+    }
   });
 });

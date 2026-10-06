@@ -11,7 +11,7 @@ import {
 /**
  * E2E #6 — QA fix: A previously had no way to see their own
  * questions/answers again once the questionnaire was locked (finalized) —
- * the "Your Wavelength" page only showed the share link and B's status.
+ * the "Your answers are in." page only showed the share link and B's status.
  * app/w/[token]/page.tsx now also renders a read-only summary
  * (components/questionnaire/read-only-answers.tsx) for A in that state:
  * every question and A's own formatted answer, with no way to edit
@@ -38,8 +38,8 @@ test("A sees a read-only view of their questions and answers after finalizing, w
   }
   await finalizeDraft(page, "Alex");
 
-  // Already on "Your Wavelength" (finalizeDraft waits for that heading) —
-  // the share link/status UI must still be there, untouched.
+  // Already on "Your answers are in." (finalizeDraft waits for that
+  // heading) — the share link/status UI must still be there, untouched.
   await expect(page.locator("#share-link")).toBeVisible();
 
   // The new read-only summary: every question's text and its formatted

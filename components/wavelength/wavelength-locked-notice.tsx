@@ -44,8 +44,8 @@ export function WavelengthLockedNotice({ shareToken }: { shareToken: string }) {
 
       <h1 className="b-locked__heading">Nice try! 😄</h1>
       <p className="b-locked__text">
-        You&apos;ve already answered this Wavelength — no going back and changing your mind now,
-        that&apos;s not really the same wavelength anymore.
+        You&apos;ve already answered this one — no going back and changing your mind now, that
+        wouldn&apos;t really be honest anymore.
       </p>
 
       <div className="b-locked__actions">

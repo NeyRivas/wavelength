@@ -75,7 +75,7 @@ export function WavelengthIndicator({ score, level }: { score: number; level: Al
       width="100%"
       height={HEIGHT}
       role="img"
-      aria-label={`Two wavelengths shown ${score} percent in phase, representing your alignment`}
+      aria-label={`Two rhythms shown ${score} percent in sync, representing how closely your answers align`}
     >
       <defs>
         <linearGradient id="wavelengthGradientA" x1="0" y1="0" x2="1" y2="0">

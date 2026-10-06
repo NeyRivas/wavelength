@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { computeGuessAccuracy, GUESS_ACCURACY_MESSAGES } from "../../lib/wavelength/guess-accuracy";
+import {
+  computeGuessAccuracy,
+  GUESS_ACCURACY_MESSAGES,
+  guessAccuracyMessageForA,
+  type GuessAccuracyTier,
+} from "../../lib/wavelength/guess-accuracy";
 
 function scoresFor(correctCount: number, total: number): number[] {
   return Array.from({ length: total }, (_, i) => (i < correctCount ? 100 : 0));
@@ -50,6 +55,41 @@ describe("computeGuessAccuracy", () => {
   it("GUESS_ACCURACY_MESSAGES has no High/Mixed/Low or percentage-style wording", () => {
     for (const message of Object.values(GUESS_ACCURACY_MESSAGES)) {
       expect(message.toLowerCase()).not.toMatch(/alignment|compatib|wavelength|same page|%/);
+    }
+  });
+});
+
+describe("guessAccuracyMessageForA (A's own perspective on B's result)", () => {
+  const tiers: GuessAccuracyTier[] = ["excellent", "good", "fair", "poor"];
+
+  it("returns a distinct, perspective-matched sentence per tier, naming B by alias", () => {
+    expect(guessAccuracyMessageForA("excellent", "Bailey")).toBe(
+      "Bailey basically lives in your head.",
+    );
+    expect(guessAccuracyMessageForA("good", "Bailey")).toBe("Okay, Bailey knows you pretty well.");
+    expect(guessAccuracyMessageForA("fair", "Bailey")).toBe(
+      "Bailey might need to hang out with you more.",
+    );
+    expect(guessAccuracyMessageForA("poor", "Bailey")).toBe("Does Bailey even know you? \u{1F602}");
+  });
+
+  it("is never identical to B's own message for the same tier (not a mechanical you/me swap gone unchanged)", () => {
+    for (const tier of tiers) {
+      expect(guessAccuracyMessageForA(tier, "Bailey")).not.toBe(GUESS_ACCURACY_MESSAGES[tier]);
+    }
+  });
+
+  it("always names the given alias", () => {
+    for (const tier of tiers) {
+      expect(guessAccuracyMessageForA(tier, "Riley")).toContain("Riley");
+    }
+  });
+
+  it("has no High/Mixed/Low, wavelength, or percentage-style wording for any tier", () => {
+    for (const tier of tiers) {
+      expect(guessAccuracyMessageForA(tier, "Bailey").toLowerCase()).not.toMatch(
+        /alignment|compatib|wavelength|same page|%/,
+      );
     }
   });
 });

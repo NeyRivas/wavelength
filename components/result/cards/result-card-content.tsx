@@ -25,10 +25,10 @@ function namesLine(aliasA: string, aliasB: string): string {
 export function CardOne({ data }: { data: ResultCardsData }) {
   return (
     <div className={styles.content}>
-      <div className={styles.eyebrow}>Your wavelength</div>
+      <div className={styles.eyebrow}>Your result</div>
       <div className={styles.names}>{namesLine(data.aliasA, data.aliasB)}</div>
       <div className={styles.score}>{data.score}%</div>
-      <div className={styles.caption}>On the same wavelength</div>
+      <div className={styles.caption}>In sync</div>
       <div className={styles.waveLarge}>
         <SyncedWave width={200} height={80} />
       </div>
@@ -59,7 +59,7 @@ export function CardThree({ data }: { data: ResultCardsData }) {
   const hasDifferences = data.differentCategories.length > 0;
   return (
     <div className={styles.content}>
-      <div className={styles.eyebrow}>Different wavelengths</div>
+      <div className={styles.eyebrow}>Different rhythms</div>
       <div className={styles.diffHeadline}>
         {hasDifferences ? "Different tempos, same song." : "Aligned across the board."}
       </div>
@@ -95,14 +95,14 @@ export function CardThree({ data }: { data: ResultCardsData }) {
 export function CardFour({ data }: { data: ResultCardsData }) {
   return (
     <div className={styles.content}>
-      <div className={styles.shareWordmark}>Wavelength</div>
+      <div className={styles.shareWordmark}>Sameeeish</div>
       <div className={styles.names}>{namesLine(data.aliasA, data.aliasB)}</div>
       <div className={[styles.score, styles.scoreSmall].join(" ")}>{data.score}%</div>
-      <div className={styles.caption}>On the same wavelength</div>
+      <div className={styles.caption}>In sync</div>
       <div className={styles.waveLarge}>
         <SyncedWave width={220} height={88} />
       </div>
-      <div className={styles.shareBadge}>wavelength.zone</div>
+      <div className={styles.shareBadge}>sameeeish</div>
     </div>
   );
 }

@@ -30,6 +30,27 @@ export const FRIENDSHIP_MEMORY_MESSAGES: Record<FriendshipMemoryTier, string> = 
   poor: "Were you even there? \u{1F602}",
 };
 
+/** A's own version of FRIENDSHIP_MEMORY_MESSAGES — same four tiers, same
+ * approved meaning, recast from A's point of view reading about B's score
+ * instead of B's own first-person result (global QA/copy pass): "We might
+ * need to make more memories." (B, mutual framing) becomes "{bAlias}
+ * might need to make more memories." (A, centered on B) — the approved
+ * example for this exact pair. A strictly presentational, additive
+ * export — FRIENDSHIP_MEMORY_MESSAGES, computeFriendshipMemory, and every
+ * tier threshold above are unchanged. */
+export function friendshipMemoryMessageForA(tier: FriendshipMemoryTier, bAlias: string): string {
+  switch (tier) {
+    case "excellent":
+      return `${bAlias} basically knows your friendship by heart.`;
+    case "good":
+      return `Okay, ${bAlias} knows your friendship pretty well.`;
+    case "fair":
+      return `${bAlias} might need to make more memories with you.`;
+    case "poor":
+      return `Was ${bAlias} even there? \u{1F602}`;
+  }
+}
+
 export interface FriendshipMemoryResult {
   correctCount: number;
   totalQuestions: number;

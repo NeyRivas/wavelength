@@ -125,12 +125,19 @@ export const SCALE_LABELS = [
   "Extremely important",
 ] as const;
 
-/** Finalizes A's draft (alias + "Create my Wavelength") and returns the
- * share link shown on the resulting "Your Wavelength" page. */
+/** Finalizes A's draft (alias + the finalize button) and returns the share
+ * link shown on the resulting "Your answers are in." page
+ * (components/wavelength/review-intro.tsx). Every caller here builds a
+ * generic, non-ready-made draft, so the finalize button always shows the
+ * default copy (components/questionnaire/finalize-form.tsx /
+ * lib/wavelength/experience-copy.ts's MAKE_YOUR_OWN_COPY) — a ready-made
+ * game's own draft would show a different, contextual button label. */
 export async function finalizeDraft(page: Page, alias = "Alex"): Promise<string> {
   await page.getByLabel("Your name").fill(alias);
-  await page.getByRole("button", { name: "Create my Wavelength" }).click();
-  await expect(page.getByRole("heading", { name: "Your Wavelength" })).toBeVisible();
+  await page
+    .getByRole("button", { name: "Answer. Share. See how much you're on the same page." })
+    .click();
+  await expect(page.getByRole("heading", { name: "Your answers are in." })).toBeVisible();
   return page.locator("#share-link").inputValue();
 }
 
@@ -140,7 +147,12 @@ export async function finalizeDraft(page: Page, alias = "Alex"): Promise<string>
  * names both participants' actual aliases ("Are Alex and Bailey on the
  * same wavelength?"), which vary per test. */
 export async function expectResultVisible(page: Page): Promise<void> {
-  await expect(page.getByRole("heading", { name: /on the same wavelength\?/ })).toBeVisible({
+  // Scoped by id rather than exact heading text (components/result/
+  // global-summary.tsx's heading is now contextual per ready-made game —
+  // global QA/copy pass item #2 — and every caller here builds a generic,
+  // non-ready-made draft, which renders the default "How X and Y compare"
+  // copy) — this only needs to confirm the actual result page rendered.
+  await expect(page.locator("#global-summary-heading")).toBeVisible({
     timeout: 10_000,
   });
 }

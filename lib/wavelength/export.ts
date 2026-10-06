@@ -36,7 +36,7 @@ export function buildShareSummaryText(
   aliasB: string,
 ): string {
   const lines: string[] = [
-    `Wavelength — ${aliasA} & ${aliasB}`,
+    `Sameeeish — ${aliasA} & ${aliasB}`,
     `${view.global.score}% aligned (${view.global.level})`,
     ALIGNMENT_INTERPRETATION[view.global.level],
     "",
@@ -55,7 +55,7 @@ export function buildShareSummaryText(
     lines.push("", `Most aligned on: ${topCategories.join(", ")}`);
   }
 
-  lines.push("", "Curious how aligned you are with someone? Make your own Wavelength.");
+  lines.push("", "Curious how aligned you are with someone? Make your own Sameeeish.");
 
   return lines.join("\n");
 }
