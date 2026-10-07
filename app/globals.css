@@ -88,35 +88,124 @@ dialog::backdrop {
    .wl-create, CreateHeader and .create-shell (the same product namespace
    and shell every other app/w/[token]/* screen already uses), so this is
    styled as the last step of the same flow rather than a new surface.
-   Every class below (.sameeeish-reveal*, .global-summary*, .badge*,
-   .category-*, .question-compare*, .result-*) already existed pre-redesign
-   with plain/functional styling only — nothing here changes what data any
-   of these render (still exactly `view`/`aliasA`/`aliasB` as computed by
-   lib/wavelength/result.ts + lib/scoring/score.ts), only their appearance
-   and, for .badge, unused now-dead color tokens that pointed outside the
-   approved palette. (.sameeeish-reveal replaces the old .wavelength-
-   loading transition entirely — global QA/copy pass item #8.)
+   Every class below (.wavelength-loading*, .sameeeish-word*,
+   .global-summary*, .badge*, .category-*, .question-compare*, .result-*)
+   already existed pre-redesign with plain/functional styling only —
+   nothing here changes what data any of these render (still exactly
+   `view`/`aliasA`/`aliasB` as computed by lib/wavelength/result.ts +
+   lib/scoring/score.ts), only their appearance and, for .badge, unused
+   now-dead color tokens that pointed outside the approved palette.
    ═══════════════════════════════════════════════════════════════════════ */
 
-/* ── the SAMEEEISH! wordmark reaction ─────────────────────────────────── */
-/* QA follow-up pass: one shared system (components/result/
-   sameeeish-reveal.tsx's SameeeishWordmark) for both the full-screen
-   result-reveal transition (.sameeeish-word--hero, inside
-   .sameeeish-reveal below) and the small flourish sitting inside each
-   result card (.sameeeish-word--inline) — replaces both the old
-   "SAMEEEISH/SAME!" transition text and the separate result-sparkles
-   particle system entirely. Typography is the whole reaction: no
-   confetti, no floating particles, nothing that reads as a generic
-   celebration library. */
+/* ── "Finding your result…" → "See your results" transition ──────────── */
+/* Restore pass: this motif and its two-phase timing are restored verbatim
+   from commit 5ed9e3e (the original "Finding your wavelength…" → "See
+   your results" transition, before it was briefly replaced by a
+   SameeeishWordmark hero build). Class names (`.wavelength-loading*`) are
+   kept as-is from that commit — internal identifiers only, never rendered
+   as text, same "legacy internal naming is fine" exception already used
+   elsewhere in this codebase (e.g. `wavelengthId`, the `wavelengths`
+   table). See components/result/result-reveal.tsx for the phase timing
+   and why the copy itself ("Finding your result…", not "...wavelength…")
+   differs from the historical original. */
 
-.sameeeish-reveal {
+.wavelength-loading {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 1.5rem;
   min-height: 60vh;
   text-align: center;
 }
+
+.wavelength-loading__motif {
+  display: block;
+  width: min(16rem, 100%);
+  height: auto;
+}
+
+.wavelength-loading__dot {
+  animation: wavelength-converge-a 1.4s ease-in-out infinite alternate;
+}
+
+.wavelength-loading__dot--b {
+  animation-name: wavelength-converge-b;
+}
+
+@keyframes wavelength-converge-a {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(80px);
+  }
+}
+
+@keyframes wavelength-converge-b {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-80px);
+  }
+}
+
+.wavelength-loading__glow {
+  opacity: 0;
+  transform: scale(0.6);
+  transform-origin: 100px 40px;
+  transition:
+    opacity 0.4s ease,
+    transform 0.4s ease;
+}
+
+.wavelength-loading--ready .wavelength-loading__dot {
+  animation: none;
+  transform: translateX(80px);
+}
+
+.wavelength-loading--ready .wavelength-loading__dot--b {
+  transform: translateX(-80px);
+}
+
+.wavelength-loading--ready .wavelength-loading__glow {
+  opacity: 0.5;
+  transform: scale(1);
+}
+
+.wavelength-loading__text {
+  margin: 0;
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 1.25rem;
+  color: var(--wl-ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wavelength-loading__dot {
+    animation: none;
+    transform: translateX(80px);
+  }
+
+  .wavelength-loading__dot--b {
+    transform: translateX(-80px);
+  }
+}
+
+/* ── the SAMEEEISH! wordmark reaction ─────────────────────────────────── */
+/* QA follow-up pass: the small flourish sitting inside each result card
+   (GuessAccuracySummary/FriendshipMemorySummary/GlobalSummary all render
+   it via components/result/sameeeish-reveal.tsx's SameeeishWordmark,
+   `size="inline"`) — replaces the old separate result-sparkles particle
+   system. Typography is the whole reaction: no confetti, no floating
+   particles, nothing that reads as a generic celebration library.
+   `.sameeeish-word--hero` below is no longer used now that the result-
+   reveal transition above it was restored to the original wave/dots
+   motif — left in place (along with the component's own "hero" size
+   option) rather than touching components/result/sameeeish-reveal.tsx,
+   which stays exactly as approved for its one remaining, active job. */
 
 .sameeeish-word {
   margin: 0;
@@ -236,9 +325,10 @@ dialog::backdrop {
   }
 }
 
-/* Visually hidden but still announced — the one thing a screen reader
-   gets for the full-screen transition (the big word itself is
-   aria-hidden, purely decorative brand motion). */
+/* Standard visually-hidden-but-announced utility. No longer used by the
+   result-reveal transition (restore pass: that screen's text is visible
+   again, inside a `role="status"` container — see result-reveal.tsx) —
+   left in place as a generic, reusable utility class rather than removed. */
 .sr-only {
   position: absolute;
   width: 1px;

@@ -10,8 +10,6 @@ import { ResultView } from "@/components/result/result-view";
 import { ResultNotAvailableNotice } from "@/components/wavelength/result-not-available-notice";
 import { requireUserId } from "@/lib/supabase/identity";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { computeFriendshipMemory } from "@/lib/wavelength/friendship-memory";
-import { computeGuessAccuracy } from "@/lib/wavelength/guess-accuracy";
 import { buildWavelengthResultView, ResultDataError } from "@/lib/wavelength/result";
 import { getReadyMadeGame } from "@/lib/wavelength/ready-made-games";
 
@@ -159,12 +157,11 @@ export default async function ResultPage({ params }: { params: Promise<{ token: 
     : undefined;
 
   if (resolvedGame?.resultMode === "guess-accuracy") {
-    const { tier } = computeGuessAccuracy(view.allQuestions.map((q) => q.score));
     return (
       <div className={`${fraunces.variable} ${nunitoSans.variable} wl-create`}>
         <CreateHeader />
         <main className="create-shell result-shell">
-          <ResultReveal celebrate={tier === "excellent"}>
+          <ResultReveal>
             <GuessAccuracySummary view={view} aliasA={aliasA} aliasB={aliasB} viewer={viewer} />
             <CreateNewWavelengthCta />
           </ResultReveal>
@@ -179,12 +176,11 @@ export default async function ResultPage({ params }: { params: Promise<{ token: 
   // lib/wavelength/friendship-memory.ts). Every other game (including
   // "guess-accuracy") is unaffected by this branch.
   if (resolvedGame?.resultMode === "friendship-memory") {
-    const { tier } = computeFriendshipMemory(view.allQuestions.map((q) => q.score));
     return (
       <div className={`${fraunces.variable} ${nunitoSans.variable} wl-create`}>
         <CreateHeader />
         <main className="create-shell result-shell">
-          <ResultReveal celebrate={tier === "excellent"}>
+          <ResultReveal>
             <FriendshipMemorySummary view={view} aliasA={aliasA} aliasB={aliasB} viewer={viewer} />
             <CreateNewWavelengthCta />
           </ResultReveal>
@@ -197,7 +193,7 @@ export default async function ResultPage({ params }: { params: Promise<{ token: 
     <div className={`${fraunces.variable} ${nunitoSans.variable} wl-create`}>
       <CreateHeader />
       <main className="create-shell result-shell">
-        <ResultReveal celebrate={view.global.level === "High Alignment"}>
+        <ResultReveal>
           <ResultView view={view} aliasA={aliasA} aliasB={aliasB} gameId={resolvedGame?.id} />
         </ResultReveal>
       </main>
