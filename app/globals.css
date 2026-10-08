@@ -1052,6 +1052,16 @@ dialog::backdrop {
   overflow-x: hidden;
 }
 
+/* Unify pass: positioning context for the home page's own header, which
+   is absolutely positioned (see .landing--home .landing-header below) so
+   it overlaps the top of the hero instead of sitting in its own row
+   above it. Scoped to `.landing--home` only — every other `.landing`
+   page keeps its header in normal flow and needs no positioning context
+   for it. */
+.landing--home {
+  position: relative;
+}
+
 /* Sticky footer for the internal marketing/picker pages (/how-it-works,
    /ways-to-play, /for-couples, /faq, /play, /play/dating-couples,
    /play/friends) — added via this opt-in modifier (alongside the shared
@@ -1304,24 +1314,28 @@ dialog::backdrop {
    marker on app/page.tsx's own wrapper div, since LandingHeader itself is
    shared by every other marketing/picker page, which all keep the
    divider as-is.
-   Hero refinement pass: the header's own solid white fill is dropped here
-   too (not just its border) — that flat white rectangle was the real
-   remaining "visible division" against the hero's gradient underneath it,
-   independent of the border. No separate "subtle background for
-   readability after scrolling" is needed: `--color-bg` (the page's own
-   background, behind every section past the hero) is the same white
-   `.landing-header` used to paint directly, so a transparent header over
-   scrolled content reads identically to the old opaque one — only over
-   the hero itself, right at the top, does the gradient now actually show
-   through.
-   Atmosphere pass: `position: static` overrides the shared rule's
-   `position: sticky` — explicitly requested for the home page only (the
-   header should scroll away naturally with the hero, not pin itself to
-   the viewport). Every other page keeps the shared sticky behavior
-   unchanged; this selector only ever matches the home page's own
-   header. */
+   Unify pass: `position: static` (a prior pass's fix for "don't make it
+   sticky") still left the header as its own in-flow block row sitting
+   *before* the hero in the document — a transparent, borderless row, but
+   still a distinct row, which is what kept reading as "navbar, then
+   hero" even with continuous color behind both. `position: absolute`
+   here removes it from flow entirely: the header now overlaps the top of
+   the hero's own box instead of pushing it down, so there is no row
+   boundary left to perceive at all, only one continuous canvas with
+   controls floating on it. Still not sticky and not fixed — an
+   absolutely-positioned element scrolls away with the rest of the page
+   exactly like a static one once you scroll past it, so "scrolls away
+   naturally" is unaffected. `.landing--home` itself (app/globals.css,
+   below) is given `position: relative` as this element's positioning
+   context. .landing-hero's own top padding is increased by the header's
+   approximate height (see .landing-hero's own comment) so nothing
+   underneath actually sits beneath the floating header. Every other page
+   keeps the shared sticky, in-flow header unchanged — this selector only
+   ever matches the home page's own header. */
 .landing--home .landing-header {
-  position: static;
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
   background: transparent;
   border-bottom-color: transparent;
 }
@@ -1488,6 +1502,20 @@ dialog::backdrop {
   text-align: center;
 }
 
+/* Unify pass: extra top padding, home page only, to reserve room for the
+   now absolutely-positioned header (see .landing--home .landing-header
+   above) floating on top of this box instead of sitting in its own row
+   before it. The header's own real height is roughly 4.5rem (1rem+1rem
+   vertical padding plus its tallest child, the ~2.4rem CTA button,
+   consistent across breakpoints since the nav links that disappear on
+   narrow screens were never the tallest part of the row) — 5rem added
+   on top of the existing responsive padding-top leaves a comfortable
+   margin so the eyebrow/heading never sit underneath the floating
+   controls at any viewport width. */
+.landing--home .landing-hero {
+  padding-top: calc(clamp(3rem, 8vw, 6rem) + 5rem);
+}
+
 /* Atmosphere pass: a soft fade from the hero's own gradient into the
    plain page background right where "How it works" begins, instead of
    the gradient's own blurred-but-still-visible edge ending abruptly at
@@ -1638,9 +1666,16 @@ dialog::backdrop {
    deepened (-4rem → -6rem) so the gradient reads as a genuinely present
    atmosphere rather than a faint tint, and so it fully covers the header
    area above it with margin to spare now that the header's own
-   background is transparent on this page. Blur, colors, gradient shape,
-   and each blob's own size/position are untouched — more of the same
-   soft layers, not a new or more saturated one. */
+   background is transparent on this page.
+   Unify pass: opacity raised again (0.46 → 0.62) and blur eased back
+   (70px → 56px) — still soft/heavily blurred, but letting the colors
+   themselves read more distinctly instead of just a bigger wash, since
+   this is now also standing in for the illustration's own removed local
+   blobs (see .hero-shape's removal note near .hero-shape__svg) as the
+   hero's one and only background gradient. Colors, gradient shape
+   (radial, fading to transparent), and each blob's own size/position are
+   still untouched — the same two layers, just presented more vividly,
+   not a new or redesigned gradient. */
 
 .landing-hero__ambient {
   position: absolute;
@@ -1658,12 +1693,11 @@ dialog::backdrop {
 .landing-hero__ambient-blob {
   position: absolute;
   border-radius: 50%;
-  /* Blur unchanged from 72b2068's exact value — opacity raised (see the
-     .landing-hero__ambient comment above) is the only presence lever
-     touched here; the gradient shape itself still fades to transparent
-     instead of cutting off hard. */
-  filter: blur(70px);
-  opacity: 0.46;
+  /* Blur eased back and opacity raised again — see the
+     .landing-hero__ambient comment above; the gradient shape itself
+     still fades to transparent instead of cutting off hard. */
+  filter: blur(56px);
+  opacity: 0.62;
   animation-timing-function: ease-in-out;
   animation-iteration-count: infinite;
 }
@@ -1681,10 +1715,18 @@ dialog::backdrop {
    top of the durations/direction that already differed, so the two never
    read as moving in sync. Movement stays small relative to each blob's
    own ~30rem size (a few percent at most) — the composition underneath
-   never visibly changes, just breathes. */
+   never visibly changes, just breathes.
+   Unify pass: both blobs enlarged (~45%, same anchor point, same radial
+   shape/color stops) since the gradient is now the hero's one and only
+   background (the illustration's own local blobs are gone) and the
+   previous size left most of the right half of the hero plain white —
+   not "the main visual element of the landing page" the brief asks for.
+   Growing from the same `top`/`left` anchor in all directions (still an
+   ellipse, still the same two color stops) reaches further toward center
+   without moving or restyling either shape. */
 .landing-hero__ambient-blob--a {
-  width: 30rem;
-  height: 34rem;
+  width: 44rem;
+  height: 48rem;
   top: -4rem;
   left: -6%;
   background: radial-gradient(
@@ -1698,8 +1740,8 @@ dialog::backdrop {
 }
 
 .landing-hero__ambient-blob--b {
-  width: 26rem;
-  height: 30rem;
+  width: 38rem;
+  height: 42rem;
   top: 20rem;
   left: 12%;
   background: radial-gradient(
@@ -1746,62 +1788,15 @@ dialog::backdrop {
   aspect-ratio: 2.2 / 1;
 }
 
-.hero-shape {
-  position: absolute;
-  border-radius: 50%;
-  /* Blur restored to 72b2068's exact value; each variant's own opacity
-     below is restored too — only the gradient shape changed (see
-     .landing-hero__ambient-blob above for the same reasoning). */
-  filter: blur(26px);
-  animation: hero-blob-drift 24s ease-in-out infinite;
-}
-
-/* Gradients built only from the approved palette (Lavender→Pink,
-   SkyBlue→Mint) — radial instead of 72b2068's flat 2-stop linear fill,
-   fading to transparent within the shape's own edge so there's no
-   perceptible boundary; size/colors/opacity are exactly 72b2068's. */
-.hero-shape--one {
-  width: 22rem;
-  height: 22rem;
-  top: -7rem;
-  right: -6rem;
-  background: radial-gradient(
-    circle at 35% 35%,
-    var(--wl-lavender) 0%,
-    var(--wl-pink) 55%,
-    transparent 100%
-  );
-  opacity: 0.55;
-  animation-duration: 22s;
-}
-
-.hero-shape--two {
-  width: 20rem;
-  height: 20rem;
-  bottom: -9rem;
-  left: -7rem;
-  background: radial-gradient(
-    circle at 65% 65%,
-    var(--wl-blue) 0%,
-    var(--wl-mint) 55%,
-    transparent 100%
-  );
-  opacity: 0.4;
-  animation-duration: 27s;
-  animation-direction: alternate-reverse;
-}
-
-/* A soft peach glow among the illustration's other blurred blobs. */
-.hero-shape--three {
-  width: 15rem;
-  height: 15rem;
-  top: 22%;
-  left: 22%;
-  background: radial-gradient(circle, var(--wl-peach), transparent 72%);
-  opacity: 0.55;
-  animation-duration: 19s;
-}
-
+/* Atmosphere pass: the illustration's own three local gradient blobs
+   (.hero-shape--one/two/three, each with the same hero-blob-drift
+   animation other pages' decorative blobs still use below) are removed —
+   the waves now float directly over the single, section-wide
+   .landing-hero__ambient-blob gradient instead of layering a second,
+   locally-scoped gradient system on top of it. `hero-blob-drift` itself
+   stays: components/landing/for-couples-hero.tsx, faq-hero.tsx,
+   how-it-works-hero.tsx, and ways-to-play-hero.tsx all still use it for
+   their own decorative blobs, untouched. */
 @keyframes hero-blob-drift {
   0%,
   100% {

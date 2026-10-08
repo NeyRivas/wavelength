@@ -79,10 +79,8 @@ const DOT_B_Y = waveY(WAVE_B_BASELINE, WAVE_B_AMPLITUDE, WAVE_B_PERIODS, WAVE_B_
  * rhythms → trying to align"): the illustration's focal content is now
  * two independently-animated wave paths (Wave A, Wave B), each carrying
  * its own "participant dot" (the same lavender/blue ringed-dot language
- * ReviewIntro/InviteIntro/the Result page's own wave already use),
- * floating freely over the soft gradient blobs (no framing circle — see
- * the removal note in app/globals.css near .hero-shape--three) so they
- * visibly drift toward and away from phase over time — never
+ * ReviewIntro/InviteIntro/the Result page's own wave already use), so
+ * they visibly drift toward and away from phase over time — never
  * mechanically synced, never permanently apart. A soft central glow
  * pulses on its own slower cycle, standing in for a
  * recurring "moment of alignment" without literally scripting one. The
@@ -99,6 +97,18 @@ const DOT_B_Y = waveY(WAVE_B_BASELINE, WAVE_B_AMPLITUDE, WAVE_B_PERIODS, WAVE_B_
  * spanning the whole section (not just the illustration column), so the
  * CTA — sitting in the text column — has living gradient underneath it
  * too, not a flat white background.
+ *
+ * Atmosphere pass: the illustration used to carry its own separate set of
+ * three local gradient blobs (.hero-shape--one/two/three) behind the
+ * waves, in addition to the section-wide ambient blobs above — two
+ * independent gradient systems layered on top of each other, which made
+ * the illustration's own area read as a more saturated "patch" distinct
+ * from the rest of the hero. Those three local blobs are removed; the
+ * waves now float directly over the same single, section-wide ambient
+ * gradient everything else in the hero already sits on, so the whole
+ * viewport reads as one continuous atmosphere rather than two stacked
+ * ones. The waves themselves — paths, dots, drift animation, sync-glow —
+ * are completely unchanged, only their own local background is gone.
  *
  * All motion is CSS-only (no JS, no new state), continuous and slow, and
  * disabled entirely under prefers-reduced-motion (see app/globals.css) —
@@ -145,10 +155,6 @@ export function LandingHero() {
           moved. */}
       <div className="landing-hero__visual">
         <div className="landing-hero__illustration" aria-hidden="true">
-          <div className="hero-shape hero-shape--one" />
-          <div className="hero-shape hero-shape--two" />
-          <div className="hero-shape hero-shape--three" />
-
           <svg
             className="hero-shape__svg"
             viewBox="0 0 400 400"
