@@ -1756,11 +1756,31 @@ dialog::backdrop {
    what actually gives the now-stronger gradient somewhere soft to go
    before it meets .landing-hero::after's own whiteout band lower down —
    two fades doing different jobs (this one dissolves the color, the
-   other below cleans up whatever's left) instead of one abrupt cut. */
-
+   other below cleans up whatever's left) instead of one abrupt cut.
+   Full-bleed pass: this wrapper used to be inset just -2rem past
+   .landing-hero's own edges — fine on the 1280px viewport the hero's
+   60rem column was designed around, but on anything meaningfully wider
+   (a 1920px/2000px desktop) that left a hard, bounded gradient box with
+   plain white on both outer sides, which is exactly the "background
+   must not be bounded on the sides" the gradient is meant to avoid.
+   left: 50% + width: 100vw + translateX(-50%) is the standard "break out
+   of a centered, narrower parent" technique: 50% here resolves against
+   .landing-hero's own 60rem box, but since that box is itself centered
+   in the full-width page (margin: 0 auto, no asymmetric padding above
+   it), 50% of it lands on the exact same x-coordinate as the viewport's
+   own center — so the 100vw-wide box this anchors, shifted left by half
+   its own width, lands exactly on the true viewport edges at any screen
+   width, not just the width this was last tested at. Only the two axes
+   that needed it changed (left/width replace inset's left/right pair);
+   top/bottom are untouched, so the vertical placement, the mask fade,
+   and the blobs' own `top` values are all exactly as before. */
 .landing-hero__ambient {
   position: absolute;
-  inset: -6rem -2rem;
+  top: -6rem;
+  bottom: -6rem;
+  left: 50%;
+  width: 100vw;
+  transform: translateX(-50%);
   z-index: 0;
   mask-image: linear-gradient(to bottom, black 0%, black 65%, transparent 100%);
   -webkit-mask-image: linear-gradient(to bottom, black 0%, black 65%, transparent 100%);
@@ -1806,12 +1826,19 @@ dialog::backdrop {
    not "the main visual element of the landing page" the brief asks for.
    Growing from the same `top`/`left` anchor in all directions (still an
    ellipse, still the same two color stops) reaches further toward center
-   without moving or restyling either shape. */
+   without moving or restyling either shape.
+   Full-bleed pass: `left` converts from a percentage of the old, narrower
+   ambient box (-6%/12% of ~64rem) to a calc() against the new 100vw one's
+   own center (50%) — -6% of 64rem was 3.84rem left of that box's own
+   left edge, which itself sat 32rem left of the hero's (and so the
+   viewport's) center; 50% - 35.84rem lands on that exact same
+   x-coordinate, so neither blob actually moved. Only the box they're
+   positioned within got wider. */
 .landing-hero__ambient-blob--a {
   width: 78rem;
   height: 50rem;
   top: -4rem;
-  left: -6%;
+  left: calc(50% - 35.84rem);
   background: radial-gradient(
     ellipse at 40% 35%,
     var(--wl-lavender) 0%,
@@ -1826,7 +1853,11 @@ dialog::backdrop {
   width: 38rem;
   height: 42rem;
   top: 20rem;
-  left: 12%;
+  /* Full-bleed pass: same conversion as --a above — 12% of the old
+     ~64rem box was 7.68rem right of that box's own left edge (32rem left
+     of center), so 24.32rem left of center overall; unchanged position,
+     just expressed against the new 100vw box's own center instead. */
+  left: calc(50% - 24.32rem);
   background: radial-gradient(
     ellipse at 60% 60%,
     var(--wl-mint) 0%,
