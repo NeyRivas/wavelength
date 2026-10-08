@@ -1303,8 +1303,20 @@ dialog::backdrop {
    the page background right below it. Scoped to the "landing--home"
    marker on app/page.tsx's own wrapper div, since LandingHeader itself is
    shared by every other marketing/picker page, which all keep the
-   divider as-is. */
+   divider as-is.
+   Hero refinement pass: the header's own solid white fill is dropped here
+   too (not just its border) — that flat white rectangle was the real
+   remaining "visible division" against the hero's gradient underneath it,
+   independent of the border. No separate "subtle background for
+   readability after scrolling" is needed: `--color-bg` (the page's own
+   background, behind every section past the hero) is the same white
+   `.landing-header` used to paint directly, so a transparent header over
+   scrolled content reads identically to the old opaque one — only over
+   the hero itself, right at the top, does the gradient now actually show
+   through. Still `position: sticky` from the shared rule above (unchanged
+   — already correct everywhere, including here). */
 .landing--home .landing-header {
+  background: transparent;
   border-bottom-color: transparent;
 }
 
@@ -1565,7 +1577,8 @@ dialog::backdrop {
      cutting off hard. */
   filter: blur(70px);
   opacity: 0.32;
-  animation: hero-blob-drift 30s ease-in-out infinite;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
 }
 
 /* Sized/positioned (with deliberate overlap between the two) specifically
@@ -1574,7 +1587,14 @@ dialog::backdrop {
    of the section. Radial instead of 72b2068's flat 2-stop linear fill,
    fading to transparent well inside the shape's own edge, so there's no
    perceptible boundary — everything else (size, colors, blur, opacity)
-   is exactly 72b2068's. */
+   is exactly 72b2068's.
+   Hero refinement pass: each blob now drifts on its own keyframes
+   (hero-blob-drift-a/-b below) instead of sharing one — different
+   horizontal/vertical distances and a different scale peak per layer, on
+   top of the durations/direction that already differed, so the two never
+   read as moving in sync. Movement stays small relative to each blob's
+   own ~30rem size (a few percent at most) — the composition underneath
+   never visibly changes, just breathes. */
 .landing-hero__ambient-blob--a {
   width: 30rem;
   height: 34rem;
@@ -1586,6 +1606,8 @@ dialog::backdrop {
     var(--wl-pink) 55%,
     transparent 100%
   );
+  animation-name: hero-blob-drift-a;
+  animation-duration: 30s;
 }
 
 .landing-hero__ambient-blob--b {
@@ -1599,6 +1621,7 @@ dialog::backdrop {
     var(--wl-blue) 55%,
     transparent 100%
   );
+  animation-name: hero-blob-drift-b;
   animation-duration: 35s;
   animation-direction: alternate-reverse;
 }
@@ -1699,6 +1722,36 @@ dialog::backdrop {
   }
   50% {
     transform: translate(-0.75rem, 1rem) scale(1.05);
+  }
+}
+
+/* Hero refinement pass: the two large ambient gradient blobs behind the
+   hero's text/CTA (.landing-hero__ambient-blob--a/--b) each get their own
+   float path — different horizontal distance, vertical distance, and
+   scale peak — so they visibly move independently of each other rather
+   than sharing one drift shape at different speeds. Still the same
+   transform-only, ease-in-out, infinite-loop technique as every other
+   blob on the site (hero-blob-drift above); only the per-layer distances
+   differ, and they stay conservative relative to each blob's own ~30rem
+   size so the overall composition reads the same at every point in the
+   loop — a slow breathing motion, not a moving shape. */
+@keyframes hero-blob-drift-a {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(1.5rem, -1.25rem) scale(1.06);
+  }
+}
+
+@keyframes hero-blob-drift-b {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-1.75rem, 1.5rem) scale(1.08);
   }
 }
 
