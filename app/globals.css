@@ -88,9 +88,9 @@ dialog::backdrop {
    .wl-create, CreateHeader and .create-shell (the same product namespace
    and shell every other app/w/[token]/* screen already uses), so this is
    styled as the last step of the same flow rather than a new surface.
-   Every class below (.wavelength-loading*, .sameeeish-word*,
-   .global-summary*, .badge*, .category-*, .question-compare*, .result-*)
-   already existed pre-redesign with plain/functional styling only —
+   Every class below (.wavelength-loading*, .global-summary*, .badge*,
+   .category-*, .question-compare*, .result-*) already existed pre-redesign
+   with plain/functional styling only —
    nothing here changes what data any of these render (still exactly
    `view`/`aliasA`/`aliasB` as computed by lib/wavelength/result.ts +
    lib/scoring/score.ts), only their appearance and, for .badge, unused
@@ -191,137 +191,6 @@ dialog::backdrop {
 
   .wavelength-loading__dot--b {
     transform: translateX(-80px);
-  }
-}
-
-/* ── the SAMEEEISH! wordmark reaction ─────────────────────────────────── */
-/* QA follow-up pass: the small flourish sitting inside each result card
-   (GuessAccuracySummary/FriendshipMemorySummary/GlobalSummary all render
-   it via components/result/sameeeish-reveal.tsx's SameeeishWordmark,
-   `size="inline"`) — replaces the old separate result-sparkles particle
-   system. Typography is the whole reaction: no confetti, no floating
-   particles, nothing that reads as a generic celebration library.
-   `.sameeeish-word--hero` below is no longer used now that the result-
-   reveal transition above it was restored to the original wave/dots
-   motif — left in place (along with the component's own "hero" size
-   option) rather than touching components/result/sameeeish-reveal.tsx,
-   which stays exactly as approved for its one remaining, active job. */
-
-.sameeeish-word {
-  margin: 0;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.02em;
-  font-family: var(--font-fraunces), serif;
-  font-style: italic;
-  font-weight: 600;
-  color: var(--wl-ink);
-}
-
-.sameeeish-word--hero {
-  font-size: clamp(2.25rem, 9vw, 4rem);
-}
-
-/* The small reaction inside a result card (GuessAccuracySummary/
-   FriendshipMemorySummary/GlobalSummary) — a flourish under the real
-   headline/interpretation text, never competing with it for attention. */
-.sameeeish-word--inline {
-  margin-top: 1.5rem;
-  font-size: clamp(1.1rem, 4vw, 1.5rem);
-}
-
-.sameeeish-word__letter {
-  display: inline-block;
-  opacity: 0;
-  transform: translateY(14px) scale(0.85);
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .sameeeish-word__letter {
-    animation: sameeeish-letter-in 0.42s cubic-bezier(0.2, 0.9, 0.3, 1.3) forwards;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .sameeeish-word__letter {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-@keyframes sameeeish-letter-in {
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-/* The trailing "ISH" (SameeeishWordmark marks exactly those 3 letters,
-   never the celebratory shorter "SAMEEE!" word, which has no "ISH" at
-   all) — a subtle lift: a touch bigger and bolder, the same approved-
-   palette gradient fill "SAMEEE!" below uses, plus a faint, slow glow
-   once it's settled. Still one word, same baseline, same gap as every
-   other letter — nothing about layout/spacing singles it out, only
-   color/weight/scale/motion do. */
-.sameeeish-word__letter--ish {
-  font-size: 1.08em;
-  font-weight: 700;
-  background: linear-gradient(
-    180deg,
-    var(--wl-ink),
-    color-mix(in srgb, var(--wl-lavender) 55%, var(--wl-ink) 45%)
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .sameeeish-word__letter--ish {
-    animation:
-      sameeeish-letter-in 0.42s cubic-bezier(0.2, 0.9, 0.3, 1.3) forwards,
-      sameeeish-ish-glow 2.2s ease-in-out 0.5s infinite;
-  }
-}
-
-@keyframes sameeeish-ish-glow {
-  0%,
-  100% {
-    filter: drop-shadow(0 0 0 transparent);
-  }
-  50% {
-    filter: drop-shadow(0 0 5px color-mix(in srgb, var(--wl-lavender) 55%, transparent));
-  }
-}
-
-/* SAMEEE! — the celebratory culmination (high-tier/high-alignment results
-   only): every letter gets the same gradient-fill treatment "ISH" uses
-   above, reusing that one "this moment is special" visual language
-   instead of inventing a second one. */
-/* QA follow-up pass: mixed with ink at the same 55/45 ratio as the "ISH"
-   emphasis above (not the raw, pastel --wl-lavender/pink/mint stops) —
-   visual QA found the raw palette nearly illegible as a text fill against
-   the result card's light/white background, which defeats the point of
-   this being the result's own protagonist moment. Still clearly the same
-   three-color brand gradient, just dark enough to read. */
-.sameeeish-word--celebrate .sameeeish-word__letter {
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--wl-lavender) 55%, var(--wl-ink) 45%),
-    color-mix(in srgb, var(--wl-pink) 55%, var(--wl-ink) 45%),
-    color-mix(in srgb, var(--wl-mint) 55%, var(--wl-ink) 45%)
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .sameeeish-word--celebrate .sameeeish-word__letter {
-    animation:
-      sameeeish-letter-in 0.42s cubic-bezier(0.2, 0.9, 0.3, 1.3) forwards,
-      sameeeish-ish-glow 2.2s ease-in-out 0.5s infinite;
   }
 }
 
@@ -514,14 +383,30 @@ dialog::backdrop {
   color: var(--wl-ink);
 }
 
+/* Typography cleanup pass: moved off the display typeface (Fraunces
+   italic) onto the UI/body one (Nunito Sans) and a quieter, muted ink
+   color — this is supporting/explanatory text, not a second emotional
+   statement competing with `.global-summary__heading` above it. Any
+   participant alias inside this sentence (GuessAccuracySummary's/
+   FriendshipMemorySummary's own markup wraps it in `.global-summary__name`
+   below) still reads as clearly more prominent than the sentence around
+   it, without needing italics or a display font of its own. */
 .global-summary__interpretation {
   margin: 1rem auto 0;
   max-width: 28rem;
-  font-family: var(--font-fraunces), serif;
-  font-style: italic;
-  font-weight: 500;
-  font-size: 1.25rem;
-  line-height: 1.5;
+  font-family: var(--font-nunito), system-ui, sans-serif;
+  font-weight: 400;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--wl-muted);
+}
+
+/* A participant's name inside `.global-summary__interpretation` — bolder
+   weight and full ink color (vs. the sentence's own lighter weight and
+   muted color) make the person the clear subject of that sentence,
+   without introducing a new font or going back to the display typeface. */
+.global-summary__name {
+  font-weight: 800;
   color: var(--wl-ink);
 }
 

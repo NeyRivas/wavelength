@@ -21,13 +21,14 @@ type Phase = "finding" | "ready" | "revealed";
  * ever visible before that.
  *
  * This had been replaced (QA follow-up pass) by a single-phase
- * SameeeishWordmark hero build; restoring the two-phase wave/dots motif
- * here does not touch that component (components/result/
- * sameeeish-reveal.tsx) — it's still the approved small flourish inside
- * each result card itself (GuessAccuracySummary/FriendshipMemorySummary/
- * GlobalSummary all still render it), since that's the Results card's own
- * visual design, not the transition. The two are independent: this is
- * only what shows *before* those cards reveal.
+ * SameeeishWordmark hero build — restoring the two-phase wave/dots motif
+ * here was independent of that component (components/result/
+ * sameeeish-reveal.tsx), which at the time was still the approved small
+ * flourish inside each result card itself. A later typography cleanup
+ * pass has since removed that flourish from every result card too (and
+ * deleted the now-unused component) — this transition was untouched by
+ * that pass and still shows exactly what's described above, only before
+ * those cards' own content, not inside them.
  *
  * Copy: the original's first-phase text was "Finding your wavelength…",
  * which would visibly reintroduce the retired "Wavelength" brand name.

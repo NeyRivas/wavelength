@@ -9,15 +9,20 @@ import { answerChoice, answerRow, joinAsB, questionCard, submitFinal } from "./u
  * same count ("{aliasB} got X of {aliasA}'s 12 friendship moments
  * right.") — two consecutive lines communicating the same information.
  * The first line was removed (components/result/
- * friendship-memory-summary.tsx); the interpretation sentence, the tier
- * headline, and the shared SameeeishWordmark reaction all stay.
+ * friendship-memory-summary.tsx); the interpretation sentence and the
+ * tier headline stay.
+ *
+ * Typography cleanup pass: the animated SAMEEEISH/SAMEEE flourish that
+ * used to sit below the interpretation line is gone too (components/
+ * result/sameeeish-reveal.tsx, deleted) — this spec now also guards
+ * against it quietly coming back.
  *
  * Drives the real ready-made "Friendship Check" flow end to end (no
  * shortcuts): these questions ship with unwritten (blank) answer options
  * — A has to type both options in before picking the "correct" one, same
  * as tests/e2e/option-persists-after-save.spec.ts already does for one
  * question. Every question gets the exact same two option strings so B
- * can trivially match all of them (an "excellent" tier/celebrate result),
+ * can trivially match all of them (this game's "excellent" tier),
  * without that detail affecting what's being asserted here.
  */
 
@@ -39,7 +44,7 @@ const FRIENDSHIP_CHECK_QUESTIONS = [
 const OPTION_A = "Memory A";
 const OPTION_B = "Memory B";
 
-test("Friendship Check's result shows the memory count exactly once, alongside the shared SAMEEE! reaction", async ({
+test("Friendship Check's result shows the memory count exactly once, with no animated SAMEEEISH flourish", async ({
   page,
   browser,
 }) => {
@@ -87,11 +92,10 @@ test("Friendship Check's result shows the memory count exactly once, alongside t
   await expect(bPage.getByText("got 12 of Alex's 12 friendship moments right")).toBeVisible();
   await expect(bPage.getByText(/out of \d+ right/)).toHaveCount(0);
 
-  // A perfect match is this game's "excellent" tier, which stops the
-  // shared brand reaction at the shorter SAMEEE! instead of completing
-  // SAMEEEISH! — same component, same system as the result-reveal
-  // transition B just watched to get here.
-  await expect(bPage.getByText("SAMEEE!", { exact: true })).toBeVisible();
+  // Typography cleanup pass: no animated SAMEEEISH/SAMEEE wordmark
+  // anywhere on the result, regardless of tier.
+  await expect(bPage.getByText("SAMEEEISH!", { exact: true })).toHaveCount(0);
+  await expect(bPage.getByText("SAMEEE!", { exact: true })).toHaveCount(0);
 
   await bContext.close();
 });

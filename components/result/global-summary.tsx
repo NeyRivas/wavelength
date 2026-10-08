@@ -2,7 +2,6 @@ import type { AlignmentLevel } from "@/lib/scoring/score";
 import { ALIGNMENT_INTERPRETATION } from "@/lib/wavelength/result";
 
 import { AlignmentBadge } from "./alignment-badge";
-import { SameeeishWordmark } from "./sameeeish-reveal";
 import { WavelengthIndicator } from "./wavelength-indicator";
 
 /** Per-game eyebrow/heading (global QA/copy pass item #2/#13) — keyed by
@@ -28,15 +27,6 @@ const DEFAULT_COPY = {
   eyebrow: "Your result",
   heading: (aliasA: string, aliasB: string) => `How ${aliasA} and ${aliasB} compare`,
 };
-
-/** AlignmentLevel → the same `celebrate` boolean GuessAccuracySummary/
- * FriendshipMemorySummary derive from their own tier (both: "the best
- * tier, and only that one") — High Alignment is this result's equivalent
- * of "excellent". Presentational only; doesn't touch `level`, `score`, or
- * ALIGNMENT_INTERPRETATION. */
-function isHighAlignment(level: AlignmentLevel): boolean {
-  return level === "High Alignment";
-}
 
 /**
  * The percentage is secondary to the concept — the heading asks the
@@ -65,6 +55,19 @@ function isHighAlignment(level: AlignmentLevel): boolean {
  * Bug-fix pass: the heading names both participants by their actual
  * aliases rather than the generic "you" framing — real names everywhere
  * identity is shown, never the bare "A"/"B" internal labels.
+ *
+ * Typography cleanup pass: dropped the animated SAMEEEISH/SAMEEE inline
+ * flourish that used to sit below the interpretation line (components/
+ * result/sameeeish-reveal.tsx — now deleted, nothing else used it once
+ * every result card stopped). `ALIGNMENT_INTERPRETATION` never names
+ * either participant (it's a level-only sentence), so there's no alias to
+ * emphasize here the way GuessAccuracySummary/FriendshipMemorySummary do
+ * in their own interpretation line — this card's "participant name" tier
+ * is the heading above, already carrying both aliases, untouched. The
+ * interpretation sentence itself still moved, along with theirs, onto the
+ * plain UI/body typeface (`.global-summary__interpretation`, app/
+ * globals.css) instead of the display italic it used to share with the
+ * heading — calmer, more readable, nothing new to animate.
  */
 export function GlobalSummary({
   score,
@@ -97,7 +100,6 @@ export function GlobalSummary({
         <AlignmentBadge level={level} />
         <p className="global-summary__score">{score}% aligned</p>
         <p className="global-summary__interpretation">{ALIGNMENT_INTERPRETATION[level]}</p>
-        <SameeeishWordmark celebrate={isHighAlignment(level)} size="inline" />
       </div>
     </section>
   );

@@ -1,8 +1,6 @@
 import type { WavelengthResultView } from "@/lib/wavelength/result";
 import { computeGuessAccuracy, guessAccuracyMessageForA } from "@/lib/wavelength/guess-accuracy";
 
-import { SameeeishWordmark } from "./sameeeish-reveal";
-
 /**
  * The Result page's headline for "How Well Do You Know Me?" — a
  * friendship trivia game, not a compatibility quiz. Replaces
@@ -26,11 +24,18 @@ import { SameeeishWordmark } from "./sameeeish-reveal";
  *
  * Reuses the exact same `.global-summary*` glass-card CSS as every other
  * Result headline (app/globals.css) — same visual language, no new
- * styles — just with different content and no badge/wave indicator. The
- * reaction below the interpretation line is the shared SameeeishWordmark
- * (components/result/sameeeish-reveal.tsx) — the same brand moment the
- * result-reveal transition just showed, not a separate sparkle/confetti
- * system.
+ * styles — just with different content and no badge/wave indicator.
+ *
+ * Typography cleanup pass: dropped the animated SAMEEEISH/SAMEEE inline
+ * flourish that used to sit below the interpretation line (components/
+ * result/sameeeish-reveal.tsx — now deleted, nothing else used it once
+ * every result card stopped). In its place, the interpretation sentence
+ * itself carries the typographic hierarchy: `aliasA`/`aliasB` are wrapped
+ * in `.global-summary__name` (bold, full ink color) so the person stays
+ * the clear subject, while the sentence around them moved to the plain
+ * UI/body typeface (Nunito Sans, `.global-summary__interpretation` in
+ * app/globals.css) instead of the display italic it used to share with
+ * `headline` above it — calmer, more readable, nothing new to animate.
  */
 export function GuessAccuracySummary({
   view,
@@ -67,9 +72,10 @@ export function GuessAccuracySummary({
           {headline}
         </h1>
         <p className="global-summary__interpretation">
-          {aliasB} guessed {correctCount} of {aliasA}&apos;s {totalQuestions} answers correctly.
+          <span className="global-summary__name">{aliasB}</span> guessed {correctCount} of{" "}
+          <span className="global-summary__name">{aliasA}</span>&apos;s {totalQuestions} answers
+          correctly.
         </p>
-        <SameeeishWordmark celebrate={tier === "excellent"} size="inline" />
       </div>
     </section>
   );
