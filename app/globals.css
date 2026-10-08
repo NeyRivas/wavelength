@@ -1385,14 +1385,52 @@ dialog::backdrop {
   color: var(--wl-ink);
 }
 
-/* Atmosphere pass: a protective text-shadow for the nav links against the
-   home page's now-more-present gradient — same technique already used by
-   .landing-hero__note just below for the same reason (muted gray has the
-   least contrast margin of any text in the hero). Logo/active-link text
-   is already var(--wl-ink), near-black, with plenty of margin regardless,
-   so neither needs this. */
+/* Glass-nav pass: home page only — the three plain-text nav links join
+   the header CTA (.landing--home .landing-header__cta below) on the same
+   glass surface, so all four controls ("How it works" / "Ways to play" /
+   "FAQ" / "Start playing") read as one family of floating glass buttons,
+   per the reference screenshot of pill-shaped translucent controls. Same
+   recipe as that CTA and as .landing-button--glass (translucent white +
+   backdrop blur + a delicate border + an inset top highlight) at a
+   lighter touch — lower opacity, tighter padding — so three small pills
+   plus the one CTA pill don't read as four oversized cards. The gap
+   between items is tightened to match (2rem free-floating text links →
+   0.625rem pill cluster), echoing the reference's tightly-grouped
+   buttons instead of widely spaced ones. The old protective text-shadow
+   is no longer needed now that each link has its own opaque-ish surface
+   behind it. */
+.landing--home .landing-nav {
+  gap: 0.625rem;
+}
+
 .landing--home .landing-nav a {
-  text-shadow: 0 1px 3px rgba(255, 255, 255, 0.55);
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow:
+    0 10px 24px -14px rgba(24, 24, 32, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.75);
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+}
+
+.landing--home .landing-nav a:hover {
+  background: rgba(255, 255, 255, 0.58);
+  box-shadow:
+    0 14px 28px -14px rgba(24, 24, 32, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  transform: translateY(-1px);
+}
+
+.landing--home .landing-nav a:active {
+  transform: translateY(0);
 }
 
 /* Current-route indicator (components/landing/landing-header.tsx compares
@@ -1415,6 +1453,23 @@ dialog::backdrop {
   height: 2px;
   border-radius: 999px;
   background: var(--wl-lavender);
+}
+
+/* Glass-nav pass: on the home page's own pill-shaped links, the active
+   indicator moves from an underline (which would float oddly beneath a
+   rounded pill's edge) to a slightly stronger glass surface — the same
+   surface language the pill itself already uses, just more opaque, so
+   "active" reads as "this pill is a little more solid" rather than a
+   line breaking the pill shape. The underline itself is suppressed only
+   in this scope; every other `.landing` page keeps the underline exactly
+   as before. */
+.landing--home .landing-nav__link--active {
+  background: rgba(255, 255, 255, 0.6);
+  border-color: rgba(255, 255, 255, 0.85);
+}
+
+.landing--home .landing-nav__link--active::after {
+  content: none;
 }
 
 /* Footer legal links ("About" / "Privacy" / "Terms" / "Contact") — shown
@@ -1490,7 +1545,10 @@ dialog::backdrop {
      already narrower than this, so mobile/tablet use the full width. */
   max-width: 60rem;
   margin: 0 auto;
-  padding: clamp(3rem, 8vw, 6rem) clamp(1.5rem, 4vw, 4rem) clamp(4rem, 9vw, 6rem);
+  /* Transition pass: bottom padding grown (4–6rem → 6–9rem) to give the
+     fade below (.landing-hero::after) more empty room to dissolve into
+     before "How it works" begins — see that rule's own comment. */
+  padding: clamp(3rem, 8vw, 6rem) clamp(1.5rem, 4vw, 4rem) clamp(6rem, 12vw, 9rem);
   /* Centered composition (redesign pass): one vertical column — content,
      then the wave illustration + social proof — instead of a left
      text/right illustration grid. Centered at every breakpoint, so there
@@ -1527,15 +1585,27 @@ dialog::backdrop {
    .landing-hero__ambient (painted after it, so it visibly fades that
    blob's tail) and still below .landing-hero__content/__visual's z-index
    of 1. Nothing here touches .landing-how/.landing-section — "How it
-   works" itself is completely unmodified. */
+   works" itself is completely unmodified.
+   Transition pass: band grown (4–6rem → 6–9rem, matching the hero's own
+   taller bottom padding above) and given a mid-stop instead of a single
+   transparent→opaque run — a plain two-stop linear fade reads as mostly
+   solid-color until quite late, then falls off fast, which is exactly
+   the "sudden line" the gradient's now-higher opacity (Unify pass) made
+   more noticeable. The added 55% stop spreads the falloff evenly across
+   the whole band instead of the back half of it. */
 .landing-hero::after {
   content: "";
   position: absolute;
   z-index: 0;
   inset-inline: 0;
   bottom: 0;
-  height: clamp(4rem, 9vw, 6rem);
-  background: linear-gradient(to bottom, transparent, var(--color-bg));
+  height: clamp(6rem, 12vw, 9rem);
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(255, 255, 255, 0.55) 55%,
+    var(--color-bg) 100%
+  );
   pointer-events: none;
 }
 
@@ -1675,12 +1745,25 @@ dialog::backdrop {
    hero's one and only background gradient. Colors, gradient shape
    (radial, fading to transparent), and each blob's own size/position are
    still untouched — the same two layers, just presented more vividly,
-   not a new or redesigned gradient. */
+   not a new or redesigned gradient.
+   Gradient-prominence pass: opacity raised once more (0.62 → 0.76) and
+   blur eased back again (56px → 48px) — the brief calls the gradient
+   "the biggest visual weakness" and asks for it to become one of the
+   hero's main visual features; same two color stops, same radial shape,
+   just more visibly saturated. A mask-image is added to this wrapper (not
+   the blobs themselves, so it composites once rather than per-blob) that
+   fades the whole gradient layer out over its own last ~35%, which is
+   what actually gives the now-stronger gradient somewhere soft to go
+   before it meets .landing-hero::after's own whiteout band lower down —
+   two fades doing different jobs (this one dissolves the color, the
+   other below cleans up whatever's left) instead of one abrupt cut. */
 
 .landing-hero__ambient {
   position: absolute;
   inset: -6rem -2rem;
   z-index: 0;
+  mask-image: linear-gradient(to bottom, black 0%, black 65%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, black 65%, transparent 100%);
   /* No overflow:hidden here (polish pass): a blurred blob's soft halo
      extends well past its own box, and clipping it at this container's
      edge was exactly what produced the visible "gradient → hard cut →
@@ -1696,8 +1779,8 @@ dialog::backdrop {
   /* Blur eased back and opacity raised again — see the
      .landing-hero__ambient comment above; the gradient shape itself
      still fades to transparent instead of cutting off hard. */
-  filter: blur(56px);
-  opacity: 0.62;
+  filter: blur(48px);
+  opacity: 0.76;
   animation-timing-function: ease-in-out;
   animation-iteration-count: infinite;
 }
@@ -1725,8 +1808,8 @@ dialog::backdrop {
    ellipse, still the same two color stops) reaches further toward center
    without moving or restyling either shape. */
 .landing-hero__ambient-blob--a {
-  width: 44rem;
-  height: 48rem;
+  width: 78rem;
+  height: 50rem;
   top: -4rem;
   left: -6%;
   background: radial-gradient(
@@ -1736,7 +1819,7 @@ dialog::backdrop {
     transparent 100%
   );
   animation-name: hero-blob-drift-a;
-  animation-duration: 24s;
+  animation-duration: 17s;
 }
 
 .landing-hero__ambient-blob--b {
@@ -1751,7 +1834,7 @@ dialog::backdrop {
     transparent 100%
   );
   animation-name: hero-blob-drift-b;
-  animation-duration: 29s;
+  animation-duration: 21s;
   animation-direction: alternate-reverse;
 }
 
@@ -1822,14 +1905,22 @@ dialog::backdrop {
    the float is clearly perceptible at a glance rather than something you
    only notice after watching for a while — still well under 10% of
    either blob's own size, and still slow enough (whole seconds per
-   cycle) to read as breathing, not sliding. */
+   cycle) to read as breathing, not sliding.
+   Gradient-prominence pass: distances roughly doubled again (±28-36px →
+   ±52-56px) and the cycle shortened again (24s/29s → 17s/21s, see the
+   animation-duration on .landing-hero__ambient-blob--a/--b above) — the
+   brief explicitly called the previous motion "technically animated but
+   visually impossible to notice." Horizontal, vertical, and scale all
+   still move together on one ease-in-out loop (no new keyframe stops,
+   no new properties), just a bigger, faster version of the same
+   breathing path. */
 @keyframes hero-blob-drift-a {
   0%,
   100% {
     transform: translate(0, 0) scale(1);
   }
   50% {
-    transform: translate(2rem, -1.75rem) scale(1.08);
+    transform: translate(4.5rem, -3.25rem) scale(1.14);
   }
 }
 
@@ -1839,7 +1930,7 @@ dialog::backdrop {
     transform: translate(0, 0) scale(1);
   }
   50% {
-    transform: translate(-2.25rem, 2rem) scale(1.11);
+    transform: translate(-4.75rem, 3.75rem) scale(1.16);
   }
 }
 
