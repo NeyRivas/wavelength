@@ -1313,9 +1313,15 @@ dialog::backdrop {
    `.landing-header` used to paint directly, so a transparent header over
    scrolled content reads identically to the old opaque one — only over
    the hero itself, right at the top, does the gradient now actually show
-   through. Still `position: sticky` from the shared rule above (unchanged
-   — already correct everywhere, including here). */
+   through.
+   Atmosphere pass: `position: static` overrides the shared rule's
+   `position: sticky` — explicitly requested for the home page only (the
+   header should scroll away naturally with the hero, not pin itself to
+   the viewport). Every other page keeps the shared sticky behavior
+   unchanged; this selector only ever matches the home page's own
+   header. */
 .landing--home .landing-header {
+  position: static;
   background: transparent;
   border-bottom-color: transparent;
 }
@@ -1365,6 +1371,16 @@ dialog::backdrop {
   color: var(--wl-ink);
 }
 
+/* Atmosphere pass: a protective text-shadow for the nav links against the
+   home page's now-more-present gradient — same technique already used by
+   .landing-hero__note just below for the same reason (muted gray has the
+   least contrast margin of any text in the hero). Logo/active-link text
+   is already var(--wl-ink), near-black, with plenty of margin regardless,
+   so neither needs this. */
+.landing--home .landing-nav a {
+  text-shadow: 0 1px 3px rgba(255, 255, 255, 0.55);
+}
+
 /* Current-route indicator (components/landing/landing-header.tsx compares
    usePathname() against each link's href). A thin lavender underline
    under just that link's own label — an ::after so it adds no padding,
@@ -1408,6 +1424,47 @@ dialog::backdrop {
   white-space: nowrap;
 }
 
+/* Atmosphere pass: home page only — the one actual button in the header
+   (the three nav items beside it are plain text links, not buttons; left
+   untouched) becomes a translucent glass surface instead of a solid ink
+   pill, so it reads as floating over the hero gradient rather than
+   sitting on top of it as an opaque block. Reuses .landing-button--glass's
+   exact, already-approved recipe verbatim (same hero, same CTA glass
+   language already established there) — translucent white + backdrop
+   blur + a delicate border + an inset top highlight, no mirror/reflection
+   effect, no new colors. Ink text (not the base rule's white) for
+   contrast against this now-light surface — same swap .landing-button--
+   glass already makes for the same reason. Shape/padding/label/font/
+   layout are all untouched; only the fill is a surface, not scoped
+   beyond `.landing--home` so every other page's header keeps the solid
+   ink pill exactly as before. */
+.landing--home .landing-header__cta {
+  background: rgba(255, 255, 255, 0.5);
+  color: var(--wl-ink);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow:
+    0 14px 32px -14px rgba(24, 24, 32, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+}
+
+.landing--home .landing-header__cta:hover {
+  background: rgba(255, 255, 255, 0.68);
+  box-shadow:
+    0 18px 38px -14px rgba(24, 24, 32, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  transform: translateY(-1px);
+}
+
+.landing--home .landing-header__cta:active {
+  transform: translateY(0);
+}
+
 /* ── hero ──────────────────────────────────────────────────────────── */
 
 .landing-hero {
@@ -1429,6 +1486,29 @@ dialog::backdrop {
   align-items: center;
   gap: 2rem;
   text-align: center;
+}
+
+/* Atmosphere pass: a soft fade from the hero's own gradient into the
+   plain page background right where "How it works" begins, instead of
+   the gradient's own blurred-but-still-visible edge ending abruptly at
+   the section boundary. Confined to the hero's own existing bottom
+   padding band (the same clamp() already reserved as breathing room
+   below the wave illustration/social-proof row, now doing double duty)
+   so it never overlaps real content — just the already-empty space at
+   the very bottom of the section. z-index: 0 keeps it level with
+   .landing-hero__ambient (painted after it, so it visibly fades that
+   blob's tail) and still below .landing-hero__content/__visual's z-index
+   of 1. Nothing here touches .landing-how/.landing-section — "How it
+   works" itself is completely unmodified. */
+.landing-hero::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  inset-inline: 0;
+  bottom: 0;
+  height: clamp(4rem, 9vw, 6rem);
+  background: linear-gradient(to bottom, transparent, var(--color-bg));
+  pointer-events: none;
 }
 
 .landing-hero__content {
@@ -1553,11 +1633,18 @@ dialog::backdrop {
    column has living gradient underneath it too, not a flat white
    background (visual-signature pass: "si el glass no se percibe porque
    está sobre un fondo blanco plano, ajusta la composición"). Kept low-
-   opacity/heavily-blurred so body text stays fully readable. */
+   opacity/heavily-blurred so body text stays fully readable.
+   Atmosphere pass: opacity raised (0.32 → 0.46) and the wrapper's bleed
+   deepened (-4rem → -6rem) so the gradient reads as a genuinely present
+   atmosphere rather than a faint tint, and so it fully covers the header
+   area above it with margin to spare now that the header's own
+   background is transparent on this page. Blur, colors, gradient shape,
+   and each blob's own size/position are untouched — more of the same
+   soft layers, not a new or more saturated one. */
 
 .landing-hero__ambient {
   position: absolute;
-  inset: -4rem -2rem;
+  inset: -6rem -2rem;
   z-index: 0;
   /* No overflow:hidden here (polish pass): a blurred blob's soft halo
      extends well past its own box, and clipping it at this container's
@@ -1571,12 +1658,12 @@ dialog::backdrop {
 .landing-hero__ambient-blob {
   position: absolute;
   border-radius: 50%;
-  /* Blur/opacity restored to 72b2068's exact values (that subtler
-     atmosphere is the approved intensity) — only the gradient shape
-     below changed, so the edge still fades to transparent instead of
-     cutting off hard. */
+  /* Blur unchanged from 72b2068's exact value — opacity raised (see the
+     .landing-hero__ambient comment above) is the only presence lever
+     touched here; the gradient shape itself still fades to transparent
+     instead of cutting off hard. */
   filter: blur(70px);
-  opacity: 0.32;
+  opacity: 0.46;
   animation-timing-function: ease-in-out;
   animation-iteration-count: infinite;
 }
@@ -1607,7 +1694,7 @@ dialog::backdrop {
     transparent 100%
   );
   animation-name: hero-blob-drift-a;
-  animation-duration: 30s;
+  animation-duration: 24s;
 }
 
 .landing-hero__ambient-blob--b {
@@ -1622,7 +1709,7 @@ dialog::backdrop {
     transparent 100%
   );
   animation-name: hero-blob-drift-b;
-  animation-duration: 35s;
+  animation-duration: 29s;
   animation-direction: alternate-reverse;
 }
 
@@ -1734,14 +1821,20 @@ dialog::backdrop {
    blob on the site (hero-blob-drift above); only the per-layer distances
    differ, and they stay conservative relative to each blob's own ~30rem
    size so the overall composition reads the same at every point in the
-   loop — a slow breathing motion, not a moving shape. */
+   loop — a slow breathing motion, not a moving shape.
+   Atmosphere pass: distances/scale increased a second time (±24-36px,
+   up to 1.11 scale, from a shorter 24s/29s cycle instead of 30s/35s) so
+   the float is clearly perceptible at a glance rather than something you
+   only notice after watching for a while — still well under 10% of
+   either blob's own size, and still slow enough (whole seconds per
+   cycle) to read as breathing, not sliding. */
 @keyframes hero-blob-drift-a {
   0%,
   100% {
     transform: translate(0, 0) scale(1);
   }
   50% {
-    transform: translate(1.5rem, -1.25rem) scale(1.06);
+    transform: translate(2rem, -1.75rem) scale(1.08);
   }
 }
 
@@ -1751,7 +1844,7 @@ dialog::backdrop {
     transform: translate(0, 0) scale(1);
   }
   50% {
-    transform: translate(-1.75rem, 1.5rem) scale(1.08);
+    transform: translate(-2.25rem, 2rem) scale(1.11);
   }
 }
 
