@@ -1834,7 +1834,26 @@ dialog::backdrop {
    here, same reasoning as before: clipping at this box's own edge is
    what previously produced a visible "gradient → hard cut" seam;
    horizontal bleed is still safely contained one level up by
-   `.landing main`'s own overflow-x: hidden. */
+   `.landing main`'s own overflow-x: hidden.
+   Transition pass: a mask-image fades this whole wrapper (wash + glow
+   together, one mechanism instead of two) to transparent toward its own
+   bottom, so the background dissolves into "How it works" instead of
+   stopping at a blur-softened but still-perceptible edge — which is what
+   was actually happening before this pass: neither layer had any fade of
+   its own, so each just ended at its own box edge, softened only by its
+   60px blur radius, which reads as a seam once you're more than ~60px
+   past it. The stops are expressed as a fixed distance from this
+   wrapper's own bottom (not a plain percentage) so the fade's length
+   stays constant regardless of how tall the hero itself happens to be at
+   a given viewport/content size: the wrapper's own bottom edge is always
+   exactly 6rem below the hero's own bottom edge (the `bottom: -6rem`
+   above), so "transparent 100%" i.e. the wrapper's true bottom lands
+   6rem past the hero, and "black calc(100% - 22rem)" (fully opaque,
+   where the fade begins) lands 16rem above the hero's own bottom edge —
+   a generous ~22rem (352px) dissolve that finishes past the hero/How-it-
+   works boundary rather than short of it, with nothing left to read as a
+   line at the boundary itself. Masking the wrapper (not each child
+   individually) keeps this to one rule instead of two near-duplicates. */
 .landing-hero__ambient {
   position: absolute;
   top: -6rem;
@@ -1843,6 +1862,13 @@ dialog::backdrop {
   width: 100vw;
   transform: translateX(-50%);
   z-index: 0;
+  mask-image: linear-gradient(to bottom, black 0%, black calc(100% - 22rem), transparent 100%);
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    black 0%,
+    black calc(100% - 22rem),
+    transparent 100%
+  );
   pointer-events: none;
 }
 
