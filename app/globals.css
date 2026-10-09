@@ -1685,32 +1685,17 @@ dialog::backdrop {
    section below relies on scroll-margin-top instead, since the header
    stays in view at every scroll position now (section-scroll pass), not
    just while the hero is on screen.
-   Section-scroll pass: each landing section is now meant to read as one
-   intentional, roughly-viewport-tall "scene" rather than a conventional
-   long page with arbitrary spacing — min-height does that without ever
-   clipping (it's a floor, not a ceiling: real content taller than one
-   screen, e.g. on a narrow phone where the hero's own content needs more
-   room, simply grows the section past 100% as it always could).
-   100svh (small viewport height — the viewport's height with any mobile
-   browser toolbar fully expanded, i.e. the smallest it ever is) is
-   declared second so it overrides the plain 100vh fallback in browsers
-   that support it; 100vh alone is used as-is by the ones that don't.
-   svh specifically (not the default vh, which mobile browsers size
-   against the toolbar-collapsed/largest state) means this never computes
-   taller than what's actually visible when the toolbar reappears, so it
-   can't retroactively cause the exact clipping min-height is meant to
-   avoid. justify-content: center balances the now-possibly-taller box's
-   content vertically instead of leaving it pinned to the top with extra
-   blank space below. scroll-margin-top/scroll-snap-align: start pair
-   with --landing-nav-height and the proximity snap declared on `html`
-   (search "Section-scroll pass" near the top of this file) so scrolling
-   to this section settles with its own top content clear of the fixed
-   header, the same way every other section below does. */
+   Section-scroll pass (corrected): scroll-margin-top/scroll-snap-align:
+   start pair with --landing-nav-height and the proximity snap declared on
+   `html` (search "Section-scroll pass" near the top of this file) so
+   scrolling to this section settles with its own, UNCHANGED top content
+   clear of the fixed header. An earlier version of this pass also added
+   min-height/justify-content here to make the section read as a full
+   "scene" — that inflated every section's actual height and was reverted;
+   this rule now only changes scroll behavior, not this section's
+   dimensions, exactly like the other three sections below. */
 .landing--home .landing-hero {
   padding-top: calc(clamp(3rem, 8vw, 6rem) + var(--landing-nav-height));
-  min-height: calc(100vh - var(--landing-nav-height));
-  min-height: calc(100svh - var(--landing-nav-height));
-  justify-content: center;
   scroll-margin-top: var(--landing-nav-height);
   scroll-snap-align: start;
 }
@@ -2208,22 +2193,20 @@ dialog::backdrop {
   margin: 0 auto;
 }
 
-/* Section-scroll pass: see .landing--home .landing-hero's own comment for
-   the full min-height/svh/justify-content/scroll-margin rationale — same
-   technique, applied here via flex instead of relying on an already-flex
-   layout, since .landing-how itself sets no display (How It Works' own
-   content — eyebrow, heading, three-card grid — just stacks in normal
-   block flow today). `id="how-it-works"` also gets the same
-   scroll-margin-top as a defensive match for that id's own anchor
-   semantics, even though the header's own "How it works" link now
+/* Section-scroll pass (corrected): scroll-only — this section's existing
+   height, spacing, and layout (eyebrow, heading, three-card grid stacking
+   in normal block flow) are untouched; only scroll-margin-top/
+   scroll-snap-align pair with --landing-nav-height and the proximity snap
+   on `html` (search "Section-scroll pass" near the top of this file) so
+   scrolling here settles with this section's own, unchanged top content
+   clear of the fixed header. An earlier version also forced min-height/
+   flex/justify-content to make this read as a full "scene" — that
+   inflated the section's actual height and was reverted. `id="how-it-works"`
+   gets the same scroll-margin-top as a defensive match for that id's own
+   anchor semantics, even though the header's own "How it works" link now
    navigates to the dedicated /how-it-works route rather than jumping to
    this id (see landing-header.tsx's own doc comment). */
 .landing--home .landing-how {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  min-height: calc(100vh - var(--landing-nav-height));
-  min-height: calc(100svh - var(--landing-nav-height));
   scroll-margin-top: var(--landing-nav-height);
   scroll-snap-align: start;
 }
@@ -2576,30 +2559,25 @@ dialog::backdrop {
    the narrower measure — for-couples-questions.tsx shares the bare
    .landing-experience class for its layout but not this modifier, so
    /for-couples (protected) keeps its existing .landing-section width.
-   Section-scroll pass: same min-height/svh/scroll-margin "scene" sizing
-   as the hero and How It Works (see .landing--home .landing-hero's own
-   comment for the full rationale) — but deliberately no
-   justify-content/flex-direction override here, unlike those two:
-   .landing-experience (the shared base rule above) is already `display:
-   grid; align-items: center;`, which already centers this section's one
-   row of content along the cross axis within its own row height. What
-   min-height actually needs is align-content (not align-items) set to
-   center too — align-items only positions an item within its row track;
-   align-content is what positions the row track itself within the grid
-   container's leftover height once the container is taller than its
-   content, which is the actual new situation here. Scoped to
-   `.landing--home` even though .landing-experience--home is already
-   exclusive to this page's own section, matching this file's established
-   double-scoping convention for every other home-only rule. */
+   Section-scroll pass (corrected): scroll-only — scroll-margin-top/
+   scroll-snap-align pair with --landing-nav-height and the proximity snap
+   on `html` (search "Section-scroll pass" near the top of this file) so
+   scrolling here settles with this section's own, unchanged top content
+   clear of the fixed header. An earlier version also forced min-height
+   (plus align-content to center the now-taller box's content) to make
+   this read as a full "scene" — that inflated the section's actual
+   height and was reverted; .landing-experience's own existing `display:
+   grid; align-items: center;` is untouched, exactly as it always was.
+   Scoped to `.landing--home` even though .landing-experience--home is
+   already exclusive to this page's own section, matching this file's
+   established double-scoping convention for every other home-only
+   rule. */
 .landing-experience--home {
   max-width: 60rem;
   margin: 0 auto;
 }
 
 .landing--home .landing-experience--home {
-  align-content: center;
-  min-height: calc(100vh - var(--landing-nav-height));
-  min-height: calc(100svh - var(--landing-nav-height));
   scroll-margin-top: var(--landing-nav-height);
   scroll-snap-align: start;
 }
@@ -2899,20 +2877,20 @@ dialog::backdrop {
 
 /* ── dark closing CTA ─────────────────────────────────────────────────── */
 
-/* Section-scroll pass: same min-height/svh/scroll-margin "scene" sizing as
-   the three sections above (see .landing--home .landing-hero's own
-   comment for the full rationale) plus display:flex + justify-content:
-   center, since — like the hero and unlike "The experience" — this
-   section isn't already a flex/grid container that centers its one real
-   child (.landing-dark-cta__content) for free. .landing-dark-cta__shapes,
-   the decorative blob layer, is position: absolute and unaffected by its
-   parent becoming a flex container. This class is already exclusive to
-   this page's own closing CTA (components/landing/landing-cta-section.tsx
-   is its only user), but still scoped under `.landing--home` to match
-   this file's established double-scoping convention for every other
-   home-only "scene" rule, and so a future reuse of .landing-dark-cta
-   elsewhere wouldn't silently inherit viewport-tall sizing it never
-   asked for. */
+/* Section-scroll pass (corrected): scroll-only — this section's existing
+   height, padding, and layout are untouched (.landing-dark-cta__content
+   still just sits in this box's normal block flow, no flex). Only
+   scroll-margin-top/scroll-snap-align pair with --landing-nav-height and
+   the proximity snap on `html` (search "Section-scroll pass" near the top
+   of this file) so scrolling here settles with the section's own,
+   unchanged top edge clear of the fixed header. An earlier version also
+   forced min-height/display:flex/justify-content to make this read as a
+   full "scene" — that inflated the final CTA's actual height and was
+   reverted; its copy, typography, spacing, and button are exactly as
+   approved. This class is already exclusive to this page's own closing
+   CTA (components/landing/landing-cta-section.tsx is its only user), but
+   still scoped under `.landing--home` to match this file's established
+   double-scoping convention for every other home-only rule. */
 .landing-dark-cta {
   position: relative;
   overflow: hidden;
@@ -2924,11 +2902,6 @@ dialog::backdrop {
 }
 
 .landing--home .landing-dark-cta {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  min-height: calc(100vh - var(--landing-nav-height));
-  min-height: calc(100svh - var(--landing-nav-height));
   scroll-margin-top: var(--landing-nav-height);
   scroll-snap-align: start;
 }
