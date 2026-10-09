@@ -1338,23 +1338,23 @@ dialog::backdrop {
   top: 0;
   z-index: 20;
   background: #ffffff;
-  border-bottom: 1px solid var(--color-border);
 }
 
-/* Landing page ("/") only: the header's bottom border is made transparent
-   (not `border: none`, so the header's box height/spacing stay pixel-
-   identical — nothing shifts) so it reads as one continuous surface with
-   the page background right below it. Scoped to the "landing--home"
-   marker on app/page.tsx's own wrapper div, since LandingHeader itself is
-   shared by every other marketing/picker page, which all keep the
-   divider as-is.
+/* Landing page ("/") only: fixed and transparent, so it reads as one
+   continuous surface with the page background right below it. Scoped to
+   the "landing--home" marker on app/page.tsx's own wrapper div, since
+   LandingHeader itself is shared by every other marketing/picker page.
+   Divider-removal pass: the base `.landing-header` rule above no longer
+   has a bottom border at all (removed, not just hidden), so every other
+   page now reads the same borderless way this one always has — this rule
+   no longer needs its own `border-bottom-color: transparent` override.
    Unify pass: `position: static` (a prior pass's fix for "don't make it
    sticky") still left the header as its own in-flow block row sitting
-   *before* the hero in the document — a transparent, borderless row, but
-   still a distinct row, which is what kept reading as "navbar, then
-   hero" even with continuous color behind both. `position: absolute`
-   removed it from flow entirely so it overlapped the top of the hero's
-   own box instead of pushing it down.
+   *before* the hero in the document — a transparent row, but still a
+   distinct row, which is what kept reading as "navbar, then hero" even
+   with continuous color behind both. `position: absolute` removed it
+   from flow entirely so it overlapped the top of the hero's own box
+   instead of pushing it down.
    Section-scroll pass: now `position: fixed` instead of `absolute` — this
    round explicitly asks for the navigation to stay pinned while scrolling
    through all four sections, reversing the earlier "scrolls away
@@ -1373,7 +1373,6 @@ dialog::backdrop {
   inset-inline: 0;
   top: 0;
   background: transparent;
-  border-bottom-color: transparent;
 }
 
 .landing-header__inner {
@@ -1576,51 +1575,32 @@ dialog::backdrop {
 }
 
 /* Current-route indicator (components/landing/landing-header.tsx compares
-   usePathname() against each link's href). A thin lavender underline
-   under just that link's own label — an ::after so it adds no padding,
-   background block, or extra height to the nav/header, and can't affect
-   sticky positioning or layout. */
+   usePathname() against each link's href) — ink + bold text only.
+   Correction pass: this used to also draw a lavender underline bar below
+   the active label via an ::after pseudo-element; that line read as an
+   unwanted stray mark under the nav (most noticeable together with the
+   new hover wash) and has been removed outright rather than hidden, so
+   there is nothing left for any later rule to re-enable. */
 .landing-nav__link--active {
   position: relative;
   color: var(--wl-ink);
   font-weight: 700;
 }
 
-.landing-nav__link--active::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  /* Hover-refinement pass: .landing--internal .landing-nav a (above) now
-     carries its own padding, so this offset is measured from that pill's
-     bottom edge rather than the bare text's — pulled in from -0.4rem to
-     keep the same ~0.4rem visual gap below the label itself. Irrelevant
-     on the home page, which suppresses this ::after entirely below. */
-  bottom: 0.0625rem;
-  height: 2px;
-  border-radius: 999px;
-  background: var(--wl-lavender);
-}
-
 /* Glass-nav pass: on the home page's own pill-shaped links, the active
-   indicator moves from an underline (which would float oddly beneath a
-   rounded pill's edge) to a slightly stronger glass surface — the same
-   surface language the pill itself already uses, just more opaque, so
-   "active" reads as "this pill is a little more solid" rather than a
-   line breaking the pill shape. The underline itself is suppressed only
-   in this scope; every other `.landing` page keeps the underline exactly
-   as before.
+   indicator is a slightly stronger glass surface — the same surface
+   language the pill itself already uses, just more opaque, so "active"
+   reads as "this pill is a little more solid."
    Liquid-glass pass: `background-color` instead of the `background`
    shorthand — this rule only needs to override the fill's opacity, and
    the shorthand would reset `background-image` (the base rule's sheen
-   gradient, above) to `none` on every currently-active nav link. */
+   gradient, above) to `none` on every currently-active nav link.
+   Correction pass: the matching `::after` override (which used to
+   suppress the base rule's underline bar here) is gone along with that
+   bar itself, above. */
 .landing--home .landing-nav__link--active {
   background-color: rgba(255, 255, 255, 0.6);
   border-color: rgba(255, 255, 255, 0.85);
-}
-
-.landing--home .landing-nav__link--active::after {
-  content: none;
 }
 
 /* Hover-refinement pass: was a flat, opaque `var(--wl-ink)` fill with no
@@ -1695,50 +1675,36 @@ dialog::backdrop {
   box-shadow: 0 0 0 4px rgba(24, 24, 32, 0.85);
 }
 
-/* Atmosphere pass: home page only — the one actual button in the header
-   (the three nav items beside it are plain text links, not buttons; left
-   untouched) becomes a translucent glass surface instead of a solid ink
-   pill, so it reads as floating over the hero gradient rather than
-   sitting on top of it as an opaque block. Reuses .landing-button--glass's
-   exact, already-approved recipe verbatim (same hero, same CTA glass
-   language already established there) — translucent white + backdrop
-   blur + a delicate border + an inset top highlight, no mirror/reflection
-   effect, no new colors. Ink text (not the base rule's white) for
-   contrast against this now-light surface — same swap .landing-button--
-   glass already makes for the same reason. Shape/padding/label/font/
-   layout are all untouched; only the fill is a surface, not scoped
-   beyond `.landing--home` so every other page's header keeps the solid
-   ink pill exactly as before.
-   Liquid-glass pass: same recipe/rationale as .landing--home .landing-nav
-   a above (see that rule's own comment for why a supplied LiquidButton
-   reference isn't reproduced via its Radix/cva/SVG-filter stack) at this
-   button's existing stronger tier — slightly higher fill opacity, blur,
-   and shadow spread than the nav links, same as before this pass, so the
-   primary CTA keeps standing out as the one "real" button among the four
-   glass controls. background-image (the sheen) stays off the hover/
-   active overrides' `background-color`-only changes for the same reason
-   as the nav links — the shorthand would otherwise reset it.
-   Section-scroll pass: base fill opacity raised (0.5 → 0.68), same
-   reasoning and same dark-CTA-section worst case as the nav links above —
-   0.5 already cleared 4.5:1 on its own, but nav's own fix brought it up
-   close enough that the CTA needed the same upward shift just to stay the
-   visibly stronger of the four controls at every matching state. */
+/* Correction pass: this used to be a translucent WHITE glass surface
+   (ink text) — a deliberate departure from the base rule's dark pill,
+   reasoned as "read as floating over the hero gradient." That reasoning
+   didn't match what was actually wanted: the header CTA is meant to be
+   the same dark-ink identity everywhere, including here, just adapted
+   for a floating surface instead of plain white. This keeps the base
+   rule's dark fill/white text/sheen/border language but with more
+   transparency and a touch more blur/saturate/shadow spread (the same
+   "stronger tier" this rule has always used) so it still genuinely reads
+   as glass over the colorful hero — and stays legible over the dark
+   closing CTA section too, since a dark-on-dark-ish fill only needs to
+   stay distinguishable via its border/shadow/highlight there, not via
+   contrast with a light fill. Shape/padding/label/font are untouched
+   (inherited from the base rule above), not scoped beyond `.landing--home`
+   so every other page's header is unaffected either way. */
 .landing--home .landing-header__cta {
   background-image: linear-gradient(
     135deg,
-    rgba(255, 255, 255, 0.6) 0%,
-    rgba(255, 255, 255, 0.12) 40%,
-    rgba(255, 255, 255, 0) 62%
+    rgba(255, 255, 255, 0.22) 0%,
+    rgba(255, 255, 255, 0.04) 45%,
+    rgba(255, 255, 255, 0) 65%
   );
-  background-color: rgba(255, 255, 255, 0.68);
-  color: var(--wl-ink);
-  border: 1px solid rgba(255, 255, 255, 0.75);
+  background-color: rgba(24, 24, 32, 0.84);
+  border: 1px solid rgba(255, 255, 255, 0.22);
   backdrop-filter: blur(14px) saturate(160%);
   -webkit-backdrop-filter: blur(14px) saturate(160%);
   box-shadow:
-    0 14px 32px -14px rgba(24, 24, 32, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.85),
-    inset 0 -10px 14px -12px rgba(24, 24, 32, 0.16);
+    0 14px 32px -14px rgba(24, 24, 32, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    inset 0 -10px 14px -12px rgba(24, 24, 32, 0.22);
   transition:
     background-color 0.2s ease,
     border-color 0.2s ease,
@@ -1748,25 +1714,24 @@ dialog::backdrop {
 
 /* Hover-refinement pass: a touch of lavender mixed into the fill/border,
    same reasoning as the home nav links' own hover just above — the glass
-   recipe (blur/shadow/lift) stays exactly as approved. */
+   recipe (blur/shadow/lift) and the dark identity both stay. */
 @media (hover: hover) {
   .landing--home .landing-header__cta:hover {
-    background-color: color-mix(in srgb, var(--wl-lavender) 22%, rgba(255, 255, 255, 0.82));
-    border-color: color-mix(in srgb, var(--wl-lavender) 45%, rgba(255, 255, 255, 0.75));
+    background-color: color-mix(in srgb, var(--wl-lavender) 16%, rgba(24, 24, 32, 0.88));
+    border-color: color-mix(in srgb, var(--wl-lavender) 55%, transparent);
     box-shadow:
-      0 18px 38px -14px rgba(24, 24, 32, 0.32),
-      inset 0 1px 0 rgba(255, 255, 255, 0.95),
-      inset 0 -10px 14px -12px rgba(24, 24, 32, 0.1);
+      0 18px 38px -14px rgba(24, 24, 32, 0.5),
+      0 0 0 3px color-mix(in srgb, var(--wl-lavender) 22%, transparent),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3);
     transform: translateY(-1px);
   }
 }
 
 .landing--home .landing-header__cta:active {
-  background-color: rgba(255, 255, 255, 0.74);
+  background-color: rgba(14, 14, 20, 0.9);
   box-shadow:
-    0 8px 18px -14px rgba(24, 24, 32, 0.26),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8),
-    inset 0 -5px 12px -9px rgba(24, 24, 32, 0.2);
+    0 8px 18px -14px rgba(24, 24, 32, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
   transform: translateY(0);
 }
 
