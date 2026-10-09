@@ -12,6 +12,7 @@ const INFO_LINKS = [
   { href: "/about", label: "About" },
   { href: "/privacy", label: "Privacy" },
   { href: "/terms", label: "Terms" },
+  { href: "/contact", label: "Contact" },
 ] as const;
 
 /**
@@ -20,13 +21,7 @@ const INFO_LINKS = [
  * "Contact" labels into a real, three-column footer: the Sameeeish
  * wordmark + a short description, an "Explore" group pointing at the
  * app's existing entry points, and an "Information" group pointing at
- * real pages (see app/about, app/privacy, app/terms).
- *
- * "Contact" is intentionally omitted: there is no configured contact
- * destination anywhere in this project (no support email, no contact
- * form endpoint), and the brief that drove this rewrite explicitly says
- * not to fabricate one — a working footer with fewer links beats a
- * broken or fake one.
+ * real pages (see app/about, app/privacy, app/terms, app/contact).
  */
 export function LandingFooter() {
   const year = new Date().getFullYear();

@@ -3045,6 +3045,14 @@ dialog::backdrop {
   text-decoration: underline;
 }
 
+/* The /contact page's one real action (a mailto: link) — sits outside
+   .landing-legal__body so it doesn't inherit that block's plain
+   underlined-text link styling, and reuses the existing
+   .landing-button--primary pill verbatim instead of a new control. */
+.landing-legal__cta {
+  margin: 0.5rem 0 0;
+}
+
 /* ── responsive ───────────────────────────────────────────────────────── */
 
 @media (max-width: 56rem) {
