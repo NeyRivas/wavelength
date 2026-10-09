@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 
+import Link from "next/link";
+
 import { SCALE_LABELS, SCALE_VALUES } from "@/lib/wavelength/categories";
 
 type Tint = "pink" | "blue" | "mint" | "lavender";
@@ -24,13 +26,11 @@ type ScaleExample = {
 type Example = ChoiceExample | ScaleExample;
 
 /**
- * Several example questions covering both real question types (feedback
- * pass: "make the question preview a REAL carousel") — Choice and Scale
- * only, never Situation. Card tints are deliberately limited to pink/
- * blue/mint/lavender (never peach): peach is reserved as the one
- * consistent "selected" accent for both Choice and Scale options below,
- * so a selected pill never visually blends into a same-hue card
- * background.
+ * Several example questions covering both real question types — Choice
+ * and Scale only, never Situation. Card tints are deliberately limited to
+ * pink/blue/mint/lavender (never peach): peach is reserved as the one
+ * consistent "selected" accent below, so the illustrated selection never
+ * visually blends into a same-hue card background.
  */
 const EXAMPLES: Example[] = [
   {
@@ -64,71 +64,62 @@ const EXAMPLES: Example[] = [
 const OPTION_KEYS = ["A", "B", "C", "D"] as const;
 const AUTOPLAY_MS = 6000;
 
-function ChoiceOptions({ options }: { options: string[] }) {
-  const [selected, setSelected] = useState(1);
+// A fixed illustrative "answer" for each question type — purely a static
+// visual (this card has no interactive state of its own), echoing the real
+// product's UI without inviting a click on any option.
+const CHOICE_PREVIEW_INDEX = 1;
+const SCALE_PREVIEW_VALUE = 75;
 
+function ChoicePreview({ options }: { options: string[] }) {
   return (
     <div className="landing-demo__options">
       {options.map((label, index) => (
-        <button
+        <span
           key={label}
-          type="button"
           className={`landing-demo__option${
-            selected === index ? " landing-demo__option--selected" : ""
+            index === CHOICE_PREVIEW_INDEX ? " landing-demo__option--selected" : ""
           }`}
-          onClick={() => setSelected(index)}
         >
           <span className="landing-demo__option-avatar">{OPTION_KEYS[index]}</span>
           {label}
-        </button>
+        </span>
       ))}
     </div>
   );
 }
 
-function ScaleOptions() {
-  const [selected, setSelected] = useState<number>(75);
-
+function ScalePreview() {
   return (
     <div className="landing-demo__scale">
       {SCALE_VALUES.map((value) => (
-        <button
+        <span
           key={value}
-          type="button"
           className={`landing-demo__scale-option${
-            selected === value ? " landing-demo__scale-option--selected" : ""
+            value === SCALE_PREVIEW_VALUE ? " landing-demo__scale-option--selected" : ""
           }`}
-          onClick={() => setSelected(value)}
         >
           {SCALE_LABELS[value]}
-        </button>
+        </span>
       ))}
     </div>
   );
 }
 
 /**
- * "The experience" question preview (Figma reference, screenshot 3),
- * turned into a genuinely working carousel. Presentational/demo only:
- * nothing here reads or writes a real Wavelength, calls a Server Action,
- * or touches Supabase — the actual questionnaire/answering flow is
- * completely untouched. Each example keeps its own transient selection
- * (a fresh `key={activeIndex}` remount on navigation — "it is fine for
- * each example to maintain its own temporary selection" per the brief),
- * and the indicator row + tag/footer chrome stay outside that remounted
- * subtree so clicking an indicator doesn't lose its own focus.
- *
- * Optional slow autoplay (every 6s) is disabled entirely under
- * prefers-reduced-motion and permanently paused the moment anyone
- * interacts with the card (an indicator, a Choice option, or a Scale
- * level) — manual navigation always still works either way.
+ * "The experience" question preview. Purely a visual illustration of the
+ * product, not a working demo: nothing here reads or writes a real
+ * Wavelength, calls a Server Action, or touches Supabase, and nothing
+ * inside it is separately clickable. The whole card is one accessible
+ * link to /play — the real "what are you playing?" entry point — with an
+ * accessible name that makes clear this is a preview, not a form to fill
+ * in. The example question rotates automatically (disabled under
+ * prefers-reduced-motion) as ambient decoration; the indicator dots are a
+ * non-interactive progress readout for that rotation, not controls.
  */
 export function ExperienceDemoCard() {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [autoplayPaused, setAutoplayPaused] = useState(false);
 
   useEffect(() => {
-    if (autoplayPaused) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     const timer = setInterval(() => {
@@ -136,30 +127,24 @@ export function ExperienceDemoCard() {
     }, AUTOPLAY_MS);
 
     return () => clearInterval(timer);
-  }, [autoplayPaused]);
+  }, []);
 
   const current = EXAMPLES[activeIndex]!;
 
   return (
     <div className="landing-demo">
-      <div
+      <Link
+        href="/play"
         className={`landing-demo__card landing-demo__card--${current.tint}`}
-        onClick={() => setAutoplayPaused(true)}
+        aria-label="Preview of an example question — select to start a real Sameeeish questionnaire"
       >
         <div className="landing-demo__head">
           <span className="landing-demo__tag">{current.tag}</span>
-          <div className="landing-demo__dots" role="group" aria-label="Example questions">
+          <div className="landing-demo__dots" aria-hidden="true">
             {EXAMPLES.map((_, index) => (
-              <button
+              <span
                 key={index}
-                type="button"
                 className={`landing-demo__indicator${index === activeIndex ? " is-active" : ""}`}
-                aria-label={`Show example question ${index + 1} of ${EXAMPLES.length}`}
-                aria-current={index === activeIndex ? "true" : undefined}
-                onClick={() => {
-                  setAutoplayPaused(true);
-                  setActiveIndex(index);
-                }}
               />
             ))}
           </div>
@@ -168,9 +153,9 @@ export function ExperienceDemoCard() {
         <div className="landing-demo__slide" key={activeIndex}>
           <h3 className="landing-demo__question">{current.question}</h3>
           {current.type === "choice" ? (
-            <ChoiceOptions options={current.options} />
+            <ChoicePreview options={current.options} />
           ) : (
-            <ScaleOptions />
+            <ScalePreview />
           )}
         </div>
 
@@ -184,10 +169,8 @@ export function ExperienceDemoCard() {
             ))}
           </span>
         </div>
-      </div>
-      <p className="landing-demo__hint">
-        Click an answer to try it <span aria-hidden="true">↑</span>
-      </p>
+      </Link>
+      <p className="landing-demo__hint">Just a preview — tap to play for real</p>
     </div>
   );
 }

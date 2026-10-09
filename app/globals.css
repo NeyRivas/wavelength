@@ -1563,16 +1563,6 @@ dialog::backdrop {
   content: none;
 }
 
-/* Footer legal links ("About" / "Privacy" / "Terms" / "Contact") — shown
-   in the reference but with no corresponding page anywhere in the app
-   (see landing-footer.tsx doc comment). Styled identically to the real
-   nav links so the footer still matches the screenshot visually, without
-   pretending they lead anywhere. */
-.landing-nav__inert {
-  color: var(--wl-muted);
-  cursor: default;
-}
-
 .landing-header__cta {
   background: var(--wl-ink);
   color: #ffffff;
@@ -2505,6 +2495,11 @@ dialog::backdrop {
   margin-top: 1.75rem;
 }
 
+.landing-experience__actions {
+  display: flex;
+  margin-top: 2rem;
+}
+
 .landing-experience__demo {
   position: relative;
   display: flex;
@@ -2557,7 +2552,13 @@ dialog::backdrop {
    behind it (above) is what shows through, so "hay algo vivo detrás de
    esta superficie" reads clearly. Inner content (options/scale pills)
    stays fully opaque white for legibility regardless. */
+/* Now a single <a> (Link to /play), not a static div — the whole example
+   preview is one entry point into the real flow, not a container for
+   separately-clickable controls. display:block + color/text-decoration
+   resets undo the browser's default anchor styling so it still reads
+   exactly as the original card did. */
 .landing-demo__card {
+  display: block;
   padding: 1.75rem;
   border-radius: 1.25rem;
   background: color-mix(in srgb, var(--wl-pink) 55%, transparent);
@@ -2565,10 +2566,25 @@ dialog::backdrop {
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
   box-shadow: 0 30px 60px -20px rgba(24, 24, 32, 0.2);
+  color: inherit;
+  text-decoration: none;
   text-align: left;
   /* Card tint crossfades instead of cutting abruptly when the active
      example changes (see .landing-demo__card--* below). */
-  transition: background-color 0.4s ease;
+  transition:
+    background-color 0.4s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+}
+
+.landing-demo__card:hover {
+  box-shadow: 0 34px 64px -20px rgba(24, 24, 32, 0.26);
+  transform: translateY(-2px);
+}
+
+.landing-demo__card:focus-visible {
+  outline: 2px solid var(--wl-ink);
+  outline-offset: 3px;
 }
 
 /* Card tints — deliberately never peach, which is reserved as the one
@@ -2621,20 +2637,16 @@ dialog::backdrop {
   -webkit-backdrop-filter: blur(6px);
 }
 
-/* Real carousel controls now (feedback pass) — each is a button with a
-   generous invisible hit area around the same small visual dot the
-   static version used, so tapping stays comfortable on mobile without
-   changing how the indicator row looks. */
+/* A non-interactive progress readout for the automatic rotation below —
+   not controls (the whole card is already one link; see .landing-demo__card
+   above), so these are plain spans with no hit area, cursor, or focus
+   styling of their own. */
 .landing-demo__indicator {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 1.375rem;
   height: 1.375rem;
-  padding: 0;
-  border: none;
-  background: none;
-  cursor: pointer;
 }
 
 .landing-demo__indicator::before {
@@ -2652,12 +2664,6 @@ dialog::backdrop {
 .landing-demo__indicator.is-active::before {
   background: var(--wl-ink);
   transform: scale(1.2);
-}
-
-.landing-demo__indicator:focus-visible {
-  outline: 2px solid var(--wl-ink);
-  outline-offset: 1px;
-  border-radius: 50%;
 }
 
 /* The animated part of the card — only the question + its answer control
@@ -2705,7 +2711,6 @@ dialog::backdrop {
   align-items: center;
   gap: 0.75rem;
   padding: 0.9rem 1.125rem;
-  border: none;
   border-radius: 0.75rem;
   background: #ffffff;
   font-family: var(--font-nunito), system-ui, sans-serif;
@@ -2713,7 +2718,6 @@ dialog::backdrop {
   font-weight: 600;
   color: var(--wl-ink);
   text-align: left;
-  cursor: pointer;
 }
 
 .landing-demo__option--selected {
@@ -2745,8 +2749,8 @@ dialog::backdrop {
 }
 
 .landing-demo__scale-option {
+  display: block;
   padding: 0.65rem 1rem;
-  border: none;
   border-radius: 0.75rem;
   background: #ffffff;
   font-family: var(--font-nunito), system-ui, sans-serif;
@@ -2754,7 +2758,6 @@ dialog::backdrop {
   font-weight: 600;
   color: var(--wl-ink);
   text-align: left;
-  cursor: pointer;
 }
 
 .landing-demo__scale-option--selected {
@@ -2919,28 +2922,127 @@ dialog::backdrop {
 .landing-footer {
   max-width: 80rem;
   margin: 0 auto;
-  padding: 2rem clamp(1.5rem, 4vw, 4rem);
+  padding: clamp(3rem, 6vw, 4.5rem) clamp(1.5rem, 4vw, 4rem) 2rem;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1.5rem;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.landing-footer__top {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: 2.5rem;
 }
 
 .landing-logo--footer {
   font-size: 1.0625rem;
 }
 
-.landing-footer__links {
+.landing-footer__brand {
   display: flex;
-  gap: 1.5rem;
-  font-size: 0.875rem;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.landing-footer__description {
+  margin: 0;
+  max-width: 24rem;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--wl-muted);
+}
+
+.landing-footer__col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.landing-footer__heading {
+  margin: 0 0 0.25rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--wl-ink);
+}
+
+.landing-footer__link {
+  font-size: 0.9375rem;
+  color: var(--wl-muted);
+  text-decoration: none;
+}
+
+.landing-footer__link:hover {
+  color: var(--wl-ink);
+}
+
+.landing-footer__link:focus-visible {
+  outline: 2px solid var(--wl-ink);
+  outline-offset: 2px;
+  border-radius: 2px;
 }
 
 .landing-footer__copy {
   margin: 0;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--color-border);
   font-size: 0.8125rem;
   color: var(--wl-muted);
+}
+
+/* ── informational pages (About / Privacy / Terms) ───────────────────────
+   Plain prose content for app/about, app/privacy, app/terms. Reuses
+   .landing-section + .landing-how for the page's existing padding/60rem
+   centered column, narrowed further here to a comfortable reading
+   measure, with heading/body styling pulled from the same Fraunces-
+   italic/Nunito-Sans/wl-ink/wl-muted system every other page already
+   uses — no new typography or colors introduced. */
+.landing-legal {
+  max-width: 42rem;
+}
+
+.landing-legal__updated {
+  margin: 0 0 2.5rem;
+  font-size: 0.875rem;
+  color: var(--wl-muted);
+}
+
+.landing-legal__body h2 {
+  margin: 2.5rem 0 1rem;
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-weight: 600;
+  font-size: 1.375rem;
+  color: var(--wl-ink);
+}
+
+.landing-legal__body h2:first-child {
+  margin-top: 0;
+}
+
+.landing-legal__body p {
+  margin: 0 0 1.25rem;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--wl-muted);
+}
+
+.landing-legal__body ul {
+  margin: 0 0 1.25rem;
+  padding-left: 1.25rem;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--wl-muted);
+}
+
+.landing-legal__body li {
+  margin-bottom: 0.5rem;
+}
+
+.landing-legal__body a {
+  color: var(--wl-ink);
+  text-decoration: underline;
 }
 
 /* ── responsive ───────────────────────────────────────────────────────── */
@@ -2970,13 +3072,30 @@ dialog::backdrop {
     justify-content: center;
   }
 
+  .landing-experience__actions {
+    justify-content: center;
+  }
+
   .landing-experience__demo {
     order: -1;
     margin-bottom: 1rem;
   }
 
-  .landing-footer {
-    justify-content: center;
+  .landing-footer__top {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    text-align: center;
+  }
+
+  .landing-footer__brand {
+    align-items: center;
+  }
+
+  .landing-footer__description {
+    margin-inline: auto;
+  }
+
+  .landing-footer__copy {
     text-align: center;
   }
 }

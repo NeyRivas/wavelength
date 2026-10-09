@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { ExperienceDemoCard } from "./experience-demo-card";
 
 const PILLS: { label: string; className: string }[] = [
@@ -7,9 +9,11 @@ const PILLS: { label: string; className: string }[] = [
   { label: "Share any way", className: "landing-pill--pink" },
 ];
 
-/** "The experience" (Figma reference, screenshot 3): copy + pill row on
- * the left, the interactive question mockup on the right inside a soft
- * halo. */
+/** "The experience" (Figma reference, screenshot 3): copy + pill row + a
+ * "Let's play" CTA on the left, a static visual preview of a real question
+ * on the right inside a soft halo. The preview (ExperienceDemoCard) is a
+ * second, illustrative entry point into /play — not an interactive demo —
+ * so the section now offers two equivalent ways in. */
 export function LandingExperience() {
   return (
     <section className="landing-section landing-experience landing-experience--home">
@@ -27,6 +31,12 @@ export function LandingExperience() {
               {pill.label}
             </span>
           ))}
+        </div>
+
+        <div className="landing-experience__actions">
+          <Link href="/play" className="landing-button landing-button--primary">
+            Let&apos;s play <span aria-hidden="true">→</span>
+          </Link>
         </div>
       </div>
 
