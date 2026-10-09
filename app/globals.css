@@ -1417,8 +1417,53 @@ dialog::backdrop {
   text-decoration: none;
 }
 
-.landing-nav a:hover {
-  color: var(--wl-ink);
+@media (hover: hover) {
+  .landing-nav a:hover {
+    color: var(--wl-ink);
+  }
+}
+
+/* Hover-refinement pass: on every non-home page the header is a plain
+   white bar (.landing-header's own base `background: #ffffff`, never
+   overridden except on `.landing--home`), so a lavender hover here is a
+   flat, understated wash rather than the home page's glass recipe below
+   — "adapt colors/transparency, keep the same design language" per that
+   pass's brief. padding + an equal negative margin give the wash a pill
+   to render against without moving any link's text by so much as a
+   pixel (the nav's own 2rem gap, set on `.landing-nav` above, is
+   untouched); border starts transparent so the box model never changes
+   size between states. */
+.landing--internal .landing-nav a {
+  display: inline-flex;
+  align-items: center;
+  margin: -0.4375rem -0.75rem;
+  padding: 0.4375rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+@media (hover: hover) {
+  .landing--internal .landing-nav a:hover {
+    background-color: color-mix(in srgb, var(--wl-lavender) 20%, transparent);
+    border-color: color-mix(in srgb, var(--wl-lavender) 45%, transparent);
+    color: var(--wl-ink);
+  }
+}
+
+/* A two-ring "halo" (an inner white outline + an outer dark ring) stays
+   legible on both the plain white header here and the home header's own
+   gradient/dark-CTA-section backdrop below, instead of a single flat
+   color that would vanish against one or the other — one rule covers
+   both variants. */
+.landing-nav a:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(24, 24, 32, 0.85);
+  border-radius: 999px;
 }
 
 /* Glass-nav pass: home page only — the three plain-text nav links join
@@ -1493,17 +1538,27 @@ dialog::backdrop {
     inset 0 -8px 12px -10px rgba(24, 24, 32, 0.14);
   transition:
     background-color 0.2s ease,
+    border-color 0.2s ease,
     box-shadow 0.2s ease,
     transform 0.15s ease;
 }
 
-.landing--home .landing-nav a:hover {
-  background-color: rgba(255, 255, 255, 0.68);
-  box-shadow:
-    0 14px 28px -14px rgba(24, 24, 32, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    inset 0 -8px 12px -10px rgba(24, 24, 32, 0.1);
-  transform: translateY(-1px);
+/* Hover-refinement pass: the same lavender wash the plain-white header
+   gets above, adapted to this glass recipe — a touch of lavender mixed
+   into the fill and border instead of just brightening toward white, so
+   the hover language reads as "one lavender accent" across both header
+   variants while this pill's own glass/blur/shadow identity (unchanged
+   below) stays exactly as approved. */
+@media (hover: hover) {
+  .landing--home .landing-nav a:hover {
+    background-color: color-mix(in srgb, var(--wl-lavender) 26%, rgba(255, 255, 255, 0.7));
+    border-color: color-mix(in srgb, var(--wl-lavender) 50%, rgba(255, 255, 255, 0.65));
+    box-shadow:
+      0 14px 28px -14px rgba(24, 24, 32, 0.28),
+      inset 0 1px 0 rgba(255, 255, 255, 0.9),
+      inset 0 -8px 12px -10px rgba(24, 24, 32, 0.1);
+    transform: translateY(-1px);
+  }
 }
 
 /* Liquid-glass pass: a pressed state that reads as the glass actually
@@ -1536,7 +1591,12 @@ dialog::backdrop {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: -0.4rem;
+  /* Hover-refinement pass: .landing--internal .landing-nav a (above) now
+     carries its own padding, so this offset is measured from that pill's
+     bottom edge rather than the bare text's — pulled in from -0.4rem to
+     keep the same ~0.4rem visual gap below the label itself. Irrelevant
+     on the home page, which suppresses this ::after entirely below. */
+  bottom: 0.0625rem;
   height: 2px;
   border-radius: 999px;
   background: var(--wl-lavender);
@@ -1563,15 +1623,76 @@ dialog::backdrop {
   content: none;
 }
 
+/* Hover-refinement pass: was a flat, opaque `var(--wl-ink)` fill with no
+   border/shadow/sheen of its own — refined into a restrained dark glass
+   pill instead (a near-opaque ink fill so text contrast and "this is the
+   primary action" legibility are untouched, plus a delicate border and a
+   soft inset top highlight for the glass read), and sized down slightly
+   (padding only — font-size/border-radius/label are untouched, so the
+   pill shape and text size are exactly as before, just a touch more
+   compact). Padding lives here because `.landing--home
+   .landing-header__cta` below never redefines it, so the size reduction
+   reaches that variant too, automatically, with no separate edit. */
 .landing-header__cta {
-  background: var(--wl-ink);
+  display: inline-flex;
+  align-items: center;
+  background-color: rgba(24, 24, 32, 0.92);
+  background-image: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.16) 0%,
+    rgba(255, 255, 255, 0.03) 45%,
+    rgba(255, 255, 255, 0) 65%
+  );
   color: #ffffff;
   font-weight: 700;
   font-size: 0.9375rem;
-  padding: 0.625rem 1.25rem;
+  padding: 0.5625rem 1.125rem;
   border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-shadow:
+    0 6px 16px -10px rgba(24, 24, 32, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
   text-decoration: none;
   white-space: nowrap;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+}
+
+/* Lavender hover, echoing the nav links' own hover without losing this
+   button's dark identity: the fill warms very slightly toward lavender
+   and the border/ring pick up the tint, but the base stays dark ink. */
+@media (hover: hover) {
+  .landing-header__cta:hover {
+    background-color: color-mix(in srgb, var(--wl-lavender) 14%, rgba(24, 24, 32, 0.94));
+    border-color: color-mix(in srgb, var(--wl-lavender) 55%, transparent);
+    box-shadow:
+      0 8px 20px -10px rgba(24, 24, 32, 0.5),
+      0 0 0 3px color-mix(in srgb, var(--wl-lavender) 24%, transparent),
+      inset 0 1px 0 rgba(255, 255, 255, 0.22);
+    transform: translateY(-1px);
+  }
+}
+
+.landing-header__cta:active {
+  background-color: rgba(14, 14, 20, 0.95);
+  box-shadow:
+    0 3px 10px -8px rgba(24, 24, 32, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  transform: translateY(0);
+}
+
+/* Same universal two-ring halo as the nav links, for the same reason:
+   this CTA sits on plain white on every internal page but floats over
+   the hero gradient and the dark closing CTA section on the home page. */
+.landing-header__cta:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(24, 24, 32, 0.85);
 }
 
 /* Atmosphere pass: home page only — the one actual button in the header
@@ -1620,17 +1741,24 @@ dialog::backdrop {
     inset 0 -10px 14px -12px rgba(24, 24, 32, 0.16);
   transition:
     background-color 0.2s ease,
+    border-color 0.2s ease,
     box-shadow 0.2s ease,
     transform 0.15s ease;
 }
 
-.landing--home .landing-header__cta:hover {
-  background-color: rgba(255, 255, 255, 0.82);
-  box-shadow:
-    0 18px 38px -14px rgba(24, 24, 32, 0.32),
-    inset 0 1px 0 rgba(255, 255, 255, 0.95),
-    inset 0 -10px 14px -12px rgba(24, 24, 32, 0.1);
-  transform: translateY(-1px);
+/* Hover-refinement pass: a touch of lavender mixed into the fill/border,
+   same reasoning as the home nav links' own hover just above — the glass
+   recipe (blur/shadow/lift) stays exactly as approved. */
+@media (hover: hover) {
+  .landing--home .landing-header__cta:hover {
+    background-color: color-mix(in srgb, var(--wl-lavender) 22%, rgba(255, 255, 255, 0.82));
+    border-color: color-mix(in srgb, var(--wl-lavender) 45%, rgba(255, 255, 255, 0.75));
+    box-shadow:
+      0 18px 38px -14px rgba(24, 24, 32, 0.32),
+      inset 0 1px 0 rgba(255, 255, 255, 0.95),
+      inset 0 -10px 14px -12px rgba(24, 24, 32, 0.1);
+    transform: translateY(-1px);
+  }
 }
 
 .landing--home .landing-header__cta:active {
@@ -2971,10 +3099,23 @@ dialog::backdrop {
   font-size: 0.9375rem;
   color: var(--wl-muted);
   text-decoration: none;
+  text-underline-offset: 0.2em;
+  text-decoration-thickness: 2px;
+  transition: color 0.2s ease;
 }
 
-.landing-footer__link:hover {
-  color: var(--wl-ink);
+/* Hover-refinement pass: text still darkens to ink (unchanged, keeps
+   contrast on the footer's plain white/light background), with a soft
+   lavender underline added as the "subtle lavender treatment" — a
+   text-level accent, not a filled pill, so every link in both the
+   Explore and Information columns (Contact included) stays reading as
+   plain text rather than turning into a row of little buttons. */
+@media (hover: hover) {
+  .landing-footer__link:hover {
+    color: var(--wl-ink);
+    text-decoration: underline;
+    text-decoration-color: var(--wl-lavender);
+  }
 }
 
 .landing-footer__link:focus-visible {
