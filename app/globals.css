@@ -1663,9 +1663,11 @@ dialog::backdrop {
      already narrower than this, so mobile/tablet use the full width. */
   max-width: 60rem;
   margin: 0 auto;
-  /* Transition pass: bottom padding grown (4–6rem → 6–9rem) to give the
-     fade below (.landing-hero::after) more empty room to dissolve into
-     before "How it works" begins — see that rule's own comment. */
+  /* Background-removal pass: this bottom padding value is unchanged (the
+     task removing the hero's background explicitly preserves dimensions/
+     spacing) even though the comment that originally justified its size
+     — extra room for a gradient-to-page-background fade — no longer
+     applies now that .landing-hero::after (that fade) is removed below. */
   padding: clamp(3rem, 8vw, 6rem) clamp(1.5rem, 4vw, 4rem) clamp(6rem, 12vw, 9rem);
   /* Centered composition (redesign pass): one vertical column — content,
      then the wave illustration + social proof — instead of a left
@@ -1698,41 +1700,6 @@ dialog::backdrop {
   padding-top: calc(clamp(3rem, 8vw, 6rem) + var(--landing-nav-height));
   scroll-margin-top: var(--landing-nav-height);
   scroll-snap-align: start;
-}
-
-/* Atmosphere pass: a soft fade from the hero's own gradient into the
-   plain page background right where "How it works" begins, instead of
-   the gradient's own blurred-but-still-visible edge ending abruptly at
-   the section boundary. Confined to the hero's own existing bottom
-   padding band (the same clamp() already reserved as breathing room
-   below the wave illustration/social-proof row, now doing double duty)
-   so it never overlaps real content — just the already-empty space at
-   the very bottom of the section. z-index: 0 keeps it level with
-   .landing-hero__ambient (painted after it, so it visibly fades that
-   blob's tail) and still below .landing-hero__content/__visual's z-index
-   of 1. Nothing here touches .landing-how/.landing-section — "How it
-   works" itself is completely unmodified.
-   Transition pass: band grown (4–6rem → 6–9rem, matching the hero's own
-   taller bottom padding above) and given a mid-stop instead of a single
-   transparent→opaque run — a plain two-stop linear fade reads as mostly
-   solid-color until quite late, then falls off fast, which is exactly
-   the "sudden line" the gradient's now-higher opacity (Unify pass) made
-   more noticeable. The added 55% stop spreads the falloff evenly across
-   the whole band instead of the back half of it. */
-.landing-hero::after {
-  content: "";
-  position: absolute;
-  z-index: 0;
-  inset-inline: 0;
-  bottom: 0;
-  height: clamp(6rem, 12vw, 9rem);
-  background: linear-gradient(
-    to bottom,
-    transparent 0%,
-    rgba(255, 255, 255, 0.55) 55%,
-    var(--color-bg) 100%
-  );
-  pointer-events: none;
 }
 
 .landing-hero__content {
@@ -1851,162 +1818,23 @@ dialog::backdrop {
   background: var(--wl-mint);
 }
 
-/* ── hero ambient background ──────────────────────────────────────────
-   Two large, very soft gradient blobs spanning the WHOLE hero section
-   (not just the illustration column) — so the glass CTA in the text
-   column has living gradient underneath it too, not a flat white
-   background (visual-signature pass: "si el glass no se percibe porque
-   está sobre un fondo blanco plano, ajusta la composición"). Kept low-
-   opacity/heavily-blurred so body text stays fully readable.
-   Atmosphere pass: opacity raised (0.32 → 0.46) and the wrapper's bleed
-   deepened (-4rem → -6rem) so the gradient reads as a genuinely present
-   atmosphere rather than a faint tint, and so it fully covers the header
-   area above it with margin to spare now that the header's own
-   background is transparent on this page.
-   Unify pass: opacity raised again (0.46 → 0.62) and blur eased back
-   (70px → 56px) — still soft/heavily blurred, but letting the colors
-   themselves read more distinctly instead of just a bigger wash, since
-   this is now also standing in for the illustration's own removed local
-   blobs (see .hero-shape's removal note near .hero-shape__svg) as the
-   hero's one and only background gradient. Colors, gradient shape
-   (radial, fading to transparent), and each blob's own size/position are
-   still untouched — the same two layers, just presented more vividly,
-   not a new or redesigned gradient.
-   Gradient-prominence pass: opacity raised once more (0.62 → 0.76) and
-   blur eased back again (56px → 48px) — the brief calls the gradient
-   "the biggest visual weakness" and asks for it to become one of the
-   hero's main visual features; same two color stops, same radial shape,
-   just more visibly saturated. A mask-image is added to this wrapper (not
-   the blobs themselves, so it composites once rather than per-blob) that
-   fades the whole gradient layer out over its own last ~35%, which is
-   what actually gives the now-stronger gradient somewhere soft to go
-   before it meets .landing-hero::after's own whiteout band lower down —
-   two fades doing different jobs (this one dissolves the color, the
-   other below cleans up whatever's left) instead of one abrupt cut.
-   Full-bleed pass: this wrapper used to be inset just -2rem past
-   .landing-hero's own edges — fine on the 1280px viewport the hero's
-   60rem column was designed around, but on anything meaningfully wider
-   (a 1920px/2000px desktop) that left a hard, bounded gradient box with
-   plain white on both outer sides, which is exactly the "background
-   must not be bounded on the sides" the gradient is meant to avoid.
-   left: 50% + width: 100vw + translateX(-50%) is the standard "break out
-   of a centered, narrower parent" technique: 50% here resolves against
-   .landing-hero's own 60rem box, but since that box is itself centered
-   in the full-width page (margin: 0 auto, no asymmetric padding above
-   it), 50% of it lands on the exact same x-coordinate as the viewport's
-   own center — so the 100vw-wide box this anchors, shifted left by half
-   its own width, lands exactly on the true viewport edges at any screen
-   width, not just the width this was last tested at. Only the two axes
-   that needed it changed (left/width replace inset's left/right pair);
-   top/bottom are untouched, so the vertical placement, the mask fade,
-   and the blobs' own `top` values are all exactly as before. */
-.landing-hero__ambient {
-  position: absolute;
-  top: -6rem;
-  bottom: -6rem;
-  left: 50%;
-  width: 100vw;
-  transform: translateX(-50%);
-  z-index: 0;
-  mask-image: linear-gradient(to bottom, black 0%, black 65%, transparent 100%);
-  -webkit-mask-image: linear-gradient(to bottom, black 0%, black 65%, transparent 100%);
-  /* No overflow:hidden here (polish pass): a blurred blob's soft halo
-     extends well past its own box, and clipping it at this container's
-     edge was exactly what produced the visible "gradient → hard cut →
-     white" seam. Horizontal bleed is still safely contained one level up
-     by .landing main's own overflow-x:hidden; vertical bleed needs no
-     containment at all (it just fades into ordinary page whitespace). */
-  pointer-events: none;
-}
-
-.landing-hero__ambient-blob {
-  position: absolute;
-  border-radius: 50%;
-  /* Blur eased back and opacity raised again — see the
-     .landing-hero__ambient comment above; the gradient shape itself
-     still fades to transparent instead of cutting off hard. */
-  filter: blur(48px);
-  opacity: 0.76;
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: infinite;
-}
-
-/* Sized/positioned (with deliberate overlap between the two) specifically
-   so the CTA — which sits roughly in the vertical middle of the text
-   column — has visible gradient behind it, not just the very top/bottom
-   of the section. Radial instead of 72b2068's flat 2-stop linear fill,
-   fading to transparent well inside the shape's own edge, so there's no
-   perceptible boundary — everything else (size, colors, blur, opacity)
-   is exactly 72b2068's.
-   Hero refinement pass: each blob now drifts on its own keyframes
-   (hero-blob-drift-a/-b below) instead of sharing one — different
-   horizontal/vertical distances and a different scale peak per layer, on
-   top of the durations/direction that already differed, so the two never
-   read as moving in sync. Movement stays small relative to each blob's
-   own ~30rem size (a few percent at most) — the composition underneath
-   never visibly changes, just breathes.
-   Unify pass: both blobs enlarged (~45%, same anchor point, same radial
-   shape/color stops) since the gradient is now the hero's one and only
-   background (the illustration's own local blobs are gone) and the
-   previous size left most of the right half of the hero plain white —
-   not "the main visual element of the landing page" the brief asks for.
-   Growing from the same `top`/`left` anchor in all directions (still an
-   ellipse, still the same two color stops) reaches further toward center
-   without moving or restyling either shape.
-   Full-bleed pass: `left` converts from a percentage of the old, narrower
-   ambient box (-6%/12% of ~64rem) to a calc() against the new 100vw one's
-   own center (50%) — -6% of 64rem was 3.84rem left of that box's own
-   left edge, which itself sat 32rem left of the hero's (and so the
-   viewport's) center; 50% - 35.84rem lands on that exact same
-   x-coordinate, so neither blob actually moved. Only the box they're
-   positioned within got wider. */
-/* Reference pass: color stops only — swapped from lavender→pink to
-   peach→pink so the gradient's own warm corner (this blob's anchor, the
-   upper-left) reads as peach/cream fading into pink/magenta toward the
-   right, echoing the reference image's warm-to-pink diagonal, instead of
-   the previous cooler lavender→pink read. Nothing else about this blob
-   (size, position, ellipse focus, blur, opacity, animation) changed —
-   same mechanism, different two of the seven approved tokens. */
-.landing-hero__ambient-blob--a {
-  width: 78rem;
-  height: 50rem;
-  top: -4rem;
-  left: calc(50% - 35.84rem);
-  background: radial-gradient(
-    ellipse at 40% 35%,
-    var(--wl-peach) 0%,
-    var(--wl-pink) 55%,
-    transparent 100%
-  );
-  animation-name: hero-blob-drift-a;
-  animation-duration: 17s;
-}
-
-/* Reference pass: color stops only — swapped from mint→blue to
-   lavender→blue, since the reference's cooler corner (this blob's own
-   anchor, lower and left-of-center) reads as blue/periwinkle with no
-   green in it; lavender→blue keeps that corner cool and keeps the
-   lavender token — already the hero CTA's own color — present in the
-   gradient instead of mint. Nothing else about this blob changed. */
-.landing-hero__ambient-blob--b {
-  width: 38rem;
-  height: 42rem;
-  top: 20rem;
-  /* Full-bleed pass: same conversion as --a above — 12% of the old
-     ~64rem box was 7.68rem right of that box's own left edge (32rem left
-     of center), so 24.32rem left of center overall; unchanged position,
-     just expressed against the new 100vw box's own center instead. */
-  left: calc(50% - 24.32rem);
-  background: radial-gradient(
-    ellipse at 60% 60%,
-    var(--wl-lavender) 0%,
-    var(--wl-blue) 55%,
-    transparent 100%
-  );
-  animation-name: hero-blob-drift-b;
-  animation-duration: 21s;
-  animation-direction: alternate-reverse;
-}
+/* ── hero ambient background: REMOVED ─────────────────────────────────
+   This section used to render a `.landing-hero__ambient` wrapper (two
+   large, soft, animated `.landing-hero__ambient-blob` radial gradients,
+   full-bleed via left:50%/width:100vw/translateX(-50%), masked to fade
+   out toward the bottom) as the hero's entire background system. That
+   wrapper, both blobs (--a/--b), their hero-blob-drift-a/-b keyframes
+   (below, now also removed), and the .landing-hero::after fade that used
+   to blend that gradient into the page background are all removed —
+   the hero currently has no background system of its own, only the
+   page's plain background showing through. The corresponding markup
+   (the <div className="landing-hero__ambient"> wrapper and its two
+   blob divs) was removed from components/landing/landing-hero.tsx in
+   the same pass; see that file's own doc comment for the equivalent
+   note. Nothing else in the hero — content, layout, dimensions,
+   spacing, the wave illustration below, or its own background-
+   independent gradients (heroWaveGradientA/B, the wave strokes'
+   own fill, untouched) — changed. */
 
 /* ── hero illustration: two wavelengths ───────────────────────────────
    Three soft, animated gradient blobs (CSS) behind one inline SVG. The
@@ -2041,15 +1869,13 @@ dialog::backdrop {
   aspect-ratio: 2.2 / 1;
 }
 
-/* Atmosphere pass: the illustration's own three local gradient blobs
-   (.hero-shape--one/two/three, each with the same hero-blob-drift
-   animation other pages' decorative blobs still use below) are removed —
-   the waves now float directly over the single, section-wide
-   .landing-hero__ambient-blob gradient instead of layering a second,
-   locally-scoped gradient system on top of it. `hero-blob-drift` itself
-   stays: components/landing/for-couples-hero.tsx, faq-hero.tsx,
-   how-it-works-hero.tsx, and ways-to-play-hero.tsx all still use it for
-   their own decorative blobs, untouched. */
+/* `hero-blob-drift` (kept, shared): components/landing/for-couples-hero.tsx,
+   faq-hero.tsx, how-it-works-hero.tsx, and ways-to-play-hero.tsx all still
+   use this for their own decorative blobs, untouched. The hero's own two
+   ambient blobs that used to drift on their own hero-blob-drift-a/-b
+   keyframes are removed (background-removal pass, see the "hero ambient
+   background: REMOVED" note above) along with those two keyframes — this
+   shared one is the only hero-blob-drift keyframe left in the file. */
 @keyframes hero-blob-drift {
   0%,
   100% {
@@ -2057,50 +1883,6 @@ dialog::backdrop {
   }
   50% {
     transform: translate(-0.75rem, 1rem) scale(1.05);
-  }
-}
-
-/* Hero refinement pass: the two large ambient gradient blobs behind the
-   hero's text/CTA (.landing-hero__ambient-blob--a/--b) each get their own
-   float path — different horizontal distance, vertical distance, and
-   scale peak — so they visibly move independently of each other rather
-   than sharing one drift shape at different speeds. Still the same
-   transform-only, ease-in-out, infinite-loop technique as every other
-   blob on the site (hero-blob-drift above); only the per-layer distances
-   differ, and they stay conservative relative to each blob's own ~30rem
-   size so the overall composition reads the same at every point in the
-   loop — a slow breathing motion, not a moving shape.
-   Atmosphere pass: distances/scale increased a second time (±24-36px,
-   up to 1.11 scale, from a shorter 24s/29s cycle instead of 30s/35s) so
-   the float is clearly perceptible at a glance rather than something you
-   only notice after watching for a while — still well under 10% of
-   either blob's own size, and still slow enough (whole seconds per
-   cycle) to read as breathing, not sliding.
-   Gradient-prominence pass: distances roughly doubled again (±28-36px →
-   ±52-56px) and the cycle shortened again (24s/29s → 17s/21s, see the
-   animation-duration on .landing-hero__ambient-blob--a/--b above) — the
-   brief explicitly called the previous motion "technically animated but
-   visually impossible to notice." Horizontal, vertical, and scale all
-   still move together on one ease-in-out loop (no new keyframe stops,
-   no new properties), just a bigger, faster version of the same
-   breathing path. */
-@keyframes hero-blob-drift-a {
-  0%,
-  100% {
-    transform: translate(0, 0) scale(1);
-  }
-  50% {
-    transform: translate(4.5rem, -3.25rem) scale(1.14);
-  }
-}
-
-@keyframes hero-blob-drift-b {
-  0%,
-  100% {
-    transform: translate(0, 0) scale(1);
-  }
-  50% {
-    transform: translate(-4.75rem, 3.75rem) scale(1.16);
   }
 }
 
@@ -2168,9 +1950,14 @@ dialog::backdrop {
   }
 }
 
+/* Background-removal pass: .hero-shape (already-dead, pre-existing —
+   its own divs were removed from the markup in an earlier pass) and
+   .landing-hero__ambient-blob (removed this pass, see the "hero ambient
+   background: REMOVED" note above) are both dropped from this list —
+   neither selector matches anything in the DOM any more. The wave
+   illustration's own reduced-motion behavior (.hero-wave--a/--b,
+   .hero-sync-glow) is unchanged. */
 @media (prefers-reduced-motion: reduce) {
-  .hero-shape,
-  .landing-hero__ambient-blob,
   .hero-wave--a,
   .hero-wave--b,
   .hero-sync-glow {

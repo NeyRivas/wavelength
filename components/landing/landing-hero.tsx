@@ -89,40 +89,27 @@ const DOT_B_Y = waveY(WAVE_B_BASELINE, WAVE_B_AMPLITUDE, WAVE_B_PERIODS, WAVE_B_
  * "target" iconography, competing with — rather than reinforcing — the
  * two-wavelength concept this pass is meant to make obvious).
  *
- * The primary CTA additionally gets a restrained glass treatment
- * (.landing-button--glass, additive to the existing .landing-button--
- * primary class other pages still use unmodified) — for the surface to
- * read as glass rather than flat grey, the hero now also carries two
- * large, very soft ambient gradient blobs (.landing-hero__ambient-blob)
- * spanning the whole section (not just the illustration column), so the
- * CTA — sitting in the text column — has living gradient underneath it
- * too, not a flat white background.
+ * Background-removal pass: this section used to also render a
+ * `.landing-hero__ambient` wrapper here (two large, soft, animated
+ * .landing-hero__ambient-blob radial gradients spanning the whole
+ * section) as its background. That wrapper and its two blobs — along
+ * with the matching CSS (.landing-hero__ambient, .landing-hero__ambient-
+ * blob/--a/--b, the hero-blob-drift-a/-b keyframes, and the .landing-
+ * hero::after fade that blended that gradient into the page below) — are
+ * removed; this section currently has no background system of its own
+ * besides the page's plain background. The wave illustration below is
+ * unaffected: its own paths, dots, drift animation, and sync-glow are
+ * completely unchanged, only the separate gradient layer that used to
+ * sit behind the whole section (not just the illustration) is gone.
  *
- * Atmosphere pass: the illustration used to carry its own separate set of
- * three local gradient blobs (.hero-shape--one/two/three) behind the
- * waves, in addition to the section-wide ambient blobs above — two
- * independent gradient systems layered on top of each other, which made
- * the illustration's own area read as a more saturated "patch" distinct
- * from the rest of the hero. Those three local blobs are removed; the
- * waves now float directly over the same single, section-wide ambient
- * gradient everything else in the hero already sits on, so the whole
- * viewport reads as one continuous atmosphere rather than two stacked
- * ones. The waves themselves — paths, dots, drift animation, sync-glow —
- * are completely unchanged, only their own local background is gone.
- *
- * All motion is CSS-only (no JS, no new state), continuous and slow, and
- * disabled entirely under prefers-reduced-motion (see app/globals.css) —
- * purely decorative, still `aria-hidden`, and never competes with the
- * headline/CTA for attention.
+ * All wave motion is CSS-only (no JS, no new state), continuous and
+ * slow, and disabled entirely under prefers-reduced-motion (see
+ * app/globals.css) — purely decorative, still `aria-hidden`, and never
+ * competes with the headline/CTA for attention.
  */
 export function LandingHero() {
   return (
     <section className="landing-hero">
-      <div className="landing-hero__ambient" aria-hidden="true">
-        <div className="landing-hero__ambient-blob landing-hero__ambient-blob--a" />
-        <div className="landing-hero__ambient-blob landing-hero__ambient-blob--b" />
-      </div>
-
       <div className="landing-hero__content">
         <p className="landing-eyebrow landing-hero__eyebrow">
           <span className="landing-eyebrow__dot landing-eyebrow__dot--pink" aria-hidden="true" />
