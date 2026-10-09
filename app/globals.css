@@ -1398,7 +1398,27 @@ dialog::backdrop {
    0.625rem pill cluster), echoing the reference's tightly-grouped
    buttons instead of widely spaced ones. The old protective text-shadow
    is no longer needed now that each link has its own opaque-ish surface
-   behind it. */
+   behind it.
+   Liquid-glass pass: a reference "LiquidButton" component was supplied
+   (shadcn/Radix/cva + an SVG feTurbulence/feDisplacementMap filter
+   referenced from backdrop-filter: url(...)) to push this further. None
+   of that stack exists in this plain-CSS project, and backdrop-filter's
+   url()-filter-reference form is exactly the kind of effect that's
+   fragile across engines (inconsistent/unsupported in several current
+   Safari and Firefox releases) — so rather than adding four new
+   dependencies to reproduce one button's filter, this extracts the
+   underlying qualities (a refracted edge with bright/dark inset
+   highlights, a soft directional sheen, extra color saturation showing
+   through the blur) and rebuilds them with properties already in use
+   here: a static diagonal sheen on `background-image` (kept separate
+   from `background-color` specifically so hover/active below — and the
+   active-route override further down — can keep transitioning the
+   color without the gradient layer flashing to `none`, which is what
+   the shorthand `background` property would do to it), `saturate()`
+   added to the existing `backdrop-filter: blur(...)`, and a second inset
+   shadow pooling softly at the bottom for a sense of glass thickness —
+   no SVG filter, no new dependency, same two-tier hierarchy (nav links
+   lighter, CTA stronger) as before. */
 .landing--home .landing-nav {
   gap: 0.625rem;
 }
@@ -1408,13 +1428,20 @@ dialog::backdrop {
   align-items: center;
   padding: 0.5rem 1rem;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.4);
+  background-image: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.55) 0%,
+    rgba(255, 255, 255, 0.1) 40%,
+    rgba(255, 255, 255, 0) 60%
+  );
+  background-color: rgba(255, 255, 255, 0.38);
   border: 1px solid rgba(255, 255, 255, 0.65);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px) saturate(160%);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
   box-shadow:
     0 10px 24px -14px rgba(24, 24, 32, 0.24),
-    inset 0 1px 0 rgba(255, 255, 255, 0.75);
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    inset 0 -8px 12px -10px rgba(24, 24, 32, 0.14);
   transition:
     background-color 0.2s ease,
     box-shadow 0.2s ease,
@@ -1422,14 +1449,25 @@ dialog::backdrop {
 }
 
 .landing--home .landing-nav a:hover {
-  background: rgba(255, 255, 255, 0.58);
+  background-color: rgba(255, 255, 255, 0.56);
   box-shadow:
     0 14px 28px -14px rgba(24, 24, 32, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    inset 0 -8px 12px -10px rgba(24, 24, 32, 0.1);
   transform: translateY(-1px);
 }
 
+/* Liquid-glass pass: a pressed state that reads as the glass actually
+   compressing — lift drops back to 0 (already did), the top highlight
+   softens, and the bottom pooling shadow deepens slightly, together
+   suggesting the surface flexing under a press rather than just a color
+   change. */
 .landing--home .landing-nav a:active {
+  background-color: rgba(255, 255, 255, 0.5);
+  box-shadow:
+    0 6px 14px -12px rgba(24, 24, 32, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    inset 0 -4px 10px -8px rgba(24, 24, 32, 0.18);
   transform: translateY(0);
 }
 
@@ -1462,9 +1500,13 @@ dialog::backdrop {
    "active" reads as "this pill is a little more solid" rather than a
    line breaking the pill shape. The underline itself is suppressed only
    in this scope; every other `.landing` page keeps the underline exactly
-   as before. */
+   as before.
+   Liquid-glass pass: `background-color` instead of the `background`
+   shorthand — this rule only needs to override the fill's opacity, and
+   the shorthand would reset `background-image` (the base rule's sheen
+   gradient, above) to `none` on every currently-active nav link. */
 .landing--home .landing-nav__link--active {
-  background: rgba(255, 255, 255, 0.6);
+  background-color: rgba(255, 255, 255, 0.6);
   border-color: rgba(255, 255, 255, 0.85);
 }
 
@@ -1506,16 +1548,32 @@ dialog::backdrop {
    glass already makes for the same reason. Shape/padding/label/font/
    layout are all untouched; only the fill is a surface, not scoped
    beyond `.landing--home` so every other page's header keeps the solid
-   ink pill exactly as before. */
+   ink pill exactly as before.
+   Liquid-glass pass: same recipe/rationale as .landing--home .landing-nav
+   a above (see that rule's own comment for why a supplied LiquidButton
+   reference isn't reproduced via its Radix/cva/SVG-filter stack) at this
+   button's existing stronger tier — slightly higher fill opacity, blur,
+   and shadow spread than the nav links, same as before this pass, so the
+   primary CTA keeps standing out as the one "real" button among the four
+   glass controls. background-image (the sheen) stays off the hover/
+   active overrides' `background-color`-only changes for the same reason
+   as the nav links — the shorthand would otherwise reset it. */
 .landing--home .landing-header__cta {
-  background: rgba(255, 255, 255, 0.5);
+  background-image: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.6) 0%,
+    rgba(255, 255, 255, 0.12) 40%,
+    rgba(255, 255, 255, 0) 62%
+  );
+  background-color: rgba(255, 255, 255, 0.5);
   color: var(--wl-ink);
   border: 1px solid rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
   box-shadow:
     0 14px 32px -14px rgba(24, 24, 32, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    inset 0 -10px 14px -12px rgba(24, 24, 32, 0.16);
   transition:
     background-color 0.2s ease,
     box-shadow 0.2s ease,
@@ -1523,14 +1581,20 @@ dialog::backdrop {
 }
 
 .landing--home .landing-header__cta:hover {
-  background: rgba(255, 255, 255, 0.68);
+  background-color: rgba(255, 255, 255, 0.68);
   box-shadow:
     0 18px 38px -14px rgba(24, 24, 32, 0.32),
-    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -10px 14px -12px rgba(24, 24, 32, 0.1);
   transform: translateY(-1px);
 }
 
 .landing--home .landing-header__cta:active {
+  background-color: rgba(255, 255, 255, 0.6);
+  box-shadow:
+    0 8px 18px -14px rgba(24, 24, 32, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    inset 0 -5px 12px -9px rgba(24, 24, 32, 0.2);
   transform: translateY(0);
 }
 
