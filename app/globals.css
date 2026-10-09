@@ -1818,23 +1818,113 @@ dialog::backdrop {
   background: var(--wl-mint);
 }
 
-/* ── hero ambient background: REMOVED ─────────────────────────────────
-   This section used to render a `.landing-hero__ambient` wrapper (two
-   large, soft, animated `.landing-hero__ambient-blob` radial gradients,
-   full-bleed via left:50%/width:100vw/translateX(-50%), masked to fade
-   out toward the bottom) as the hero's entire background system. That
-   wrapper, both blobs (--a/--b), their hero-blob-drift-a/-b keyframes
-   (below, now also removed), and the .landing-hero::after fade that used
-   to blend that gradient into the page background are all removed —
-   the hero currently has no background system of its own, only the
-   page's plain background showing through. The corresponding markup
-   (the <div className="landing-hero__ambient"> wrapper and its two
-   blob divs) was removed from components/landing/landing-hero.tsx in
-   the same pass; see that file's own doc comment for the equivalent
-   note. Nothing else in the hero — content, layout, dimensions,
-   spacing, the wave illustration below, or its own background-
-   independent gradients (heroWaveGradientA/B, the wave strokes'
-   own fill, untouched) — changed. */
+/* ── hero ambient background ──────────────────────────────────────────
+   New-background pass: replaces the old two-blob background (removed in
+   full, see git history — "Remove hero ambient background gradient") with
+   the approved mockup's look: one soft diagonal pastel wash across the
+   whole section plus one gentle white glow, instead of two separate
+   radial blobs. Full-bleed the same proven way every other full-bleed
+   layer on this page already is: left: 50% + width: 100vw +
+   translateX(-50%) breaks out of .landing-hero's own narrower 60rem
+   column, landing on the true viewport edges at any screen width (same
+   technique, same reasoning as the removed version's own "Full-bleed
+   pass" — see git history for the full writeup). top/bottom: -6rem gives
+   vertical bleed room so the floating animation below never reveals a
+   hard edge at the section's own top/bottom boundary. No overflow:hidden
+   here, same reasoning as before: clipping at this box's own edge is
+   what previously produced a visible "gradient → hard cut" seam;
+   horizontal bleed is still safely contained one level up by
+   `.landing main`'s own overflow-x: hidden. */
+.landing-hero__ambient {
+  position: absolute;
+  top: -6rem;
+  bottom: -6rem;
+  left: 50%;
+  width: 100vw;
+  transform: translateX(-50%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* The diagonal wash: one continuous linear-gradient (no separate shapes,
+   no visible boundaries) through the full approved palette, low opacity
+   so the colors read as light, delicate pastels rather than saturated
+   swatches — exactly the approved mockup's values, unchanged.
+   Floating-animation pass: inset: -4rem (bigger than the wrapper's own
+   -6rem/-6rem top/bottom bleed, so this layer is bigger than its parent
+   on every side) gives hero-ambient-wash-float below room to translate a
+   few rem without ever revealing this layer's own edge within the
+   viewport. Animating the layer's transform (not its gradient stops)
+   means the gradient image itself never changes — only its position
+   shifts slightly underneath the same viewport-sized window, which reads
+   as the color slowly drifting/breathing rather than any shape visibly
+   moving (there's no edge to perceive a shape by, since a linear
+   gradient has none) — this is the "extract only the animation, keep the
+   existing background exactly as it looks" approach: the gradient
+   recipe itself (colors, stops, opacity, blur) is byte-for-byte the
+   approved mockup's. */
+.landing-hero__ambient-wash {
+  position: absolute;
+  inset: -4rem;
+  background: linear-gradient(
+    135deg,
+    var(--wl-peach) 0%,
+    var(--wl-pink) 32%,
+    var(--wl-lavender) 62%,
+    var(--wl-blue) 100%
+  );
+  opacity: 0.4;
+  filter: blur(60px);
+  animation: hero-ambient-wash-float 28s ease-in-out infinite;
+}
+
+/* The soft glow: a single large, heavily-blurred white radial highlight
+   near the top of the section, for the same gentle airiness/brightness
+   the approved mockup's own white radial layer added — same position,
+   size, color, opacity, blur as that mockup.
+   Floating-animation pass: its own independent translate + scale,
+   different duration (34s vs. the wash's 28s) and direction
+   (alternate-reverse) than the wash layer, so the two never read as
+   moving in sync — the same "independent per-layer drift" principle
+   this file already uses for other multi-layer ambient effects (see
+   hero-wave-drift-a/-b below, and git history for the previous
+   hero-blob-drift-a/-b). Distances stay small relative to this layer's
+   own ~60rem size (a few percent at most, well under what the supplied
+   FloatingGradient reference moves its own layers) so the composition
+   never visibly changes, just breathes — "slow, fluid, subtle," not an
+   obvious moving circle. */
+.landing-hero__ambient-glow {
+  position: absolute;
+  width: 60rem;
+  height: 50rem;
+  top: -14rem;
+  left: calc(50% - 30rem);
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 50%, rgba(255, 255, 255, 0.55) 0%, transparent 72%);
+  filter: blur(60px);
+  animation: hero-ambient-glow-float 34s ease-in-out infinite;
+  animation-direction: alternate-reverse;
+}
+
+@keyframes hero-ambient-wash-float {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(2rem, -1.5rem) scale(1.06);
+  }
+}
+
+@keyframes hero-ambient-glow-float {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-2.5rem, 2rem) scale(1.08);
+  }
+}
 
 /* ── hero illustration: two wavelengths ───────────────────────────────
    Three soft, animated gradient blobs (CSS) behind one inline SVG. The
@@ -1950,14 +2040,14 @@ dialog::backdrop {
   }
 }
 
-/* Background-removal pass: .hero-shape (already-dead, pre-existing —
-   its own divs were removed from the markup in an earlier pass) and
-   .landing-hero__ambient-blob (removed this pass, see the "hero ambient
-   background: REMOVED" note above) are both dropped from this list —
-   neither selector matches anything in the DOM any more. The wave
-   illustration's own reduced-motion behavior (.hero-wave--a/--b,
-   .hero-sync-glow) is unchanged. */
+/* Floating-animation pass: .landing-hero__ambient-wash/-glow join this
+   list — under reduced motion the new background stays fully visible
+   (nothing here touches opacity/display, only animation), it just stops
+   drifting. The wave illustration's own reduced-motion behavior
+   (.hero-wave--a/--b, .hero-sync-glow) is unchanged. */
 @media (prefers-reduced-motion: reduce) {
+  .landing-hero__ambient-wash,
+  .landing-hero__ambient-glow,
   .hero-wave--a,
   .hero-wave--b,
   .hero-sync-glow {

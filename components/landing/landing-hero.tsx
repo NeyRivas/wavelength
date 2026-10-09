@@ -89,20 +89,34 @@ const DOT_B_Y = waveY(WAVE_B_BASELINE, WAVE_B_AMPLITUDE, WAVE_B_PERIODS, WAVE_B_
  * "target" iconography, competing with — rather than reinforcing — the
  * two-wavelength concept this pass is meant to make obvious).
  *
- * Background-removal pass: this section used to also render a
- * `.landing-hero__ambient` wrapper here (two large, soft, animated
- * .landing-hero__ambient-blob radial gradients spanning the whole
- * section) as its background. That wrapper and its two blobs — along
- * with the matching CSS (.landing-hero__ambient, .landing-hero__ambient-
- * blob/--a/--b, the hero-blob-drift-a/-b keyframes, and the .landing-
- * hero::after fade that blended that gradient into the page below) — are
- * removed; this section currently has no background system of its own
- * besides the page's plain background. The wave illustration below is
- * unaffected: its own paths, dots, drift animation, and sync-glow are
- * completely unchanged, only the separate gradient layer that used to
- * sit behind the whole section (not just the illustration) is gone.
+ * Background-removal pass: the section's old background (two large,
+ * soft, animated .landing-hero__ambient-blob radial gradients) was
+ * removed entirely, ahead of proposing a new background from a reference
+ * image.
  *
- * All wave motion is CSS-only (no JS, no new state), continuous and
+ * New-background pass: a new `.landing-hero__ambient` wrapper replaces
+ * it, built from the approved mockup — a soft diagonal pastel wash
+ * (.landing-hero__ambient-wash) plus one gentle white glow
+ * (.landing-hero__ambient-glow), both full-bleed, both see
+ * app/globals.css for the exact gradient/opacity/blur values.
+ *
+ * Floating-animation pass: each of those two layers now drifts on its
+ * own independent CSS animation (slow translate + gentle scale,
+ * ease-in-out, infinite, different durations — see
+ * hero-ambient-wash-float/hero-ambient-glow-float in app/globals.css),
+ * adapting only the MOTION CHARACTER of a supplied FloatingGradient
+ * reference component (horizontal/vertical float, scale breathing,
+ * ease-in-out, per-layer duration) — not its own colors, its React/
+ * Framer Motion implementation (this project doesn't have Framer
+ * Motion installed, and none was added for this), its card container,
+ * or its magnitude/speed (the reference's 8-12s/100px moves are
+ * explicitly "obvious moving circles"; these run 3-4x slower and move a
+ * few rem at most, matching this file's existing wave-drift/blob-drift
+ * conventions elsewhere). The wave illustration below is unaffected —
+ * its own paths, dots, drift animation, and sync-glow are completely
+ * unchanged.
+ *
+ * All motion here is CSS-only (no JS, no new state), continuous and
  * slow, and disabled entirely under prefers-reduced-motion (see
  * app/globals.css) — purely decorative, still `aria-hidden`, and never
  * competes with the headline/CTA for attention.
@@ -110,6 +124,11 @@ const DOT_B_Y = waveY(WAVE_B_BASELINE, WAVE_B_AMPLITUDE, WAVE_B_PERIODS, WAVE_B_
 export function LandingHero() {
   return (
     <section className="landing-hero">
+      <div className="landing-hero__ambient" aria-hidden="true">
+        <div className="landing-hero__ambient-wash" />
+        <div className="landing-hero__ambient-glow" />
+      </div>
+
       <div className="landing-hero__content">
         <p className="landing-eyebrow landing-hero__eyebrow">
           <span className="landing-eyebrow__dot landing-eyebrow__dot--pink" aria-hidden="true" />
