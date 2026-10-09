@@ -1960,6 +1960,13 @@ dialog::backdrop {
    viewport's) center; 50% - 35.84rem lands on that exact same
    x-coordinate, so neither blob actually moved. Only the box they're
    positioned within got wider. */
+/* Reference pass: color stops only — swapped from lavender→pink to
+   peach→pink so the gradient's own warm corner (this blob's anchor, the
+   upper-left) reads as peach/cream fading into pink/magenta toward the
+   right, echoing the reference image's warm-to-pink diagonal, instead of
+   the previous cooler lavender→pink read. Nothing else about this blob
+   (size, position, ellipse focus, blur, opacity, animation) changed —
+   same mechanism, different two of the seven approved tokens. */
 .landing-hero__ambient-blob--a {
   width: 78rem;
   height: 50rem;
@@ -1967,7 +1974,7 @@ dialog::backdrop {
   left: calc(50% - 35.84rem);
   background: radial-gradient(
     ellipse at 40% 35%,
-    var(--wl-lavender) 0%,
+    var(--wl-peach) 0%,
     var(--wl-pink) 55%,
     transparent 100%
   );
@@ -1975,6 +1982,12 @@ dialog::backdrop {
   animation-duration: 17s;
 }
 
+/* Reference pass: color stops only — swapped from mint→blue to
+   lavender→blue, since the reference's cooler corner (this blob's own
+   anchor, lower and left-of-center) reads as blue/periwinkle with no
+   green in it; lavender→blue keeps that corner cool and keeps the
+   lavender token — already the hero CTA's own color — present in the
+   gradient instead of mint. Nothing else about this blob changed. */
 .landing-hero__ambient-blob--b {
   width: 38rem;
   height: 42rem;
@@ -1986,7 +1999,7 @@ dialog::backdrop {
   left: calc(50% - 24.32rem);
   background: radial-gradient(
     ellipse at 60% 60%,
-    var(--wl-mint) 0%,
+    var(--wl-lavender) 0%,
     var(--wl-blue) 55%,
     transparent 100%
   );
