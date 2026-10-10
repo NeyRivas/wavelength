@@ -4241,6 +4241,82 @@ dialog::backdrop {
   font-family: var(--font-nunito), system-ui, sans-serif;
 }
 
+/* ── animated background (components/questionnaire/questionnaire-
+   background.tsx) ────────────────────────────────────────────────────────
+   A slow, ambient WebGL gradient behind the create/share/invite/answer
+   pages, replacing the old per-question .quiz-ambient floating pieces
+   (removed) with one page-level treatment instead of a decoration that
+   only ran alongside the question list. Rendered as the first child of
+   `.wl-create`, absolutely positioned to fill that wrapper's own box —
+   `.wl-create` already has `position: relative` and no fixed `height`
+   (just `min-height: 100vh`), so this naturally stretches to cover a long
+   form's full content height, not just one viewport, without tracking
+   scroll or document height itself.
+   `.create-header`/`.create-shell` below both already carry their own
+   `position: relative; z-index: 1`, specifically so real content always
+   paints above this z-index-0 layer — that stacking was already in place
+   before this background existed (QA'd for the Result page's own ambient
+   blobs), and needed no change here. `pointer-events: none` on the
+   wrapper (not just the canvas) keeps every layer — fallback, glow,
+   canvas — fully click/scroll/select-through, so nothing here can ever
+   intercept a click or block text selection. */
+.quiz-shader-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Always rendered underneath the canvas (see that component's own doc
+   comment) — a static, non-animated version of the exact same gradient
+   recipe the landing hero's own ambient wash uses
+   (.landing-hero__ambient-wash in this file), so a reduced-motion visitor
+   or a WebGL failure both land on "the hero gradient, just not moving"
+   rather than a blank background. inset:-4rem (bled past the wrapper's
+   own edge, contained by `.quiz-shader-bg`'s overflow:hidden above) keeps
+   the blur from visibly fading out right at its own boundary — same
+   technique as the hero's own wash. */
+.quiz-shader-bg__fallback {
+  position: absolute;
+  inset: -4rem;
+  background: linear-gradient(
+    135deg,
+    var(--wl-peach) 0%,
+    var(--wl-pink) 32%,
+    var(--wl-lavender) 62%,
+    var(--wl-blue) 100%
+  );
+  opacity: 0.4;
+  filter: blur(60px);
+}
+
+/* The hero's own soft white glow near the top, for the same fallback
+   fidelity — same position/size/color/opacity/blur as
+   .landing-hero__ambient-glow, just static here. */
+.quiz-shader-bg__fallback-glow {
+  position: absolute;
+  width: 60rem;
+  height: 50rem;
+  top: -10rem;
+  left: calc(50% - 30rem);
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 50%, rgba(255, 255, 255, 0.55) 0%, transparent 72%);
+  filter: blur(60px);
+}
+
+/* The live WebGL canvas, layered on top of the fallback (see that
+   component's doc comment for exactly when it does/doesn't end up
+   painting anything). display:block avoids the few stray pixels of
+   inline-element baseline gap a bare <canvas> otherwise leaves. */
+.quiz-shader-bg__canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
 /* ── local product header ─────────────────────────────────────────────── */
 
 .create-header {
@@ -4488,16 +4564,6 @@ dialog::backdrop {
   flex-direction: column;
 }
 
-/* Wraps the <ol> (below) and .quiz-ambient side by side in the DOM — the
-   wrapper's own height is set entirely by the <ol>'s normal-flow content
-   (the ambient layer is absolutely positioned, so it never affects that
-   height), which is exactly what lets .quiz-ambient's `inset: 0` track
-   the card list's real, current height as it grows/shrinks with the
-   number of questions. */
-.create-card-list-wrap {
-  position: relative;
-}
-
 .create-card-list {
   position: relative;
   z-index: 1;
@@ -4513,75 +4579,6 @@ dialog::backdrop {
   margin: 0 0 clamp(2rem, 5vw, 2.75rem);
   padding: 0;
   list-style: none;
-}
-
-/* ── ambient decoration alongside the question list ────────────────────
-   Runs the full height of the card list (see .create-card-list-wrap
-   above), not just the top of the page — buildQuestionnaireAmbient
-   (lib/wavelength/questionnaire-ambient.ts) scales how many pieces there
-   are, and how far down they reach, with the actual number of questions.
-   Every piece is positioned with a negative offset from *this column's*
-   own edge, not the viewport's — e.g. a left piece sits at
-   `-(edgeGap + size)`, so it can never cross back into the column
-   regardless of viewport width. z-index 1 on .create-card-list (above)
-   keeps the real cards painted above this z-index-0 layer. */
-.quiz-ambient {
-  display: none;
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-}
-
-.quiz-ambient-piece {
-  position: absolute;
-  border-radius: 50%;
-  animation-name: quiz-ambient-drift;
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: infinite;
-  /* Adopts the 0% keyframe's values immediately, including during each
-     piece's own staggered animation-delay — without this, a piece would
-     flash at full, un-animated opacity until its delay elapsed. */
-  animation-fill-mode: backwards;
-}
-
-/* A small rotated-square "sparkle" accent (a minority of pieces — see
-   the generator) instead of a soft glow: a plain, solid diamond, no
-   blur, to read as a distinct little accent rather than another glow. */
-.quiz-ambient-sparkle-shape {
-  width: 100%;
-  height: 100%;
-  border-radius: 3px;
-  transform: rotate(45deg);
-}
-
-/* Slow, organic "floating" loop — a few px of drift, a light breath of
-   scale, and a gentle opacity dip, all tied to each piece's own --op/
-   --dx/--dy custom properties (set inline per piece) so every element
-   moves independently rather than in lockstep. */
-@keyframes quiz-ambient-drift {
-  0%,
-  100% {
-    transform: translate(0, 0) scale(1);
-    opacity: var(--op, 0.68);
-  }
-  50% {
-    transform: translate(var(--dx, 0.5rem), calc(-1 * var(--dy, 0.5rem))) scale(1.08);
-    opacity: calc(var(--op, 0.68) * 0.82);
-  }
-}
-
-@media (min-width: 64rem) {
-  .quiz-ambient {
-    display: block;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .quiz-ambient-piece {
-    animation: none;
-    opacity: var(--op, 0.68);
-  }
 }
 
 /* Collapsed "+ Add question" trigger (reference): a dashed, secondary

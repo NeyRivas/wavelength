@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { AnswerQuestionCard } from "@/components/questionnaire/answer-question-card";
 import { CreateHeader } from "@/components/questionnaire/create-header";
+import { QuestionnaireBackground } from "@/components/questionnaire/questionnaire-background";
 import { SubmitFinalForm } from "@/components/wavelength/submit-final-form";
 import { WavelengthLockedNotice } from "@/components/wavelength/wavelength-locked-notice";
 import { requireUserId } from "@/lib/supabase/identity";
@@ -106,6 +107,7 @@ export default async function AnswerPage({ params }: { params: Promise<{ token: 
   if (wavelength?.participant_b_id === userId && wavelength.state === "COMPLETED") {
     return (
       <div className={`${fraunces.variable} ${nunitoSans.variable} wl-create`}>
+        <QuestionnaireBackground />
         <CreateHeader />
         <main className="create-shell b-locked-shell">
           <WavelengthLockedNotice shareToken={token} />
@@ -140,6 +142,7 @@ export default async function AnswerPage({ params }: { params: Promise<{ token: 
 
   return (
     <div className={`${fraunces.variable} ${nunitoSans.variable} wl-create`}>
+      <QuestionnaireBackground />
       <CreateHeader />
       <main className="create-shell answer-shell">
         <AnswerShellIntro
