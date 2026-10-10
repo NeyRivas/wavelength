@@ -2,7 +2,6 @@ import { Fraunces, Nunito_Sans } from "next/font/google";
 import { redirect } from "next/navigation";
 
 import { CreateHeader } from "@/components/questionnaire/create-header";
-import { QuestionnaireBackground } from "@/components/questionnaire/questionnaire-background";
 import { ReadOnlyAnswers } from "@/components/questionnaire/read-only-answers";
 import { InviteIntro } from "@/components/wavelength/invite-intro";
 import { JoinForm } from "@/components/wavelength/join-form";
@@ -111,7 +110,6 @@ export default async function WavelengthPage({
     ]);
     return (
       <div className={`${fraunces.variable} ${nunitoSans.variable} wl-create`}>
-        <QuestionnaireBackground />
         <CreateHeader />
         <main className="create-shell share-shell">
           <ReviewIntro />
@@ -151,7 +149,6 @@ export default async function WavelengthPage({
   if (preview.is_taken) {
     return (
       <div className={`${fraunces.variable} ${nunitoSans.variable} wl-create`}>
-        <QuestionnaireBackground />
         <CreateHeader />
         <main className="create-shell wavelength-in-progress-shell">
           <WavelengthInProgressNotice />
@@ -162,7 +159,6 @@ export default async function WavelengthPage({
 
   return (
     <div className={`${fraunces.variable} ${nunitoSans.variable} wl-create`}>
-      <QuestionnaireBackground />
       <CreateHeader />
       <main className="create-shell invite-shell">
         <InviteIntro aAlias={preview.participant_a_alias} copy={inviteCopy} />

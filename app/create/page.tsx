@@ -3,7 +3,6 @@ import { Fraunces, Nunito_Sans } from "next/font/google";
 import { CreateHeader } from "@/components/questionnaire/create-header";
 import { CreateProgress } from "@/components/questionnaire/create-progress";
 import { DraftSetupForm } from "@/components/questionnaire/draft-setup-form";
-import { QuestionnaireBackground } from "@/components/questionnaire/questionnaire-background";
 import { QuestionnaireBuilder } from "@/components/questionnaire/questionnaire-builder";
 import { requireUserId } from "@/lib/supabase/identity";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -152,7 +151,6 @@ export default async function CreatePage({
   if (!draft) {
     return (
       <div className={`${fraunces.variable} ${nunitoSans.variable} wl-create`}>
-        <QuestionnaireBackground />
         <CreateHeader backHref={backHref} />
         <main className="create-shell">
           <CreateShellIntro
@@ -182,7 +180,6 @@ export default async function CreatePage({
 
   return (
     <div className={`${fraunces.variable} ${nunitoSans.variable} wl-create`}>
-      <QuestionnaireBackground />
       <CreateHeader backHref={backHref} />
       <main className="create-shell">
         <CreateShellIntro
