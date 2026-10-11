@@ -4751,6 +4751,26 @@ dialog::backdrop {
   background: color-mix(in srgb, var(--wl-peach) 30%, white);
 }
 
+/* White-interior experiment (A's QuestionCard / B's AnswerQuestionCard
+   only — same `.create-card--{tint}` scoping the halo pass above uses, so
+   the add-question form and A's read-only post-share review keep their
+   original tinted band): overrides the tinted band above to plain white,
+   per explicit request to make every passive internal container/button
+   white and let the card's own external halo (added in the previous
+   pass) carry the per-question color instead. Higher specificity (two
+   classes) than the single-class rules above, so it wins regardless of
+   source order without having to touch those shared rules. The
+   border-bottom below stays the neutral --color-border it already was —
+   that alone still separates this band from .create-card__body on a
+   plain white background. */
+.create-card--lavender .create-card__head,
+.create-card--blue .create-card__head,
+.create-card--mint .create-card__head,
+.create-card--pink .create-card__head,
+.create-card--peach .create-card__head {
+  background: #ffffff;
+}
+
 .create-card__body {
   padding: 1.5rem;
 }
@@ -4792,6 +4812,22 @@ dialog::backdrop {
 
 .create-card__number--peach {
   background: var(--wl-peach);
+}
+
+/* White-interior experiment (same scoping as .create-card__head above):
+   the solid tint fill becomes white; a border in that same tint (read
+   via --card-glow, already set per card by the halo pass above, so no
+   per-tint repetition needed here) keeps the badge from disappearing
+   against the now-also-white head band — the "adjust only borders"
+   fallback the brief itself calls for when a white container loses
+   separation, not a background recolor. */
+.create-card--lavender .create-card__number,
+.create-card--blue .create-card__number,
+.create-card--mint .create-card__number,
+.create-card--pink .create-card__number,
+.create-card--peach .create-card__number {
+  background: #ffffff;
+  border: 1.5px solid var(--card-glow);
 }
 
 .create-card__title {
@@ -5302,15 +5338,26 @@ dialog::backdrop {
    above (grouped into those same two rules by selector, not duplicated),
    using this card's own already-established lavender tint directly
    rather than a per-instance modifier class, since there's only ever one
-   .share-card per page and its color was never variable. */
+   .share-card per page and its color was never variable.
+   White-interior experiment: this card's own fill used to be a light
+   lavender wash (the card's own tint); per the same request as the
+   question cards above, that fill goes plain white here too, matching
+   A/B's cards (whose .create-card root was already white) and leaving
+   the external halo as the only color carrier. A white fill reads
+   almost indistinguishably from .wl-create's own near-white #fdfdfd
+   page background, so — the brief's own "adjust only borders" fallback
+   for a white container that loses separation — this now also carries
+   the same neutral border .create-card already uses for the identical
+   reason. */
 .share-card {
   position: relative;
   z-index: 0;
   --card-glow: var(--wl-lavender);
   margin-bottom: 2.5rem;
   padding: 1.75rem;
+  border: 1px solid var(--color-border);
   border-radius: 1.25rem;
-  background: color-mix(in srgb, var(--wl-lavender) 20%, white);
+  background: #ffffff;
   text-align: left;
 }
 
@@ -5364,9 +5411,20 @@ dialog::backdrop {
    contrast against the light pastel fill) rather than the harsher
    pure-black-on-white block this replaces. Depth comes from a soft,
    pastel-tinted shadow (color-mix of the same fill color, never a new
-   color) instead of a heavy dark drop shadow, and the hover/active
-   states just deepen that same lavender slightly toward ink — no new
-   colors, no layout change (same size/shape/position as before). */
+   color) instead of a heavy dark drop shadow.
+   White-interior experiment: the solid lavender fill becomes white
+   (this is the one actual "botón interno" this card has), with a
+   lavender border standing in for the fill as this button's one
+   remaining color cue — ink text keeps the same strong contrast against
+   white it already had against the pale fill. The hover/active states
+   are restyled as a light lavender wash instead of "deepen the solid
+   fill toward ink" (that recipe assumed a solid fill to deepen), using
+   the same 14% tint strength already established for
+   .create-type-option's own selected-state wash, so interaction
+   feedback stays legible without reintroducing a solid colored
+   background. The soft pastel-tinted shadow itself is unrelated to this
+   pass (a pre-existing elevation cue, not this button's own fill) and
+   is unchanged. */
 .share-copy-button {
   display: inline-flex;
   align-items: center;
@@ -5375,9 +5433,9 @@ dialog::backdrop {
   flex-shrink: 0;
   min-height: 2.75rem;
   padding: 0 1.5rem;
-  border: none;
+  border: 1.5px solid var(--wl-lavender);
   border-radius: 999px;
-  background: var(--wl-lavender);
+  background: #ffffff;
   color: var(--wl-ink);
   font-family: var(--font-nunito), system-ui, sans-serif;
   font-weight: 700;
@@ -5392,12 +5450,13 @@ dialog::backdrop {
 }
 
 .share-copy-button:hover {
-  background: color-mix(in srgb, var(--wl-lavender) 82%, var(--wl-ink) 18%);
+  background: color-mix(in srgb, var(--wl-lavender) 14%, white);
   box-shadow: 0 8px 18px -6px color-mix(in srgb, var(--wl-lavender) 85%, transparent);
   transform: translateY(-1px);
 }
 
 .share-copy-button:active {
+  background: color-mix(in srgb, var(--wl-lavender) 22%, white);
   transform: translateY(0);
   box-shadow: 0 4px 10px -6px color-mix(in srgb, var(--wl-lavender) 75%, transparent);
 }
@@ -5408,6 +5467,7 @@ dialog::backdrop {
 }
 
 .share-copy-button--copied {
+  border-color: var(--wl-mint);
   background: var(--wl-mint);
   color: var(--wl-ink);
   box-shadow: 0 6px 16px -6px color-mix(in srgb, var(--wl-mint) 75%, transparent);
