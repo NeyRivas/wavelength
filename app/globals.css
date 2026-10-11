@@ -1081,19 +1081,30 @@ dialog::backdrop {
    but this stays in place as a harmless no-op in case anything else ever
    comes to depend on it, and because it's still exactly correct for
    every other `.landing` page's own in-flow, non-fixed header.
-   `--landing-nav-height` is the one place the fixed header's reserved
-   height is defined — every section below that needs to either make room
-   for it (the hero's own top padding) or stop short of scrolling under it
-   (each section's scroll-margin-top) reads this same variable, so there
-   is exactly one number to keep in sync with the header's actual
-   rendered height (measured at 4.84375rem against the live page, both
-   desktop and mobile — 1rem top/bottom padding on .landing-header__inner
-   plus its tallest child, the glass pill row; the mobile-hidden nav links
-   were never the tallest part of the row, so mobile measures the same);
-   5rem leaves a small, deliberate margin above that. */
+   `--landing-header-top` is the fixed header's own offset from the
+   viewport top (see `.landing--home .landing-header` below) — the hero's
+   rounded frame now has its own `clamp(0px, 2vw, 1.5rem)` top margin (see
+   `.landing-hero` above), so the header is pushed down by that same
+   margin plus one more `1rem` of breathing room, landing it comfortably
+   inside the frame instead of flush with its rounded top edge.
+   `--landing-nav-height` is the one place the fixed header's total
+   reserved height (from the real viewport top, offset included) is
+   defined — every section below that needs to either make room for it
+   (the hero's own top padding) or stop short of scrolling under it (each
+   section's scroll-margin-top) reads this same variable, so there is
+   exactly one number to keep in sync with the header's actual rendered
+   height (measured at 4.84375rem against the live page, both desktop and
+   mobile — 1rem top/bottom padding on .landing-header__inner plus its
+   tallest child, the glass pill row; the mobile-hidden nav links were
+   never the tallest part of the row, so mobile measures the same) plus
+   its own `--landing-header-top` offset; the original flat `5rem` already
+   left a small, deliberate margin above the unoffset 4.84375rem figure,
+   kept here as the same `+ 0.15625rem`-ish slack folded into the new
+   expression. */
 .landing--home {
   position: relative;
-  --landing-nav-height: 5rem;
+  --landing-header-top: calc(clamp(0px, 2vw, 1.5rem) + 1rem);
+  --landing-nav-height: calc(4.84375rem + var(--landing-header-top) + 0.15625rem);
 }
 
 /* Sticky footer for the internal marketing/picker pages (/how-it-works,
@@ -1332,7 +1343,7 @@ dialog::backdrop {
 .landing--home .landing-header {
   position: fixed;
   inset-inline: 0;
-  top: 0;
+  top: var(--landing-header-top);
   background: transparent;
 }
 
@@ -1597,10 +1608,19 @@ dialog::backdrop {
    .landing-hero__frame's rendered width and left/right edges match
    .landing-dark-cta's precisely. The bottom padding (the gap before How
    It Works) and .landing-hero__inner's own content padding are both
-   unchanged. */
+   unchanged.
+   Top-margin pass: the top value here used to be a flat `0`, so the
+   rounded frame's own top edge sat flush with the viewport top (y=0) —
+   unlike its left/right edges, which already had this same
+   `clamp(0px, 2vw, 1.5rem)` gutter. Reusing that identical expression
+   for the top value gives the frame an equal top/left/right margin at
+   any viewport width, not just desktop, so it stays correct responsively
+   with no separate breakpoint logic needed. See
+   `.landing--home .landing-header` below for how the fixed header is
+   repositioned to stay clear of this new top edge. */
 .landing-hero {
   position: relative;
-  padding: 0 clamp(0px, 2vw, 1.5rem) clamp(3rem, 7vw, 5rem);
+  padding: clamp(0px, 2vw, 1.5rem) clamp(0px, 2vw, 1.5rem) clamp(3rem, 7vw, 5rem);
 }
 
 /* Section-scroll pass: scroll-margin-top/scroll-snap-align pair with
@@ -1724,6 +1744,41 @@ dialog::backdrop {
   padding: 1.5rem 3.25rem;
   gap: 0.75rem;
   font-size: 1.25rem;
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+/* Hover pass: .landing-button--primary (shared with Experience's own
+   CTA) has never had a hover state of its own — scoped to
+   .landing-button--hero only, so Experience's button is untouched.
+   Reuses this site's established "lavender tint + soft shadow" hover
+   language (see .landing-header__cta:hover) rather than a new recipe,
+   kept to a background tint + shadow so the button's flat, solid,
+   border-free identity — the same "visual language" as Experience's own
+   button — stays exactly as it is at rest. */
+@media (hover: hover) {
+  .landing-button--hero:hover {
+    background-color: color-mix(in srgb, var(--wl-lavender) 16%, var(--wl-ink));
+    box-shadow: 0 18px 36px -16px rgba(24, 24, 32, 0.5);
+  }
+}
+
+/* The scale-up is its own rule, gated on prefers-reduced-motion, so the
+   tint/shadow above still respond on hover either way — only the motion
+   itself is suppressed. A pure transform never reflows the page, so nothing
+   else shifts when this kicks in. */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .landing-button--hero:hover {
+    transform: scale(1.04);
+  }
+}
+
+.landing-button--hero:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 5px rgba(24, 24, 32, 0.45);
 }
 
 /* Centers the shared .landing-eyebrow's own flex row (dots + label)
