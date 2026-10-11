@@ -1613,9 +1613,12 @@ dialog::backdrop {
    taller, while keeping it clear of the fold at 1440x900 (frame still
    bottoms out comfortably above the 900px line). This only grows the
    rectangle's own internal padding — `.landing-hero`'s outer padding (the
-   top and side margins against the viewport) is untouched. */
+   top and side margins against the viewport) is untouched.
+   Taller-still pass: nudged once more (clamp max 2rem -> 2.15rem) per
+   explicit follow-up request to make it a bit taller yet again, still
+   clear of the fold at 1440x900. */
 .landing-hero__inner {
-  --landing-hero-breathing: clamp(1.125rem, 3.25vw, 2rem);
+  --landing-hero-breathing: clamp(1.1875rem, 3.375vw, 2.15rem);
   position: relative;
   z-index: 1;
   display: flex;
