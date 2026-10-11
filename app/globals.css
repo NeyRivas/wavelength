@@ -1606,9 +1606,8 @@ dialog::backdrop {
    through 409d0cb's revert of a later, since-abandoned 60rem experiment).
    Both now resolve to the identical gutter at any viewport width, so
    .landing-hero__frame's rendered width and left/right edges match
-   .landing-dark-cta's precisely. The bottom padding (the gap before How
-   It Works) and .landing-hero__inner's own content padding are both
-   unchanged.
+   .landing-dark-cta's precisely. .landing-hero__inner's own content
+   padding is unchanged.
    Top-margin pass: the top value here used to be a flat `0`, so the
    rounded frame's own top edge sat flush with the viewport top (y=0) —
    unlike its left/right edges, which already had this same
@@ -1617,10 +1616,19 @@ dialog::backdrop {
    any viewport width, not just desktop, so it stays correct responsively
    with no separate breakpoint logic needed. See
    `.landing--home .landing-header` below for how the fixed header is
-   repositioned to stay clear of this new top edge. */
+   repositioned to stay clear of this new top edge.
+   Bottom-margin pass: the bottom value used to be a much larger
+   `clamp(3rem, 7vw, 5rem)` — not the frame's own margin so much as extra
+   spacing stacked on top of How It Works' own top padding (How It Works,
+   like every `.landing-section`, already carries that same
+   `clamp(3rem, 7vw, 5rem)` as ITS top padding, so the two were adding
+   together). Reusing the same `clamp(0px, 2vw, 1.5rem)` expression here
+   too — identical to the top/left/right values — gives the frame an
+   equal margin on all four sides; How It Works' own top padding alone is
+   still what keeps the gap before it comfortable rather than cramped. */
 .landing-hero {
   position: relative;
-  padding: clamp(0px, 2vw, 1.5rem) clamp(0px, 2vw, 1.5rem) clamp(3rem, 7vw, 5rem);
+  padding: clamp(0px, 2vw, 1.5rem);
 }
 
 /* Section-scroll pass: scroll-margin-top/scroll-snap-align pair with
@@ -1779,6 +1787,70 @@ dialog::backdrop {
   outline: 2px solid #ffffff;
   outline-offset: 3px;
   box-shadow: 0 0 0 5px rgba(24, 24, 32, 0.45);
+}
+
+/* ── play-entry button hover (standardized across the site) ───────────
+   Every other button whose job is to start or enter a game/questionnaire
+   — Experience's CTA, dark-cta's "Create your questionnaire", ways-to-
+   play's two mode CTAs, /for-couples hero's primary CTA — now reuses the
+   Hero CTA's own hover recipe above, byte-for-byte: same transition
+   timing, same 16% lavender-into-base color-mix ratio, same box-shadow
+   formula, same scale(1.04) (split into its own prefers-reduced-motion-
+   gated rule, same as the Hero's), same focus-visible halo. Declared as
+   its own `.landing-button--play` class instead of folding these buttons
+   into `.landing-button--hero` so the Hero's own rule above stays
+   completely untouched (it's the approved reference, not to be
+   refactored) — a deliberate, small duplication rather than any risk to
+   it. Internal-navigation links/outline buttons (e.g. /for-couples'
+   "See how it works") and the header's own "Start playing" CTA are
+   intentionally not included: this is for the big, page-level buttons
+   that start a specific play/questionnaire experience, not general
+   navigation or utility chrome. */
+.landing-button--play {
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+@media (hover: hover) {
+  .landing-button--play:hover {
+    background-color: color-mix(in srgb, var(--wl-lavender) 16%, var(--wl-ink));
+    box-shadow: 0 18px 36px -16px rgba(24, 24, 32, 0.5);
+  }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .landing-button--play:hover {
+    transform: scale(1.04);
+  }
+}
+
+.landing-button--play:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 5px rgba(24, 24, 32, 0.45);
+}
+
+/* .landing-button--light's resting fill is lavender, not ink, so mixing
+   16% MORE lavender into it on hover would barely register — the same
+   16% ratio and transition instead mixes toward ink (deepening it,
+   mirroring the Hero's own "mix toward the opposite tone" mechanic), and
+   the focus ring swaps to ink since a white halo would barely show
+   against an already-light fill. Only `.landing-cta-section.tsx`'s
+   "Create your questionnaire" button currently uses both classes
+   together. */
+@media (hover: hover) {
+  .landing-button--light.landing-button--play:hover {
+    background-color: color-mix(in srgb, var(--wl-ink) 16%, var(--wl-lavender));
+    box-shadow: 0 18px 36px -16px rgba(24, 24, 32, 0.32);
+  }
+}
+
+.landing-button--light.landing-button--play:focus-visible {
+  outline: 2px solid var(--wl-ink);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 5px rgba(24, 24, 32, 0.22);
 }
 
 /* Centers the shared .landing-eyebrow's own flex row (dots + label)
@@ -2304,10 +2376,17 @@ dialog::backdrop {
     border-color 0.2s ease;
 }
 
+/* Amplification pass: the lift/shadow here used to read as quite subtle
+   — bumped to a slightly taller lift, a touch of scale, and a deeper,
+   wider shadow so the interaction feels clearly more responsive, while
+   staying restrained (no rotation, no large movement). One rule, shared
+   by every .game-card everywhere it's used (How It Works' three step
+   cards, and Dating & Couples/Friends' game cards), so all three read as
+   one consistent hover language rather than needing separate tuning. */
 .game-card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-4px) scale(1.015);
   border-color: transparent;
-  box-shadow: 0 20px 36px -22px rgba(24, 24, 32, 0.3);
+  box-shadow: 0 26px 44px -20px rgba(24, 24, 32, 0.36);
 }
 
 .game-card:active {
@@ -2492,14 +2571,43 @@ dialog::backdrop {
 }
 
 /* Size pass: "slightly larger than their current size" — scoped to the
-   home page's own How It Works section only (`.landing--home .landing-how`),
-   never touching GameCard's own sizing on /play/dating-couples or
-   /play/friends, which keep their existing, unmodified padding/gap. */
+   home page's own How It Works section only (`.landing--home .landing-how`).
+   Dating & Couples/Friends get the identical padding/gap bump separately
+   below, via `.play-category` instead of this selector, since they're
+   `.landing--internal` pages, not `.landing--home`. */
 .landing--home .landing-how .game-card {
   padding: 2.25rem;
 }
 
 .landing--home .landing-how .landing-card-grid {
+  gap: 2rem;
+}
+
+/* ── Dating & Couples / Friends: width + size, matching How It Works ──
+   `.play-category` (components/play/game-category-section.tsx) is
+   exclusive to /play/dating-couples and /play/friends — never matches
+   /play itself (CategoryCard, a different component) or
+   /play/dating-couples/date-night (its own `.dn-page` marker), so this
+   can't leak onto either.
+   Width: measured against the landing page's own How It Works/Experience
+   sections (both 1280px/80rem at a 1440px viewport, confirmed via
+   Playwright) — `.play-category` inherited `.landing-how`'s shared
+   60rem, same as several other internal pages still correctly need; an
+   explicit 80rem here, scoped to this class alone, lines these two pages'
+   own header/footer (already 80rem, unscoped, shared by every page) up
+   with their main content instead of leaving it narrower.
+   Size: the exact same padding/gap bump How It Works' own cards got
+   above, reused rather than inventing a second value — "slightly larger"
+   either way. */
+.play-category {
+  max-width: 80rem;
+}
+
+.play-category .game-card {
+  padding: 2.25rem;
+}
+
+.play-category .landing-card-grid {
   gap: 2rem;
 }
 

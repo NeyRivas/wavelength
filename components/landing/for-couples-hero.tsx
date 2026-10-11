@@ -84,7 +84,10 @@ export function ForCouplesHero() {
         </p>
 
         <div className="fc-hero__actions">
-          <Link href="/play/dating-couples" className="landing-button landing-button--primary">
+          <Link
+            href="/play/dating-couples"
+            className="landing-button landing-button--primary landing-button--play"
+          >
             Create your questionnaire <span aria-hidden="true">→</span>
           </Link>
           <Link href="/how-it-works" className="landing-button landing-button--outline">

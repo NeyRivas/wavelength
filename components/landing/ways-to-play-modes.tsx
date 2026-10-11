@@ -47,7 +47,10 @@ export function WaysToPlayModes() {
             <div className={`landing-card__blob ${mode.blobClass}`} aria-hidden="true" />
             <h2 className="landing-card__title">{mode.title}</h2>
             <p className="landing-card__text wtp-mode-card__text">{mode.description}</p>
-            <Link href={mode.href} className="landing-button landing-button--primary">
+            <Link
+              href={mode.href}
+              className="landing-button landing-button--primary landing-button--play"
+            >
               {mode.ctaLabel} <span aria-hidden="true">→</span>
             </Link>
           </div>

@@ -34,7 +34,10 @@ export function LandingExperience() {
         </div>
 
         <div className="landing-experience__actions">
-          <Link href="/play" className="landing-button landing-button--primary">
+          <Link
+            href="/play"
+            className="landing-button landing-button--primary landing-button--play"
+          >
             Let&apos;s play <span aria-hidden="true">→</span>
           </Link>
         </div>

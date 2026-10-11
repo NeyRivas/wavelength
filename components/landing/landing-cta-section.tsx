@@ -26,7 +26,7 @@ export function LandingCtaSection() {
           It only takes a few minutes. You might learn something new about someone you&apos;ve known
           for years.
         </p>
-        <Link href="/play" className="landing-button landing-button--light">
+        <Link href="/play" className="landing-button landing-button--light landing-button--play">
           Create your questionnaire <span aria-hidden="true">→</span>
         </Link>
         <div className="landing-dot-row" aria-hidden="true">
