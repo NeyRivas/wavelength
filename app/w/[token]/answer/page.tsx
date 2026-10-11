@@ -1,7 +1,6 @@
 import { Fraunces, Nunito_Sans } from "next/font/google";
 import { redirect } from "next/navigation";
 
-import { AnswerBackground } from "@/components/questionnaire/answer-background";
 import { AnswerQuestionCard } from "@/components/questionnaire/answer-question-card";
 import { CreateHeader } from "@/components/questionnaire/create-header";
 import { SubmitFinalForm } from "@/components/wavelength/submit-final-form";
@@ -141,7 +140,6 @@ export default async function AnswerPage({ params }: { params: Promise<{ token: 
 
   return (
     <div className={`${fraunces.variable} ${nunitoSans.variable} wl-create`}>
-      <AnswerBackground />
       <CreateHeader />
       <main className="create-shell answer-shell">
         <AnswerShellIntro
