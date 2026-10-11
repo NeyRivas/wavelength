@@ -1481,66 +1481,41 @@ dialog::backdrop {
   font-weight: 700;
 }
 
-/* Hover-refinement pass: was a flat, opaque `var(--wl-ink)` fill with no
-   border/shadow/sheen of its own — refined into a restrained dark glass
-   pill instead (a near-opaque ink fill so text contrast and "this is the
-   primary action" legibility are untouched, plus a delicate border and a
-   soft inset top highlight for the glass read), and sized down slightly
-   (padding only — font-size/border-radius/label are untouched, so the
-   pill shape and text size are exactly as before, just a touch more
-   compact). Padding lives here because `.landing--home
-   .landing-header__cta` below never redefines it, so the size reduction
-   reaches that variant too, automatically, with no separate edit. */
+/* Unify pass: the home page's solid-ink "Start playing" treatment (once
+   scoped to `.landing--home` only, with internal pages kept on a
+   separate dark-glass design) is now this button's one and only
+   appearance, everywhere — a flat, fully solid `var(--wl-ink)` pill, no
+   sheen, no border, no backdrop blur, no translucency, matching
+   Experience's own "Let's play" button (.landing-button--primary). The
+   hover is simplified to match: home's actual hover was already just a
+   1px lift (its old color/border/shadow hover declarations never
+   visibly applied there, cancelled by the solid-ink override that used
+   to sit after them in source at equal specificity) — stated directly
+   here now, everywhere, instead of leaving internal pages on the old
+   color-mix/border/shadow recipe that no longer matches. Transform-only,
+   so it's also now explicitly gated on prefers-reduced-motion (the old
+   rule never was). */
 .landing-header__cta {
   display: inline-flex;
   align-items: center;
-  background-color: rgba(24, 24, 32, 0.92);
-  background-image: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.16) 0%,
-    rgba(255, 255, 255, 0.03) 45%,
-    rgba(255, 255, 255, 0) 65%
-  );
+  background: var(--wl-ink);
   color: #ffffff;
   font-weight: 700;
   font-size: 0.9375rem;
   padding: 0.5625rem 1.125rem;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  box-shadow:
-    0 6px 16px -10px rgba(24, 24, 32, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.18);
   text-decoration: none;
   white-space: nowrap;
-  transition:
-    background-color 0.2s ease,
-    border-color 0.2s ease,
-    box-shadow 0.2s ease,
-    transform 0.15s ease;
+  transition: transform 0.15s ease;
 }
 
-/* Lavender hover, echoing the nav links' own hover without losing this
-   button's dark identity: the fill warms very slightly toward lavender
-   and the border/ring pick up the tint, but the base stays dark ink. */
-@media (hover: hover) {
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
   .landing-header__cta:hover {
-    background-color: color-mix(in srgb, var(--wl-lavender) 14%, rgba(24, 24, 32, 0.94));
-    border-color: color-mix(in srgb, var(--wl-lavender) 55%, transparent);
-    box-shadow:
-      0 8px 20px -10px rgba(24, 24, 32, 0.5),
-      0 0 0 3px color-mix(in srgb, var(--wl-lavender) 24%, transparent),
-      inset 0 1px 0 rgba(255, 255, 255, 0.22);
     transform: translateY(-1px);
   }
 }
 
 .landing-header__cta:active {
-  background-color: rgba(14, 14, 20, 0.95);
-  box-shadow:
-    0 3px 10px -8px rgba(24, 24, 32, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12);
   transform: translateY(0);
 }
 
@@ -1548,39 +1523,6 @@ dialog::backdrop {
    this CTA sits on plain white on every internal page but floats over
    the hero gradient and the dark closing CTA section on the home page. */
 .landing-header__cta:focus-visible {
-  outline: 2px solid #ffffff;
-  outline-offset: 2px;
-  box-shadow: 0 0 0 4px rgba(24, 24, 32, 0.85);
-}
-
-/* Correction pass: the home header's CTA now matches Experience's own
-   "Let's play" button (.landing-button--primary) — a flat, fully solid
-   `var(--wl-ink)` pill, no sheen, no border, no backdrop blur, no
-   translucency. Earlier passes here tried a dark-glass treatment
-   reasoned as "read as floating over the hero/dark-CTA backdrop"; that
-   read was explicitly wrong per the brief, which asks for this button to
-   be solid and visually consistent with Experience's button. Overrides
-   only the base rule's background/border/blur/shadow properties — shape,
-   padding, label, and font stay inherited from the base `.landing-header__cta`
-   rule above. Scoped to `.landing--home` only; internal pages keep their
-   own dark-glass CTA (the base rule) exactly as approved. */
-.landing--home .landing-header__cta {
-  background: var(--wl-ink);
-  background-image: none;
-  border: none;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  box-shadow: none;
-}
-
-/* The keyboard-focus halo above shares the same `box-shadow` property as
-   the flat-solid override just above it; both rules carry equal
-   specificity (two classes), so without restating the halo here, source
-   order alone would let the override's `box-shadow: none` win even while
-   focus-visible, silently dropping the ring. Restated at one selector
-   higher (.landing--home + the base class + :focus-visible) removes any
-   ambiguity. */
-.landing--home .landing-header__cta:focus-visible {
   outline: 2px solid #ffffff;
   outline-offset: 2px;
   box-shadow: 0 0 0 4px rgba(24, 24, 32, 0.85);
@@ -1622,13 +1564,16 @@ dialog::backdrop {
    spacing stacked on top of How It Works' own top padding (How It Works,
    like every `.landing-section`, already carries that same
    `clamp(3rem, 7vw, 5rem)` as ITS top padding, so the two were adding
-   together). Reusing the same `clamp(0px, 2vw, 1.5rem)` expression here
-   too — identical to the top/left/right values — gives the frame an
-   equal margin on all four sides; How It Works' own top padding alone is
-   still what keeps the gap before it comfortable rather than cramped. */
+   together). Briefly made equal to top/left/right; per explicit follow-up
+   request it's now exactly double the top/horizontal value instead —
+   `clamp(0px, 4vw, 3rem)` is `clamp(0px, 2vw, 1.5rem)` with every term
+   doubled, so it resolves to precisely 2x at any viewport width, not just
+   on desktop. Top and horizontal stay at the original `clamp(0px, 2vw,
+   1.5rem)`, unchanged. Width/alignment with .landing-dark-cta (above) is
+   untouched, since only the bottom term changed. */
 .landing-hero {
   position: relative;
-  padding: clamp(0px, 2vw, 1.5rem);
+  padding: clamp(0px, 2vw, 1.5rem) clamp(0px, 2vw, 1.5rem) clamp(0px, 4vw, 3rem);
 }
 
 /* Section-scroll pass: scroll-margin-top/scroll-snap-align pair with
@@ -1760,12 +1705,12 @@ dialog::backdrop {
 
 /* Hover pass: .landing-button--primary (shared with Experience's own
    CTA) has never had a hover state of its own — scoped to
-   .landing-button--hero only, so Experience's button is untouched.
-   Reuses this site's established "lavender tint + soft shadow" hover
-   language (see .landing-header__cta:hover) rather than a new recipe,
-   kept to a background tint + shadow so the button's flat, solid,
+   .landing-button--hero only, so Experience's button is untouched. A
+   background tint + shadow, kept so the button's flat, solid,
    border-free identity — the same "visual language" as Experience's own
-   button — stays exactly as it is at rest. */
+   button — stays exactly as it is at rest. (.landing-header__cta's own
+   hover is a simpler, separate recipe — see its own rule — not reused
+   here.) */
 @media (hover: hover) {
   .landing-button--hero:hover {
     background-color: color-mix(in srgb, var(--wl-lavender) 16%, var(--wl-ink));
@@ -3085,7 +3030,23 @@ dialog::backdrop {
 
 /* ── footer ───────────────────────────────────────────────────────────── */
 
+/* Width-bug fix: on every internal page, `.landing-footer` is a direct
+   child of `.landing--internal`'s own `display: flex; flex-direction:
+   column;` (the sticky-footer layout, above) — unlike the header, whose
+   own `margin: 0 auto` lives on an inner wrapper (.landing-header__inner)
+   insulated from that flex context, this `margin: 0 auto` sits directly
+   on the flex item itself. A flex item with auto cross-axis margins and
+   no explicit width doesn't stretch to fill the container; it shrinks to
+   its own content's preferred size instead, bounded by (but not actually
+   reaching) `max-width` — measured at 769px of an available 1280px on
+   every internal page, vs. the home page's correct 1280px (home's own
+   wrapper is `display: block`, where this quirk doesn't apply). `width:
+   100%` makes the intended size explicit instead of relying on stretch
+   semantics, fixing every internal page's footer to the same 1280px/80rem
+   home already rendered correctly — and is a no-op on home, where it was
+   already resolving to the same value. */
 .landing-footer {
+  width: 100%;
   max-width: 80rem;
   margin: 0 auto;
   padding: clamp(3rem, 6vw, 4.5rem) clamp(1.5rem, 4vw, 4rem) 2rem;
