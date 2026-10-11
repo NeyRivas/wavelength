@@ -1559,21 +1559,20 @@ dialog::backdrop {
    with no separate breakpoint logic needed. See
    `.landing--home .landing-header` below for how the fixed header is
    repositioned to stay clear of this new top edge.
-   Bottom-margin pass: the bottom value used to be a much larger
-   `clamp(3rem, 7vw, 5rem)` — not the frame's own margin so much as extra
-   spacing stacked on top of How It Works' own top padding (How It Works,
-   like every `.landing-section`, already carries that same
-   `clamp(3rem, 7vw, 5rem)` as ITS top padding, so the two were adding
-   together). Briefly made equal to top/left/right; per explicit follow-up
-   request it's now exactly double the top/horizontal value instead —
-   `clamp(0px, 4vw, 3rem)` is `clamp(0px, 2vw, 1.5rem)` with every term
-   doubled, so it resolves to precisely 2x at any viewport width, not just
-   on desktop. Top and horizontal stay at the original `clamp(0px, 2vw,
-   1.5rem)`, unchanged. Width/alignment with .landing-dark-cta (above) is
-   untouched, since only the bottom term changed. */
+   Bottom-margin pass: the bottom value briefly doubled the top/
+   horizontal value (`clamp(0px, 4vw, 3rem)`, exactly 2x
+   `clamp(0px, 2vw, 1.5rem)`). Per explicit follow-up request — the
+   rectangle needs to fit entirely within a 1440×900 viewport on first
+   load — it's back to the same `clamp(0px, 2vw, 1.5rem)` as top/
+   horizontal, all four sides equal again. This alone isn't enough height
+   to fit the fold; see `.landing-hero__inner`'s own
+   `--landing-hero-breathing` custom property below for the rest. Top and
+   horizontal are untouched either way. Width/alignment with
+   .landing-dark-cta (above) is untouched, since only the bottom term
+   changed. */
 .landing-hero {
   position: relative;
-  padding: clamp(0px, 2vw, 1.5rem) clamp(0px, 2vw, 1.5rem) clamp(0px, 4vw, 3rem);
+  padding: clamp(0px, 2vw, 1.5rem);
 }
 
 /* Section-scroll pass: scroll-margin-top/scroll-snap-align pair with
@@ -1602,16 +1601,23 @@ dialog::backdrop {
 /* Content layout + padding, moved here from .landing-hero itself (see
    that rule's own comment) — otherwise identical: one centered vertical
    column (content, then the wave illustration + social proof), same gap,
-   same text-align. */
+   same text-align.
+   Fit-to-fold pass: the vertical padding (top and bottom both) and the
+   gap before the illustration used to be larger — `--landing-hero-breathing`
+   is the one shared value behind both this rule's own padding and the
+   home-only top-extra below, reduced so the whole rounded rectangle fits
+   within a 1440×900 viewport on first load without scrolling. Horizontal
+   padding, text-align, and every other property are unchanged. */
 .landing-hero__inner {
+  --landing-hero-breathing: clamp(1rem, 3vw, 1.75rem);
   position: relative;
   z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2rem;
+  gap: 1.25rem;
   text-align: center;
-  padding: clamp(3rem, 8vw, 6rem) clamp(1.5rem, 4vw, 4rem);
+  padding: var(--landing-hero-breathing) clamp(1.5rem, 4vw, 4rem);
 }
 
 /* Unify pass: extra top padding, home page only, to reserve room for the
@@ -1622,7 +1628,7 @@ dialog::backdrop {
    stays in view at every scroll position now (section-scroll pass), not
    just while the hero is on screen. */
 .landing--home .landing-hero__inner {
-  padding-top: calc(clamp(3rem, 8vw, 6rem) + var(--landing-nav-height));
+  padding-top: calc(var(--landing-hero-breathing) + var(--landing-nav-height));
 }
 
 /* Showpiece pass: widened from 36rem so the larger heading below has
