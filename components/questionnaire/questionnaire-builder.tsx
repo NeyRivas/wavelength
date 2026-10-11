@@ -50,23 +50,21 @@ export function QuestionnaireBuilder({
   return (
     <div className="create-builder">
       {questions.length > 0 && (
-        <div className="question-stage">
-          <AnimatedQuestionList>
-            {questions.map((question, index) => (
-              <li key={question.id} data-flip-id={question.id}>
-                <QuestionCard
-                  wavelengthId={wavelength.id}
-                  question={question}
-                  index={index}
-                  tint={tintByQuestion.get(question.id)!}
-                  answerValue={answerByQuestion.get(question.id)}
-                  isFirst={index === 0}
-                  isLast={index === questions.length - 1}
-                />
-              </li>
-            ))}
-          </AnimatedQuestionList>
-        </div>
+        <AnimatedQuestionList>
+          {questions.map((question, index) => (
+            <li key={question.id} data-flip-id={question.id}>
+              <QuestionCard
+                wavelengthId={wavelength.id}
+                question={question}
+                index={index}
+                tint={tintByQuestion.get(question.id)!}
+                answerValue={answerByQuestion.get(question.id)}
+                isFirst={index === 0}
+                isLast={index === questions.length - 1}
+              />
+            </li>
+          ))}
+        </AnimatedQuestionList>
       )}
 
       {atMax ? (

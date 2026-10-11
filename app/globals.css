@@ -4575,56 +4575,6 @@ dialog::backdrop {
   list-style: none;
 }
 
-/* Dimension pass (prototype 5): one shared gradient "stage" behind the
-   whole card list, A's QuestionCard list (questionnaire-builder.tsx)
-   and B's AnswerQuestionCard list (app/w/[token]/answer/page.tsx) only —
-   .create-card-list itself is a shared primitive (also used by A's
-   read-only post-share review), so this lives on a new wrapper div only
-   those two call sites render instead of touching that shared class.
-   Deliberately a single calm panel, not a per-card halo (already tried
-   and turned down twice) — one soft brand gradient the whole stack of
-   white cards sits on, not a separate glow per card.
-
-   Bleeds past the card list's own left/right edges on a responsive,
-   intentionally modest amount (clamp(0.5rem, 3vw, 1.25rem) — less than
-   .create-shell's own horizontal padding at every breakpoint, so the
-   panel never reaches the actual page edge, per explicit request that
-   this not span the full screen) via matched negative margin + padding,
-   so the cards themselves don't shift from their original horizontal
-   position — only the backdrop behind them gets wider. The cards' own
-   style (background, border, radius, padding, content) is completely
-   untouched; only a plain neutral elevation shadow is added below (not
-   a colored one — that's the halo approach already tried), so they read
-   as physically resting on this panel rather than painted onto it. */
-.question-stage {
-  position: relative;
-  margin: 0 calc(-1 * clamp(0.5rem, 3vw, 1.25rem)) clamp(1.5rem, 4vw, 2rem);
-  padding: 1.75rem clamp(0.5rem, 3vw, 1.25rem) 0.5rem;
-  border-radius: 1.75rem;
-  background: linear-gradient(
-    150deg,
-    color-mix(in srgb, var(--wl-lavender) 34%, white) 0%,
-    color-mix(in srgb, var(--wl-blue) 26%, white) 52%,
-    color-mix(in srgb, var(--wl-mint) 26%, white) 100%
-  );
-}
-
-/* The stage's own bottom padding above already provides the "last card
-   to panel edge" gap that .create-card-list's own margin-bottom was
-   providing before (panel edge to whatever comes next, e.g. "+ Add
-   question", is now .question-stage's own margin-bottom instead) —
-   without this override the two would stack, leaving an oversized gap
-   below the last card specifically. */
-.question-stage .create-card-list {
-  margin-bottom: 0;
-}
-
-.question-stage .create-card {
-  box-shadow:
-    0 20px 40px -24px rgba(24, 24, 32, 0.35),
-    0 2px 8px -2px rgba(24, 24, 32, 0.12);
-}
-
 /* Collapsed "+ Add question" trigger (reference): a dashed, secondary
    bar below the card list — discoverable and comfortable to tap, but
    deliberately quieter than the question cards themselves. Expands into
