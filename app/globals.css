@@ -1426,142 +1426,35 @@ dialog::backdrop {
   border-radius: 999px;
 }
 
-/* Glass-nav pass: home page only — the three plain-text nav links join
-   the header CTA (.landing--home .landing-header__cta below) on the same
-   glass surface, so all four controls ("How it works" / "Ways to play" /
-   "FAQ" / "Start playing") read as one family of floating glass buttons,
-   per the reference screenshot of pill-shaped translucent controls. Same
-   recipe as that CTA and as .landing-button--glass (translucent white +
-   backdrop blur + a delicate border + an inset top highlight) at a
-   lighter touch — lower opacity, tighter padding — so three small pills
-   plus the one CTA pill don't read as four oversized cards. The gap
-   between items is tightened to match (2rem free-floating text links →
-   0.625rem pill cluster), echoing the reference's tightly-grouped
-   buttons instead of widely spaced ones. The old protective text-shadow
-   is no longer needed now that each link has its own opaque-ish surface
-   behind it.
-   Liquid-glass pass: a reference "LiquidButton" component was supplied
-   (shadcn/Radix/cva + an SVG feTurbulence/feDisplacementMap filter
-   referenced from backdrop-filter: url(...)) to push this further. None
-   of that stack exists in this plain-CSS project, and backdrop-filter's
-   url()-filter-reference form is exactly the kind of effect that's
-   fragile across engines (inconsistent/unsupported in several current
-   Safari and Firefox releases) — so rather than adding four new
-   dependencies to reproduce one button's filter, this extracts the
-   underlying qualities (a refracted edge with bright/dark inset
-   highlights, a soft directional sheen, extra color saturation showing
-   through the blur) and rebuilds them with properties already in use
-   here: a static diagonal sheen on `background-image` (kept separate
-   from `background-color` specifically so hover/active below — and the
-   active-route override further down — can keep transitioning the
-   color without the gradient layer flashing to `none`, which is what
-   the shorthand `background` property would do to it), `saturate()`
-   added to the existing `backdrop-filter: blur(...)`, and a second inset
-   shadow pooling softly at the bottom for a sense of glass thickness —
-   no SVG filter, no new dependency, same two-tier hierarchy (nav links
-   lighter, CTA stronger) as before. */
-/* Centering pass: with the header CTA removed on the home page (see
-   landing-header.tsx), .landing-header__inner's `justify-content:
-   space-between` would otherwise push this nav all the way to the
-   right edge against the logo's left edge, instead of reading as a
-   balanced, centered nav row. `margin-inline: auto` on a flex child
-   absorbs the row's remaining free space itself, centering the nav in
-   whatever room is left next to the logo — standard flex behavior, no
-   change to the shared `.landing-header__inner` rule (internal pages,
-   which still render the CTA, are unaffected). */
-.landing--home .landing-nav {
-  gap: 0.625rem;
-  margin-inline: auto;
-}
-
-/* Section-scroll pass: base fill opacity raised (0.38 → 0.55) — this glass
-   surface was tuned against the hero's own colorful gradient, but the
-   header is now fixed and stays over every section, including the dark
-   closing CTA (--wl-ink background, the same near-black this pill's own
-   text color already is). A translucent white fill that reads fine over
-   a pastel gradient or plain white can still end up well under WCAG AA's
-   4.5:1 text contrast once the only thing behind it is dark-on-dark —
-   measured around 3.5:1 at the old 0.38. 0.55 keeps roughly a 6:1 ratio
-   against the darkest realistic backdrop (ink text on an ink background,
-   seen only through this fill) while still letting color and blur show
-   through from anything lighter behind it. Hover/active below get the
-   same upward shift, preserving the original gap between all three
-   states. */
+/* Simplification pass (corrected brief): the earlier glass-pill treatment
+   for the home header's three nav links was wrong — no background, pill
+   shape, border, blur, or shadow on these links at all, at rest or on
+   hover. They read as the exact same plain text links the base
+   `.landing-nav a` rule already gives every other page (color inherit,
+   no decoration); this home-only rule now exists purely to carry the
+   zoom-only hover below without disturbing position (padding/gap stay
+   put so nothing shifts once the surrounding chrome is gone). */
 .landing--home .landing-nav a {
   display: inline-flex;
   align-items: center;
   padding: 0.5rem 1rem;
-  border-radius: 999px;
-  background-image: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.55) 0%,
-    rgba(255, 255, 255, 0.1) 40%,
-    rgba(255, 255, 255, 0) 60%
-  );
-  background-color: rgba(255, 255, 255, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.65);
-  backdrop-filter: blur(12px) saturate(160%);
-  -webkit-backdrop-filter: blur(12px) saturate(160%);
-  box-shadow:
-    0 10px 24px -14px rgba(24, 24, 32, 0.24),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8),
-    inset 0 -8px 12px -10px rgba(24, 24, 32, 0.14);
-  transition:
-    background-color 0.2s ease,
-    border-color 0.2s ease,
-    box-shadow 0.2s ease,
-    transform 0.15s ease;
+  transition: transform 0.15s ease;
 }
 
-/* Hover-refinement pass: the same lavender wash the plain-white header
-   gets above, adapted to this glass recipe — a touch of lavender mixed
-   into the fill and border instead of just brightening toward white, so
-   the hover language reads as "one lavender accent" across both header
-   variants while this pill's own glass/blur/shadow identity (unchanged
-   below) stays exactly as approved. */
-@media (hover: hover) {
-  .landing--home .landing-nav a:hover {
-    background-color: color-mix(in srgb, var(--wl-lavender) 26%, rgba(255, 255, 255, 0.7));
-    border-color: color-mix(in srgb, var(--wl-lavender) 50%, rgba(255, 255, 255, 0.65));
-    box-shadow:
-      0 14px 28px -14px rgba(24, 24, 32, 0.28),
-      inset 0 1px 0 rgba(255, 255, 255, 0.9),
-      inset 0 -8px 12px -10px rgba(24, 24, 32, 0.1);
-    transform: translateY(-1px);
-  }
-}
-
-/* Zoom pass: a small, elegant scale added on top of the lift above —
-   "How it works" / "Ways to play" / "FAQ" only (this rule is the home
-   header's own .landing-nav a, which is exactly those three links; the
-   logo and, on internal pages, the nav links are separate elements/rules
-   entirely, so neither is touched). transform is already in this pill's
-   own transition list above, so the extra scale eases in smoothly
-   alongside the lift with no separate transition to wire up. A pure
-   transform never changes the pill's layout box, so neighboring links
-   and the logo never shift or jump when one scales. Split into its own
-   rule (rather than folded into the hover block above) specifically so
-   it can be gated on prefers-reduced-motion without touching that
-   block's color/shadow/lift, which stay exactly as approved either
-   way. */
+/* Zoom pass (corrected brief): the ONLY hover effect on these three
+   links — "How it works" / "Ways to play" / "FAQ" — is a subtle
+   scale(1.06) on the text itself, no lift, no color/background change
+   beyond the base `.landing-nav a:hover` color shift every page already
+   has. A pure transform never changes the link's layout box, so
+   neighboring links and the logo never shift or jump when one scales;
+   the logo is a separate element/rule entirely and is never touched by
+   this. Gated behind prefers-reduced-motion so the zoom itself is
+   disabled when requested (the plain color hover above still applies
+   either way). */
 @media (hover: hover) and (prefers-reduced-motion: no-preference) {
   .landing--home .landing-nav a:hover {
-    transform: translateY(-1px) scale(1.06);
+    transform: scale(1.06);
   }
-}
-
-/* Liquid-glass pass: a pressed state that reads as the glass actually
-   compressing — lift drops back to 0 (already did), the top highlight
-   softens, and the bottom pooling shadow deepens slightly, together
-   suggesting the surface flexing under a press rather than just a color
-   change. */
-.landing--home .landing-nav a:active {
-  background-color: rgba(255, 255, 255, 0.62);
-  box-shadow:
-    0 6px 14px -12px rgba(24, 24, 32, 0.22),
-    inset 0 1px 0 rgba(255, 255, 255, 0.7),
-    inset 0 -4px 10px -8px rgba(24, 24, 32, 0.18);
-  transform: translateY(0);
 }
 
 /* Current-route indicator (components/landing/landing-header.tsx compares
@@ -1575,22 +1468,6 @@ dialog::backdrop {
   position: relative;
   color: var(--wl-ink);
   font-weight: 700;
-}
-
-/* Glass-nav pass: on the home page's own pill-shaped links, the active
-   indicator is a slightly stronger glass surface — the same surface
-   language the pill itself already uses, just more opaque, so "active"
-   reads as "this pill is a little more solid."
-   Liquid-glass pass: `background-color` instead of the `background`
-   shorthand — this rule only needs to override the fill's opacity, and
-   the shorthand would reset `background-image` (the base rule's sheen
-   gradient, above) to `none` on every currently-active nav link.
-   Correction pass: the matching `::after` override (which used to
-   suppress the base rule's underline bar here) is gone along with that
-   bar itself, above. */
-.landing--home .landing-nav__link--active {
-  background-color: rgba(255, 255, 255, 0.6);
-  border-color: rgba(255, 255, 255, 0.85);
 }
 
 /* Hover-refinement pass: was a flat, opaque `var(--wl-ink)` fill with no
@@ -1665,64 +1542,37 @@ dialog::backdrop {
   box-shadow: 0 0 0 4px rgba(24, 24, 32, 0.85);
 }
 
-/* Correction pass: this used to be a translucent WHITE glass surface
-   (ink text) — a deliberate departure from the base rule's dark pill,
-   reasoned as "read as floating over the hero gradient." That reasoning
-   didn't match what was actually wanted: the header CTA is meant to be
-   the same dark-ink identity everywhere, including here, just adapted
-   for a floating surface instead of plain white. This keeps the base
-   rule's dark fill/white text/sheen/border language but with more
-   transparency and a touch more blur/saturate/shadow spread (the same
-   "stronger tier" this rule has always used) so it still genuinely reads
-   as glass over the colorful hero — and stays legible over the dark
-   closing CTA section too, since a dark-on-dark-ish fill only needs to
-   stay distinguishable via its border/shadow/highlight there, not via
-   contrast with a light fill. Shape/padding/label/font are untouched
-   (inherited from the base rule above), not scoped beyond `.landing--home`
-   so every other page's header is unaffected either way. */
+/* Correction pass: the home header's CTA now matches Experience's own
+   "Let's play" button (.landing-button--primary) — a flat, fully solid
+   `var(--wl-ink)` pill, no sheen, no border, no backdrop blur, no
+   translucency. Earlier passes here tried a dark-glass treatment
+   reasoned as "read as floating over the hero/dark-CTA backdrop"; that
+   read was explicitly wrong per the brief, which asks for this button to
+   be solid and visually consistent with Experience's button. Overrides
+   only the base rule's background/border/blur/shadow properties — shape,
+   padding, label, and font stay inherited from the base `.landing-header__cta`
+   rule above. Scoped to `.landing--home` only; internal pages keep their
+   own dark-glass CTA (the base rule) exactly as approved. */
 .landing--home .landing-header__cta {
-  background-image: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.22) 0%,
-    rgba(255, 255, 255, 0.04) 45%,
-    rgba(255, 255, 255, 0) 65%
-  );
-  background-color: rgba(24, 24, 32, 0.84);
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  backdrop-filter: blur(14px) saturate(160%);
-  -webkit-backdrop-filter: blur(14px) saturate(160%);
-  box-shadow:
-    0 14px 32px -14px rgba(24, 24, 32, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.24),
-    inset 0 -10px 14px -12px rgba(24, 24, 32, 0.22);
-  transition:
-    background-color 0.2s ease,
-    border-color 0.2s ease,
-    box-shadow 0.2s ease,
-    transform 0.15s ease;
+  background: var(--wl-ink);
+  background-image: none;
+  border: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
 }
 
-/* Hover-refinement pass: a touch of lavender mixed into the fill/border,
-   same reasoning as the home nav links' own hover just above — the glass
-   recipe (blur/shadow/lift) and the dark identity both stay. */
-@media (hover: hover) {
-  .landing--home .landing-header__cta:hover {
-    background-color: color-mix(in srgb, var(--wl-lavender) 16%, rgba(24, 24, 32, 0.88));
-    border-color: color-mix(in srgb, var(--wl-lavender) 55%, transparent);
-    box-shadow:
-      0 18px 38px -14px rgba(24, 24, 32, 0.5),
-      0 0 0 3px color-mix(in srgb, var(--wl-lavender) 22%, transparent),
-      inset 0 1px 0 rgba(255, 255, 255, 0.3);
-    transform: translateY(-1px);
-  }
-}
-
-.landing--home .landing-header__cta:active {
-  background-color: rgba(14, 14, 20, 0.9);
-  box-shadow:
-    0 8px 18px -14px rgba(24, 24, 32, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.18);
-  transform: translateY(0);
+/* The keyboard-focus halo above shares the same `box-shadow` property as
+   the flat-solid override just above it; both rules carry equal
+   specificity (two classes), so without restating the halo here, source
+   order alone would let the override's `box-shadow: none` win even while
+   focus-visible, silently dropping the ring. Restated at one selector
+   higher (.landing--home + the base class + :focus-visible) removes any
+   ambiguity. */
+.landing--home .landing-header__cta:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(24, 24, 32, 0.85);
 }
 
 /* ── hero ──────────────────────────────────────────────────────────── */
@@ -2897,10 +2747,20 @@ dialog::backdrop {
    CTA (components/landing/landing-cta-section.tsx is its only user), but
    still scoped under `.landing--home` to match this file's established
    double-scoping convention for every other home-only rule. */
+/* Width-correction pass: this band never joined the site's 80rem
+   container system (components/landing/landing-cta-section.tsx renders it
+   directly, not wrapped in `.landing-section`) — on a wide desktop it grew
+   edge-to-edge with only a thin fixed gutter, well past every other
+   section's 80rem cap. `max-width: 80rem` caps it the same as Experience/
+   header/footer; `margin-inline` keeps the exact same small clamp-based
+   gutter this always had below that cap (so mobile/tablet are pixel-
+   identical to before) via `max()` against the true centering offset, so
+   above 80rem it centers instead of continuing to grow. */
 .landing-dark-cta {
   position: relative;
   overflow: hidden;
-  margin: 0 clamp(0px, 2vw, 1.5rem);
+  max-width: 80rem;
+  margin-inline: max(clamp(0px, 2vw, 1.5rem), calc((100% - 80rem) / 2));
   border-radius: 1.5rem;
   background: var(--wl-ink);
   padding: clamp(4rem, 10vw, 7rem) clamp(1.5rem, 4vw, 4rem);
@@ -3015,9 +2875,23 @@ dialog::backdrop {
   gap: 2.5rem;
 }
 
+/* Distribution-correction pass: the old `fr`-based grid stretched three
+   invisible tracks across the full row, but every track's actual content
+   (the brand block, and especially the two short link lists) is
+   left-aligned and far narrower than its track — so the visible content
+   clustered toward the left third of the row while the row's own right
+   edge stayed empty, reading as a narrow footer floating in a wide
+   container even though the container itself was correctly capped at
+   80rem. Flex + `justify-content: space-between` sizes each column to
+   its own content instead, then spreads the three blocks so the last
+   column's actual text reaches the row's right edge — the same 80rem
+   width now visibly used edge to edge. `gap` still guarantees a minimum
+   2.5rem between columns even if content were ever wide enough to meet
+   in the middle. Internal column content/spacing/hover are untouched. */
 .landing-footer__top {
-  display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
   gap: 2.5rem;
 }
 
@@ -3190,7 +3064,7 @@ dialog::backdrop {
   }
 
   .landing-footer__top {
-    grid-template-columns: 1fr;
+    flex-direction: column;
     gap: 2rem;
     text-align: center;
   }

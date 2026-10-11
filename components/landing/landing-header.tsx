@@ -26,21 +26,23 @@ const NAV_LINKS = [
  * longer the thing top-nav points at). "FAQ" links to its own dedicated
  * route the same way.
  * "Start playing" is the same single real entry CTA the whole app has:
- * /play — shown on every page except the home page itself, which already
- * has its own prominent hero CTA doing the same job; repeating it in the
- * header there read as redundant, so it's the one thing this shared
- * header omits conditionally.
+ * /play, shown on every page including the home page itself — the
+ * correction pass that re-added it here found the earlier "home already
+ * has its own hero CTA, so omit this one" reasoning was wrong: the brief
+ * wants this button kept in the landing header unconditionally, just
+ * restyled to a solid pill matching Experience's own "Let's play" button
+ * on the home page specifically (see `.landing--home .landing-header__cta`
+ * in globals.css) while internal pages keep their existing dark-glass
+ * treatment untouched.
  *
- * "use client" + usePathname() only to compute which nav item is active
- * (and whether this is the home page) — everything else here is exactly
- * as static as before. This is a route comparison, not scroll/interaction
- * state, so it's correct on first load, on a direct navigation, and on a
- * refresh alike (no client-only default that could ever flash the wrong
- * item active, or flash the CTA in before disappearing).
+ * "use client" + usePathname() only to compute which nav item is active —
+ * everything else here is exactly as static as before. This is a route
+ * comparison, not scroll/interaction state, so it's correct on first
+ * load, on a direct navigation, and on a refresh alike (no client-only
+ * default that could ever flash the wrong item active).
  */
 export function LandingHeader() {
   const pathname = usePathname();
-  const isHome = pathname === "/";
 
   return (
     <header className="landing-header">
@@ -63,11 +65,9 @@ export function LandingHeader() {
           ))}
         </nav>
 
-        {!isHome && (
-          <Link href="/play" className="landing-header__cta">
-            Start playing
-          </Link>
-        )}
+        <Link href="/play" className="landing-header__cta">
+          Start playing
+        </Link>
       </div>
     </header>
   );
