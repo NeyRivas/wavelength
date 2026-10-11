@@ -4614,7 +4614,8 @@ dialog::backdrop {
 /* ── question card ─────────────────────────────────────────────────────── */
 
 .create-card {
-  overflow: hidden;
+  position: relative;
+  z-index: 0;
   border: 1px solid var(--color-border);
   border-radius: 1.25rem;
   background: #ffffff;
@@ -4628,39 +4629,69 @@ dialog::backdrop {
   border-width: 1.5px;
 }
 
-/* Elevation + ambient glow pass (A's QuestionCard and B's
-   AnswerQuestionCard only — the two "answer your own/each other's
-   questions" cards; see each component's own className for the
-   `create-card--{tint}` modifier, which reuses the exact same `tint`
-   value already driving .create-card__head--{tint} above, just exposed
-   on the card itself so this rule can read it via a CSS variable). Four
-   layered shadows instead of one flat grey drop shadow:
-     1. a hairline tinted ring just outside the existing border — edge
-        contrast without touching `border-color` itself, so this never
-        fights .create-card--ready's own border-color override above
-        (equal specificity, and this block is declared after it);
-     2/3. a tight neutral contact shadow + a short-range ink-based lift,
-        for the physical "resting just above the page" read;
-     4. a wide, heavily-diffused halo in the card's own tint color, very
-        low opacity and a large negative spread so it reads as ambient
-        light bleeding into the white background, never a hard-edged
-        colored outline.
-   Static — no transition/animation, so there's nothing to gate behind
-   prefers-reduced-motion and no risk of layout shift or flicker.
-   box-shadow is painted outside the border box, so .create-card's own
-   overflow:hidden (for the header band's rounded corners) doesn't clip
-   it. Every other property (padding, radius, background, border-width)
-   is untouched. */
+/* Result-card-language pass: replaces the previous round's hand-rolled
+   box-shadow glow with the actual technique the Result page already uses
+   for "a colored halo bleeding past a white/glass panel's edges" —
+   .global-summary__ambient-blob's own radial-gradient-fading-to-
+   transparent + filter:blur() recipe, plus the same neutral elevation
+   shadow .category-card/.question-compare already use
+   (`0 16px 34px -16px rgba(24,24,32,.24)`), not a new invention. Grouped
+   below with .share-card (A's "waiting for B" screen, see that block
+   further down) so both get the identical halo from one shared
+   declaration instead of two near-duplicate ones — each side just sets
+   its own --card-glow.
+
+   Scoped to A's QuestionCard and B's AnswerQuestionCard only (the
+   `create-card--{tint}` modifier each already emits, reusing the exact
+   `tint` value also driving .create-card__head--{tint} above) — every
+   other .create-card user (the add-question form, A's read-only
+   post-share review) is unaffected, same scoping as before. */
 .create-card--lavender,
 .create-card--blue,
 .create-card--mint,
 .create-card--pink,
-.create-card--peach {
-  box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--card-glow) 22%, transparent),
-    0 1px 2px color-mix(in srgb, var(--wl-ink) 7%, transparent),
-    0 10px 20px -12px color-mix(in srgb, var(--wl-ink) 15%, transparent),
-    0 26px 50px -16px color-mix(in srgb, var(--card-glow) 58%, transparent);
+.create-card--peach,
+.share-card {
+  box-shadow: 0 16px 34px -16px rgba(24, 24, 32, 0.24);
+}
+
+/* The halo itself — a pseudo-element, not a box-shadow, so it can bleed
+   past the card on a wide inset (moderately more to the sides than up/
+   down — 0.5rem vertical keeps consecutive cards' halos from touching
+   across .create-card-list's own 1.25rem gap, 1.75rem horizontal is the
+   actual "more to the sides" ask — per the brief) without being clipped:
+   .create-card used to rely
+   on its own overflow:hidden to clip .create-card__head's square corners
+   to this same radius, which would have clipped this too, so that's
+   removed above in favor of rounding .create-card__head's own top
+   corners directly (see that rule below) — visually identical for every
+   .create-card user, but no longer clips a child that needs to bleed
+   past the edge. z-index:-1 relative to the generating element's own
+   stacking context (each selector above already sets position:relative +
+   z-index:0 — .create-card directly, .share-card via its own block
+   below) keeps it behind that one card without ever escaping to sit
+   behind unrelated siblings. pointer-events:none and a radial gradient
+   fading fully to transparent keep it decorative-only and halo-shaped,
+   never a hard-edged colored outline. */
+.create-card--lavender::before,
+.create-card--blue::before,
+.create-card--mint::before,
+.create-card--pink::before,
+.create-card--peach::before,
+.share-card::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: -0.5rem -1.75rem;
+  border-radius: inherit;
+  background: radial-gradient(
+    ellipse at 50% 50%,
+    color-mix(in srgb, var(--card-glow) 46%, transparent) 0%,
+    color-mix(in srgb, var(--card-glow) 20%, transparent) 55%,
+    transparent 80%
+  );
+  filter: blur(20px);
+  pointer-events: none;
 }
 
 .create-card--lavender {
@@ -4691,6 +4722,13 @@ dialog::backdrop {
   flex-wrap: wrap;
   padding: 1rem 1.5rem;
   border-bottom: 1px solid var(--color-border);
+  /* Replaces the clip .create-card's own (now-removed) overflow:hidden
+     used to provide: this band's background is full-bleed, so its own
+     top corners need rounding to match .create-card's 1.25rem radius
+     (minus the card's 1px border it sits just inside of) or they'd poke
+     past it as square corners. */
+  border-top-left-radius: calc(1.25rem - 1px);
+  border-top-right-radius: calc(1.25rem - 1px);
 }
 
 .create-card__head--lavender {
@@ -5258,7 +5296,17 @@ dialog::backdrop {
 
 /* ── share card ────────────────────────────────────────────────────────── */
 
+/* State C (A waiting for B — this screen's main/only container, see
+   app/w/[token]/page.tsx and components/wavelength/share-view.tsx): the
+   same ambient-halo + elevation-shadow recipe as the question cards
+   above (grouped into those same two rules by selector, not duplicated),
+   using this card's own already-established lavender tint directly
+   rather than a per-instance modifier class, since there's only ever one
+   .share-card per page and its color was never variable. */
 .share-card {
+  position: relative;
+  z-index: 0;
+  --card-glow: var(--wl-lavender);
   margin-bottom: 2.5rem;
   padding: 1.75rem;
   border-radius: 1.25rem;
