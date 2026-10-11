@@ -1607,9 +1607,15 @@ dialog::backdrop {
    is the one shared value behind both this rule's own padding and the
    home-only top-extra below, reduced so the whole rounded rectangle fits
    within a 1440×900 viewport on first load without scrolling. Horizontal
-   padding, text-align, and every other property are unchanged. */
+   padding, text-align, and every other property are unchanged.
+   Taller-by-a-bit pass: nudged back up slightly (clamp max 1.75rem ->
+   2rem) per explicit follow-up request to make the rectangle a little
+   taller, while keeping it clear of the fold at 1440x900 (frame still
+   bottoms out comfortably above the 900px line). This only grows the
+   rectangle's own internal padding — `.landing-hero`'s outer padding (the
+   top and side margins against the viewport) is untouched. */
 .landing-hero__inner {
-  --landing-hero-breathing: clamp(1rem, 3vw, 1.75rem);
+  --landing-hero-breathing: clamp(1.125rem, 3.25vw, 2rem);
   position: relative;
   z-index: 1;
   display: flex;
