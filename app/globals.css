@@ -2151,25 +2151,8 @@ dialog::backdrop {
    touching the shared `.landing-how` rule's own 60rem (still exactly
    what /play, /play/dating-couples/date-night, and ways-to-play-modes.tsx
    need). */
-/* Fold-margin fix: .landing-section's own top padding (shared by every
-   section using it, up to 5rem/80px) used to stack on top of the Hero's
-   own bottom margin (24px) here specifically, since this is the one
-   section that sits directly against the Hero on the home page — the
-   visible gap between the rectangle's bottom edge and "THE GAME" text
-   was 24+80=104px, nearly 4x the Hero's matching top/side margins
-   (confirmed via measurement), even though the Hero's own margin was
-   already correctly equal on all four sides. Zeroed out here, home-page
-   only, so the Hero's 24px bottom margin is the only gap before this
-   section's content, matching the top/side margins exactly. Every other
-   page using this same .landing-how class (/play, /play/dating-couples,
-   /for-couples, etc.), where nothing with its own bottom margin precedes
-   it, keeps the full top padding — this override only ever matches when
-   .landing-how sits inside `.landing--home`, i.e. this one section on
-   this one page. padding-bottom (the gap after the card grid, before
-   Experience) is untouched. */
 .landing--home .landing-how {
   max-width: 80rem;
-  padding-top: 0;
   scroll-margin-top: var(--landing-nav-height);
   scroll-snap-align: start;
 }
