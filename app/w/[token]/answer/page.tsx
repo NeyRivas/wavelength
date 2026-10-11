@@ -150,18 +150,20 @@ export default async function AnswerPage({ params }: { params: Promise<{ token: 
         />
 
         {questionList.length > 0 && (
-          <ol className="create-card-list">
-            {questionList.map((question, index) => (
-              <li key={question.id}>
-                <AnswerQuestionCard
-                  wavelengthId={wavelength.id}
-                  question={question}
-                  index={index}
-                  answerValue={answerByQuestion.get(question.id)}
-                />
-              </li>
-            ))}
-          </ol>
+          <div className="question-stage">
+            <ol className="create-card-list">
+              {questionList.map((question, index) => (
+                <li key={question.id}>
+                  <AnswerQuestionCard
+                    wavelengthId={wavelength.id}
+                    question={question}
+                    index={index}
+                    answerValue={answerByQuestion.get(question.id)}
+                  />
+                </li>
+              ))}
+            </ol>
+          </div>
         )}
 
         {allAnswered ? (
