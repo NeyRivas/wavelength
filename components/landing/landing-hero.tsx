@@ -97,8 +97,26 @@ const DOT_B_Y = waveY(WAVE_B_BASELINE, WAVE_B_AMPLITUDE, WAVE_B_PERIODS, WAVE_B_
  * New-background pass: a new `.landing-hero__ambient` wrapper replaces
  * it, built from the approved mockup — a soft diagonal pastel wash
  * (.landing-hero__ambient-wash) plus one gentle white glow
- * (.landing-hero__ambient-glow), both full-bleed, both see
- * app/globals.css for the exact gradient/opacity/blur values.
+ * (.landing-hero__ambient-glow). Originally full-bleed (see git history);
+ * the "showpiece" pass below changes how it's contained, not its own
+ * gradient/opacity/blur recipe, which is still exactly the approved
+ * mockup's.
+ *
+ * Showpiece pass: the whole hero is now wrapped in `.landing-hero__frame`
+ * — a rounded-rectangle card, structurally the same idea as the page's
+ * own closing `.landing-dark-cta` band (position: relative; overflow:
+ * hidden; border-radius; its own internal padding), just carrying the
+ * hero's own gradient instead of that section's solid ink fill. The
+ * ambient wash/glow are now sized and positioned exactly as before but
+ * live *inside* this frame instead of bleeding to the viewport's edges —
+ * `overflow: hidden` on the frame clips them at its own rounded border,
+ * which is also what makes the old bottom `mask-image` fade (used to
+ * dissolve the gradient into "How it works" below) unnecessary: there's
+ * no page-background-colored seam left to hide once the gradient simply
+ * ends at the frame's own edge. `.landing-hero` itself (the section)
+ * keeps the page's standard 60rem hero width and now holds only outer
+ * spacing — the frame is what actually carries the background, border-
+ * radius, and content padding.
  *
  * Floating-animation pass: each of those two layers now drifts on its
  * own independent CSS animation (slow translate + gentle scale,
@@ -124,130 +142,140 @@ const DOT_B_Y = waveY(WAVE_B_BASELINE, WAVE_B_AMPLITUDE, WAVE_B_PERIODS, WAVE_B_
 export function LandingHero() {
   return (
     <section className="landing-hero">
-      <div className="landing-hero__ambient" aria-hidden="true">
-        <div className="landing-hero__ambient-wash" />
-        <div className="landing-hero__ambient-glow" />
-      </div>
-
-      <div className="landing-hero__content">
-        <p className="landing-eyebrow landing-hero__eyebrow">
-          <span className="landing-eyebrow__dot landing-eyebrow__dot--pink" aria-hidden="true" />
-          <span className="landing-eyebrow__dot landing-eyebrow__dot--blue" aria-hidden="true" />A
-          game for two
-        </p>
-
-        <h1 className="landing-hero__heading">Are you really on the same page?</h1>
-
-        <p className="landing-hero__description">Find out together.</p>
-
-        <div className="landing-hero__actions">
-          <Link
-            href="/play"
-            className="landing-button landing-button--cta-solid landing-button--hero"
-          >
-            Let&apos;s play <span aria-hidden="true">→</span>
-          </Link>
-          <span className="landing-hero__note">Free · No sign-up needed</span>
+      <div className="landing-hero__frame">
+        <div className="landing-hero__ambient" aria-hidden="true">
+          <div className="landing-hero__ambient-wash" />
+          <div className="landing-hero__ambient-glow" />
         </div>
-      </div>
 
-      {/* Centered composition (redesign pass): the two-wave illustration and
-          the social-proof row now sit together, in that reading order, as
-          one visual unit below the CTA — instead of the illustration
-          floating beside the text column with social-proof stacked above
-          it. Nothing about either child changes: the illustration is still
-          its own aria-hidden decorative block, and the social-proof row is
-          still real, accessible content — only their position in the flow
-          moved. */}
-      <div className="landing-hero__visual">
-        <div className="landing-hero__illustration" aria-hidden="true">
-          <svg
-            className="hero-shape__svg"
-            viewBox="0 0 400 400"
-            preserveAspectRatio="xMidYMid slice"
-            fill="none"
-          >
-            <defs>
-              <linearGradient id="heroWaveGradientA" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stopColor="var(--wl-lavender)" />
-                <stop offset="100%" stopColor="var(--wl-pink)" />
-              </linearGradient>
-              <linearGradient id="heroWaveGradientB" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stopColor="var(--wl-blue)" />
-                <stop offset="100%" stopColor="var(--wl-mint)" />
-              </linearGradient>
-            </defs>
+        <div className="landing-hero__inner">
+          <div className="landing-hero__content">
+            <p className="landing-eyebrow landing-hero__eyebrow">
+              <span
+                className="landing-eyebrow__dot landing-eyebrow__dot--pink"
+                aria-hidden="true"
+              />
+              <span
+                className="landing-eyebrow__dot landing-eyebrow__dot--blue"
+                aria-hidden="true"
+              />
+              A game for two
+            </p>
 
-            {/* a handful of scattered dots, kept clear of the two waves as
+            <h1 className="landing-hero__heading">Are you really on the same page?</h1>
+
+            <p className="landing-hero__description">Find out together.</p>
+
+            <div className="landing-hero__actions">
+              <Link
+                href="/play"
+                className="landing-button landing-button--primary landing-button--hero"
+              >
+                Let&apos;s play <span aria-hidden="true">→</span>
+              </Link>
+              <span className="landing-hero__note">Free · No sign-up needed</span>
+            </div>
+          </div>
+
+          {/* Centered composition (redesign pass): the two-wave illustration and
+              the social-proof row now sit together, in that reading order, as
+              one visual unit below the CTA — instead of the illustration
+              floating beside the text column with social-proof stacked above
+              it. Nothing about either child changes: the illustration is still
+              its own aria-hidden decorative block, and the social-proof row is
+              still real, accessible content — only their position in the flow
+              moved. */}
+          <div className="landing-hero__visual">
+            <div className="landing-hero__illustration" aria-hidden="true">
+              <svg
+                className="hero-shape__svg"
+                viewBox="0 0 400 400"
+                preserveAspectRatio="xMidYMid slice"
+                fill="none"
+              >
+                <defs>
+                  <linearGradient id="heroWaveGradientA" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor="var(--wl-lavender)" />
+                    <stop offset="100%" stopColor="var(--wl-pink)" />
+                  </linearGradient>
+                  <linearGradient id="heroWaveGradientB" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor="var(--wl-blue)" />
+                    <stop offset="100%" stopColor="var(--wl-mint)" />
+                  </linearGradient>
+                </defs>
+
+                {/* a handful of scattered dots, kept clear of the two waves as
                 light peripheral texture — not competing with them. Framed
                 in a loose diamond around the wave band (two upper, two
                 lower, alternating left/right) now that the illustration's
                 visible window is the shorter band around y=200 (see
                 .landing-hero__illustration's aspect-ratio in
                 app/globals.css) rather than the full 400×400 square. */}
-            <circle cx="18" cy="150" r="5" fill="var(--wl-lavender)" />
-            <circle cx="368" cy="182" r="6" fill="var(--wl-peach)" />
-            <circle cx="352" cy="255" r="5" fill="var(--wl-lavender)" />
-            <circle cx="80" cy="250" r="5" fill="var(--wl-pink)" />
+                <circle cx="18" cy="150" r="5" fill="var(--wl-lavender)" />
+                <circle cx="368" cy="182" r="6" fill="var(--wl-peach)" />
+                <circle cx="352" cy="255" r="5" fill="var(--wl-lavender)" />
+                <circle cx="80" cy="250" r="5" fill="var(--wl-pink)" />
 
-            {/* the recurring "moment of alignment" — a soft glow pulsing on
+                {/* the recurring "moment of alignment" — a soft glow pulsing on
                 its own, slower, independent cycle at the illustration's
                 center */}
-            <circle className="hero-sync-glow" cx="200" cy="200" r="60" fill="var(--wl-mint)" />
+                <circle className="hero-sync-glow" cx="200" cy="200" r="60" fill="var(--wl-mint)" />
 
-            {/* Wave A — "Person A"'s own rhythm */}
-            <g className="hero-wave hero-wave--a">
-              <path
-                d={wavePathA}
-                stroke="url(#heroWaveGradientA)"
-                strokeWidth="4"
-                strokeLinecap="round"
-                fill="none"
-                opacity="0.9"
-              />
-              <circle
-                cx={DOT_A_X}
-                cy={DOT_A_Y}
-                r="11"
-                fill="#ffffff"
-                stroke="var(--wl-lavender)"
-                strokeWidth="4"
-              />
-              <circle cx={DOT_A_X} cy={DOT_A_Y} r="4" fill="var(--wl-ink)" />
-            </g>
+                {/* Wave A — "Person A"'s own rhythm */}
+                <g className="hero-wave hero-wave--a">
+                  <path
+                    d={wavePathA}
+                    stroke="url(#heroWaveGradientA)"
+                    strokeWidth="4"
+                    strokeLinecap="round"
+                    fill="none"
+                    opacity="0.9"
+                  />
+                  <circle
+                    cx={DOT_A_X}
+                    cy={DOT_A_Y}
+                    r="11"
+                    fill="#ffffff"
+                    stroke="var(--wl-lavender)"
+                    strokeWidth="4"
+                  />
+                  <circle cx={DOT_A_X} cy={DOT_A_Y} r="4" fill="var(--wl-ink)" />
+                </g>
 
-            {/* Wave B — "Person B"'s own, slightly different rhythm */}
-            <g className="hero-wave hero-wave--b">
-              <path
-                d={wavePathB}
-                stroke="url(#heroWaveGradientB)"
-                strokeWidth="4"
-                strokeLinecap="round"
-                fill="none"
-                opacity="0.9"
-              />
-              <circle
-                cx={DOT_B_X}
-                cy={DOT_B_Y}
-                r="11"
-                fill="#ffffff"
-                stroke="var(--wl-blue)"
-                strokeWidth="4"
-              />
-              <circle cx={DOT_B_X} cy={DOT_B_Y} r="4" fill="var(--wl-ink)" />
-            </g>
-          </svg>
-        </div>
+                {/* Wave B — "Person B"'s own, slightly different rhythm */}
+                <g className="hero-wave hero-wave--b">
+                  <path
+                    d={wavePathB}
+                    stroke="url(#heroWaveGradientB)"
+                    strokeWidth="4"
+                    strokeLinecap="round"
+                    fill="none"
+                    opacity="0.9"
+                  />
+                  <circle
+                    cx={DOT_B_X}
+                    cy={DOT_B_Y}
+                    r="11"
+                    fill="#ffffff"
+                    stroke="var(--wl-blue)"
+                    strokeWidth="4"
+                  />
+                  <circle cx={DOT_B_X} cy={DOT_B_Y} r="4" fill="var(--wl-ink)" />
+                </g>
+              </svg>
+            </div>
 
-        <div className="landing-social-proof">
-          <div className="landing-avatars">
-            {AVATARS.map((a) => (
-              <span key={a.label} className={`landing-avatar ${a.className}`}>
-                {a.label}
-              </span>
-            ))}
+            <div className="landing-social-proof">
+              <div className="landing-avatars">
+                {AVATARS.map((a) => (
+                  <span key={a.label} className={`landing-avatar ${a.className}`}>
+                    {a.label}
+                  </span>
+                ))}
+              </div>
+              <span>12,400+ conversations started</span>
+            </div>
           </div>
-          <span>12,400+ conversations started</span>
         </div>
       </div>
     </section>
