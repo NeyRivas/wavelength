@@ -4628,6 +4628,61 @@ dialog::backdrop {
   border-width: 1.5px;
 }
 
+/* Elevation + ambient glow pass (A's QuestionCard and B's
+   AnswerQuestionCard only — the two "answer your own/each other's
+   questions" cards; see each component's own className for the
+   `create-card--{tint}` modifier, which reuses the exact same `tint`
+   value already driving .create-card__head--{tint} above, just exposed
+   on the card itself so this rule can read it via a CSS variable). Four
+   layered shadows instead of one flat grey drop shadow:
+     1. a hairline tinted ring just outside the existing border — edge
+        contrast without touching `border-color` itself, so this never
+        fights .create-card--ready's own border-color override above
+        (equal specificity, and this block is declared after it);
+     2/3. a tight neutral contact shadow + a short-range ink-based lift,
+        for the physical "resting just above the page" read;
+     4. a wide, heavily-diffused halo in the card's own tint color, very
+        low opacity and a large negative spread so it reads as ambient
+        light bleeding into the white background, never a hard-edged
+        colored outline.
+   Static — no transition/animation, so there's nothing to gate behind
+   prefers-reduced-motion and no risk of layout shift or flicker.
+   box-shadow is painted outside the border box, so .create-card's own
+   overflow:hidden (for the header band's rounded corners) doesn't clip
+   it. Every other property (padding, radius, background, border-width)
+   is untouched. */
+.create-card--lavender,
+.create-card--blue,
+.create-card--mint,
+.create-card--pink,
+.create-card--peach {
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--card-glow) 22%, transparent),
+    0 1px 2px color-mix(in srgb, var(--wl-ink) 7%, transparent),
+    0 10px 20px -12px color-mix(in srgb, var(--wl-ink) 15%, transparent),
+    0 26px 50px -16px color-mix(in srgb, var(--card-glow) 58%, transparent);
+}
+
+.create-card--lavender {
+  --card-glow: var(--wl-lavender);
+}
+
+.create-card--blue {
+  --card-glow: var(--wl-blue);
+}
+
+.create-card--mint {
+  --card-glow: var(--wl-mint);
+}
+
+.create-card--pink {
+  --card-glow: var(--wl-pink);
+}
+
+.create-card--peach {
+  --card-glow: var(--wl-peach);
+}
+
 .create-card__head {
   display: flex;
   align-items: center;
