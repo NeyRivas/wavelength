@@ -2743,31 +2743,46 @@ dialog::backdrop {
    forced min-height/display:flex/justify-content to make this read as a
    full "scene" — that inflated the final CTA's actual height and was
    reverted; its copy, typography, spacing, and button are exactly as
-   approved. This class is already exclusive to this page's own closing
-   CTA (components/landing/landing-cta-section.tsx is its only user), but
-   still scoped under `.landing--home` to match this file's established
-   double-scoping convention for every other home-only rule. */
-/* Width-correction pass: this band never joined the site's 80rem
-   container system (components/landing/landing-cta-section.tsx renders it
-   directly, not wrapped in `.landing-section`) — on a wide desktop it grew
-   edge-to-edge with only a thin fixed gutter, well past every other
-   section's 80rem cap. `max-width: 80rem` caps it the same as Experience/
-   header/footer; `margin-inline` keeps the exact same small clamp-based
-   gutter this always had below that cap (so mobile/tablet are pixel-
-   identical to before) via `max()` against the true centering offset, so
-   above 80rem it centers instead of continuing to grow. */
+   approved.
+   LandingCtaSection (components/landing/landing-cta-section.tsx) is
+   shared by /, /how-it-works, /about, /for-couples, /faq, and
+   /ways-to-play — this base rule's own width (no max-width, just the
+   small clamp-based margin below) is each of those other five pages'
+   actual, unmodified "near-full-bleed" panel, confirmed against git
+   history (commit 51b04f4, before two since-corrected rounds briefly
+   widened it to 80rem on every page that uses it — a mistake, since this
+   rule was never meant to be the site's 80rem container). Only the home
+   page gets its own width, via `.landing--home .landing-dark-cta` below,
+   so widening it to match the home Hero never touches the other five. */
 .landing-dark-cta {
   position: relative;
   overflow: hidden;
-  max-width: 80rem;
-  margin-inline: max(clamp(0px, 2vw, 1.5rem), calc((100% - 80rem) / 2));
+  margin: 0 clamp(0px, 2vw, 1.5rem);
   border-radius: 1.5rem;
   background: var(--wl-ink);
   padding: clamp(4rem, 10vw, 7rem) clamp(1.5rem, 4vw, 4rem);
   text-align: center;
 }
 
+/* Width-correction pass: restores git history's actual precedent for
+   aligning this band with the Hero — commit 9ff589a once added exactly
+   this (a home-only `max-width: 60rem; margin: 0 auto;` modifier,
+   "joining the same 60rem column as .landing-hero"), later reverted in
+   409d0cb back to the base rule's near-full-bleed width above. That
+   revert is why, before this pass, home's dark CTA and the other five
+   pages' were identical — undone again here, on request, by reinstating
+   that same 60rem value on `.landing--home` alone, matching
+   `.landing-hero`'s own `max-width: 60rem; margin: 0 auto;` (above)
+   exactly, so the two sections' left/right edges align on any desktop
+   width wider than 60rem plus their shared horizontal padding. Below
+   that width, `max()` keeps the same small clamp-based gutter the base
+   rule already gives every page at narrow viewports (so mobile/tablet
+   are pixel-identical to before) instead of letting the margin collapse
+   to 0 once `auto` alone would no longer have any space left to center
+   with. */
 .landing--home .landing-dark-cta {
+  max-width: 60rem;
+  margin-inline: max(clamp(0px, 2vw, 1.5rem), calc((100% - 60rem) / 2));
   scroll-margin-top: var(--landing-nav-height);
   scroll-snap-align: start;
 }
