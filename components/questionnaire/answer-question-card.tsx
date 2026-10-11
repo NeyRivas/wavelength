@@ -50,7 +50,7 @@ export function AnswerQuestionCard({
 
   return (
     <article
-      className={`create-card create-card--${tint}${isAnswered ? " create-card--ready" : ""}`}
+      className={`create-card${isAnswered ? " create-card--ready" : ""}`}
       aria-label={`Question ${index + 1}: ${question.text}`}
     >
       <header className={`create-card__head create-card__head--${tint}`}>
