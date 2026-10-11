@@ -1577,21 +1577,30 @@ dialog::backdrop {
 
 /* ── hero ──────────────────────────────────────────────────────────── */
 
-/* Showpiece pass: .landing-hero (this rule) is now just the page's
-   standard-width outer wrapper — width, outer spacing, and scroll
-   behavior only. The rounded card itself, its gradient, and its content
-   padding all moved to .landing-hero__frame/__inner below, so the
-   gradient can be clipped to a contained rounded box instead of bleeding
-   to the viewport edges (see .landing-hero__ambient's own comment). Width
-   stays exactly 60rem, unlike the four sections elsewhere on this page
-   that dropped their own "Ad-rail" narrowing this same pass — the hero is
-   deliberately kept narrower, now as this card's own intentional size
-   rather than reserved ad margin. */
+/* Showpiece pass: .landing-hero (this rule) is now just the page's outer
+   wrapper — width, outer spacing, and scroll behavior only. The rounded
+   card itself, its gradient, and its content padding all moved to
+   .landing-hero__frame/__inner below, so the gradient can be clipped to a
+   contained rounded box instead of bleeding to the viewport edges (see
+   .landing-hero__ambient's own comment).
+   Width-alignment pass: this used to cap at a fixed 60rem via its own
+   max-width/margin, independent of .landing-dark-cta's width below. Per
+   explicit request, the rounded gradient card (.landing-hero__frame,
+   which fills this wrapper's content box) must instead match
+   .landing-dark-cta exactly, edge for edge — so max-width/margin are
+   dropped and the horizontal padding here is changed from
+   `clamp(1.5rem, 4vw, 4rem)` to `clamp(0px, 2vw, 1.5rem)`, the exact
+   value .landing-dark-cta uses for its own outer `margin` (its one and
+   only width rule, confirmed against git history — commit 72b2068, kept
+   through 409d0cb's revert of a later, since-abandoned 60rem experiment).
+   Both now resolve to the identical gutter at any viewport width, so
+   .landing-hero__frame's rendered width and left/right edges match
+   .landing-dark-cta's precisely. The bottom padding (the gap before How
+   It Works) and .landing-hero__inner's own content padding are both
+   unchanged. */
 .landing-hero {
   position: relative;
-  max-width: 60rem;
-  margin: 0 auto;
-  padding: 0 clamp(1.5rem, 4vw, 4rem) clamp(3rem, 7vw, 5rem);
+  padding: 0 clamp(0px, 2vw, 1.5rem) clamp(3rem, 7vw, 5rem);
 }
 
 /* Section-scroll pass: scroll-margin-top/scroll-snap-align pair with
@@ -2746,14 +2755,13 @@ dialog::backdrop {
    approved.
    LandingCtaSection (components/landing/landing-cta-section.tsx) is
    shared by /, /how-it-works, /about, /for-couples, /faq, and
-   /ways-to-play — this base rule's own width (no max-width, just the
-   small clamp-based margin below) is each of those other five pages'
-   actual, unmodified "near-full-bleed" panel, confirmed against git
-   history (commit 51b04f4, before two since-corrected rounds briefly
-   widened it to 80rem on every page that uses it — a mistake, since this
-   rule was never meant to be the site's 80rem container). Only the home
-   page gets its own width, via `.landing--home .landing-dark-cta` below,
-   so widening it to match the home Hero never touches the other five. */
+   /ways-to-play — this rule's width (no max-width, just the small
+   clamp-based margin below) is every one of those six pages' actual,
+   original "near-full-bleed" panel, confirmed against git history
+   (commit 72b2068, kept through 409d0cb's revert of a later, since-
+   abandoned attempt to narrow it on home alone to 60rem). .landing-hero
+   above now matches this exact width/gutter instead of the other way
+   around — see that rule's own comment. */
 .landing-dark-cta {
   position: relative;
   overflow: hidden;
@@ -2764,25 +2772,15 @@ dialog::backdrop {
   text-align: center;
 }
 
-/* Width-correction pass: restores git history's actual precedent for
-   aligning this band with the Hero — commit 9ff589a once added exactly
-   this (a home-only `max-width: 60rem; margin: 0 auto;` modifier,
-   "joining the same 60rem column as .landing-hero"), later reverted in
-   409d0cb back to the base rule's near-full-bleed width above. That
-   revert is why, before this pass, home's dark CTA and the other five
-   pages' were identical — undone again here, on request, by reinstating
-   that same 60rem value on `.landing--home` alone, matching
-   `.landing-hero`'s own `max-width: 60rem; margin: 0 auto;` (above)
-   exactly, so the two sections' left/right edges align on any desktop
-   width wider than 60rem plus their shared horizontal padding. Below
-   that width, `max()` keeps the same small clamp-based gutter the base
-   rule already gives every page at narrow viewports (so mobile/tablet
-   are pixel-identical to before) instead of letting the margin collapse
-   to 0 once `auto` alone would no longer have any space left to center
-   with. */
+/* Width-correction pass (superseded): a brief home-only 60rem override
+   lived here, reviving a since-abandoned commit-9ff589a experiment. Per
+   explicit follow-up request, the dark CTA's width stays the base rule's
+   original near-full-bleed sizing — confirmed against git history
+   (commit 72b2068, kept through 409d0cb's revert of that same 60rem
+   experiment) — on every page including home, unmodified; .landing-hero
+   above now matches THIS width instead (see its own comment). Scroll
+   behavior only, same as every other home-only section. */
 .landing--home .landing-dark-cta {
-  max-width: 60rem;
-  margin-inline: max(clamp(0px, 2vw, 1.5rem), calc((100% - 60rem) / 2));
   scroll-margin-top: var(--landing-nav-height);
   scroll-snap-align: start;
 }
