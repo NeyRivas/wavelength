@@ -1616,9 +1616,17 @@ dialog::backdrop {
    top and side margins against the viewport) is untouched.
    Taller-still pass: nudged once more (clamp max 2rem -> 2.15rem) per
    explicit follow-up request to make it a bit taller yet again, still
-   clear of the fold at 1440x900. */
+   clear of the fold at 1440x900.
+   Taller-by-3x pass: per explicit follow-up request for three times the
+   size of the previous nudge (clamp max 2rem -> 2.15rem, a 0.15rem step),
+   applied a 0.45rem step instead (2.15rem -> 2.6rem, same ratio on
+   min/vw). At 1440x900 this puts the rectangle's bottom edge past the
+   fold by roughly a page's own typical scroll amount — no longer fully
+   visible without scrolling at that exact viewport, which is the
+   explicit tradeoff requested over the previous rounds' "fits within
+   900px" constraint. Side margins remain exactly as before. */
 .landing-hero__inner {
-  --landing-hero-breathing: clamp(1.1875rem, 3.375vw, 2.15rem);
+  --landing-hero-breathing: clamp(1.375rem, 3.75vw, 2.6rem);
   position: relative;
   z-index: 1;
   display: flex;
