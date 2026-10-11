@@ -2120,7 +2120,16 @@ dialog::backdrop {
    anchor semantics, even though the header's own "How it works" link now
    navigates to the dedicated /how-it-works route rather than jumping to
    this id (see landing-header.tsx's own doc comment). */
+/* Width-alignment pass: home's own How It Works section now matches
+   Experience's actual rendered width — .landing-experience--home carries
+   no max-width override of its own, so it simply inherits
+   .landing-section's 80rem above; setting the same 80rem here, scoped to
+   home only, aligns the two sections' left/right edges on desktop without
+   touching the shared `.landing-how` rule's own 60rem (still exactly
+   what /play, /play/dating-couples/date-night, and ways-to-play-modes.tsx
+   need). */
 .landing--home .landing-how {
+  max-width: 80rem;
   scroll-margin-top: var(--landing-nav-height);
   scroll-snap-align: start;
 }
@@ -2458,6 +2467,40 @@ dialog::backdrop {
 .game-card--vivid:focus-visible {
   outline: 2px solid var(--wl-ink);
   outline-offset: 2px;
+}
+
+/* ── "How it works" cards, reusing the Dating & Couples design above ───
+   Home's How It Works steps (components/landing/landing-how-it-works.tsx)
+   use `.landing-card__number/__title/__text`, not GameCard's own
+   `.game-card__title/__subtitle` — so the vivid system's existing
+   z-index/color fixes for its text (just above, keyed off
+   `.game-card__title` etc.) never matched these elements. Restated here
+   for the classes these cards actually use: the same z-index lift above
+   the blob/corner-glow pseudo-element, and the same switch to solid ink
+   (instead of the muted gray every other `.landing-card` uses) so the
+   number and description stay readable against every gradient fill. */
+.game-card--vivid .landing-card__number,
+.game-card--vivid .landing-card__title,
+.game-card--vivid .landing-card__text {
+  position: relative;
+  z-index: 1;
+}
+
+.game-card--vivid .landing-card__number,
+.game-card--vivid .landing-card__text {
+  color: var(--wl-ink);
+}
+
+/* Size pass: "slightly larger than their current size" — scoped to the
+   home page's own How It Works section only (`.landing--home .landing-how`),
+   never touching GameCard's own sizing on /play/dating-couples or
+   /play/friends, which keep their existing, unmodified padding/gap. */
+.landing--home .landing-how .game-card {
+  padding: 2.25rem;
+}
+
+.landing--home .landing-how .landing-card-grid {
+  gap: 2rem;
 }
 
 /* ── "The experience" ────────────────────────────────────────────────── */
