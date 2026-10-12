@@ -224,8 +224,15 @@ const COMPATIBILITY_QUIZ_QUESTIONS: ReadyMadeQuestion[] = [
  * enum, favoring `values_priorities` (self/identity), `lifestyle`
  * (everyday moments), `relationship` (shared/social experiences), and
  * `adventures_travel` (things to try or revisit).
+ *
+ * Exported (SEO pass) so the public preview on
+ * app/play/dating-couples/getting-to-know-each-other-questions reads a
+ * real sample of this same array directly — same reasoning as
+ * lib/date-night/questions.ts's DATE_NIGHT_QUESTIONS export: one source
+ * of truth for both the actual game and its public preview, never a
+ * second, separately-maintained copy.
  */
-const GETTING_TO_KNOW_EACH_OTHER_QUESTIONS: ReadyMadeQuestion[] = [
+export const GETTING_TO_KNOW_EACH_OTHER_QUESTIONS: ReadyMadeQuestion[] = [
   {
     type: "choice",
     category: "values_priorities",

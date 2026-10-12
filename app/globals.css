@@ -6829,3 +6829,158 @@ dialog::backdrop {
 .dn-browse-item__heart--active {
   color: var(--wl-pink);
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   /play/dating-couples/getting-to-know-each-other-questions
+   ═══════════════════════════════════════════════════════════════════════
+   New, page-scoped classes rather than reusing .dn-hero/.dn-browse
+   directly — those names are Date Night's own (per their doc comments,
+   deliberately scoped to that one page), so this mirrors their exact
+   property values instead of cross-referencing them, keeping each
+   page's styling independently named per this file's existing
+   convention (.fc-*, .wtp-*, .dn-*). */
+
+.gtk-page {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.gtk-hero {
+  text-align: center;
+}
+
+.gtk-hero__title {
+  margin: 0 0 0.375rem;
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(2.25rem, 4.5vw, 3.25rem);
+  line-height: 1.1;
+  color: var(--wl-ink);
+}
+
+.gtk-hero__subtitle {
+  margin: 0 0 1.25rem;
+  font-family: var(--font-nunito), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 0.8125rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--wl-muted);
+}
+
+.gtk-hero__body {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 0 auto;
+  max-width: 34rem;
+}
+
+.gtk-hero__text {
+  margin: 0;
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  color: var(--wl-muted);
+}
+
+.gtk-browse {
+  max-width: 36rem;
+  margin: 0 auto;
+  width: 100%;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.gtk-browse__heading {
+  margin: 0 0 0.25rem;
+  font-family: var(--font-nunito), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 0.9375rem;
+  color: var(--wl-ink);
+}
+
+.gtk-browse__subtitle {
+  margin: 0 0 1.25rem;
+  font-size: 0.8125rem;
+  color: var(--wl-muted);
+}
+
+.gtk-browse-group {
+  margin-bottom: 1.5rem;
+}
+
+.gtk-browse-group:last-child {
+  margin-bottom: 0;
+}
+
+.gtk-browse-group__heading {
+  margin: 0 0 0.5rem;
+}
+
+.gtk-browse-group__pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--wl-ink);
+}
+
+.gtk-browse-group__pill--lavender {
+  background: color-mix(in srgb, var(--wl-lavender) 55%, white);
+}
+
+.gtk-browse-group__pill--blue {
+  background: color-mix(in srgb, var(--wl-blue) 55%, white);
+}
+
+.gtk-browse-group__pill--pink {
+  background: color-mix(in srgb, var(--wl-pink) 55%, white);
+}
+
+.gtk-browse-group__pill--mint {
+  background: color-mix(in srgb, var(--wl-mint) 55%, white);
+}
+
+.gtk-browse-group__list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.gtk-browse-item {
+  padding: 0.625rem 0.125rem;
+  border-bottom: 1px solid var(--color-border);
+  font-family: var(--font-nunito), system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--wl-ink);
+  text-align: left;
+}
+
+.gtk-browse-group__list li.gtk-browse-item:last-child {
+  border-bottom: none;
+}
+
+.gtk-cta {
+  text-align: center;
+}
+
+/* ── Dating & Couples: contextual link to the new page ──────────────────
+   Same 3-property pattern as .wtp-modes__more (components/landing/
+   ways-to-play-modes.tsx) — a centered, muted-text line below the
+   existing 3-card grid, not a new visual idea. Named separately rather
+   than reusing .wtp-modes__more directly, consistent with this section's
+   own naming rationale above. */
+.play-dating-couples__more {
+  margin: 2rem 0 0;
+  text-align: center;
+  color: var(--wl-muted);
+}

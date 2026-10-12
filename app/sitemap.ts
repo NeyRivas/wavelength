@@ -5,21 +5,19 @@ const BASE_URL = "https://sameeeish.com";
 /**
  * Only the approved, canonical marketing pages — no questionnaire
  * tokens, results, or other dynamic app routes (see app/robots.ts for the
- * matching disallow + noindex on those). Includes /play and its three
- * subroutes (SEO pass) — real, indexable content (the actual "Let's
- * play"/"Start playing" destination, plus Dating & Couples, Friends, and
- * Date Night) that was simply missing from this file before, not
- * excluded on purpose.
+ * matching disallow + noindex on those). Includes /play and its four
+ * subroutes — real, indexable content (the actual "Let's play"/"Start
+ * playing" destination, plus Dating & Couples, Friends, Date Night, and
+ * the dedicated "getting to know each other questions" landing page).
  *
  * `lastModified` dates are static, not `new Date()` recomputed on every
  * build/request — a sitemap that claims every page changed "right now"
  * on every single build is a worse signal to a crawler than no date at
  * all. Each date below is the real date that route's own content last
  * meaningfully changed (its `page.tsx`'s own last commit, or today for
- * the five routes touched in this SEO pass — home, /ways-to-play,
- * /for-couples, /play/dating-couples, and Date Night). These are
- * necessarily hand-maintained: bump a route's date here when its
- * content next actually changes, not on every deploy.
+ * the routes touched in a given SEO pass). These are necessarily
+ * hand-maintained: bump a route's date here when its content next
+ * actually changes, not on every deploy.
  */
 const LAST_MODIFIED = {
   home: new Date("2026-10-11"), // app/page.tsx: added home metadata (this pass)
@@ -32,9 +30,10 @@ const LAST_MODIFIED = {
   terms: new Date("2026-10-09"),
   contact: new Date("2026-10-09"),
   play: new Date("2026-10-03"),
-  playDatingCouples: new Date("2026-10-11"), // description reworked (this pass)
+  playDatingCouples: new Date("2026-10-12"), // added the new-page contextual link (this pass)
   playFriends: new Date("2026-09-26"),
   dateNight: new Date("2026-10-11"), // server-rendered question preview added (this pass)
+  gettingToKnowEachOther: new Date("2026-10-12"), // new dedicated landing page (this pass)
 } as const;
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -88,6 +87,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
     {
       url: `${BASE_URL}/play/dating-couples/date-night`,
       lastModified: LAST_MODIFIED.dateNight,
+      changeFrequency: "monthly",
+      priority: 0.6,
+    },
+    {
+      // The new dedicated "getting to know each other questions" landing
+      // page — same priority tier as its sibling, Date Night.
+      url: `${BASE_URL}/play/dating-couples/getting-to-know-each-other-questions`,
+      lastModified: LAST_MODIFIED.gettingToKnowEachOther,
       changeFrequency: "monthly",
       priority: 0.6,
     },
