@@ -14,34 +14,40 @@ const DEFAULT_CATEGORY = FAQ_CATEGORIES[0]!;
  * accordion (components/landing/faq-accordion.tsx) renders only that
  * category's questions — two separate interaction levels sharing one
  * piece of state (`activeId`), owned here so switching categories never
- * touches routing (no navigation, no reload, no four separate pages) and
- * never affects any question's own open/closed state beyond resetting it
- * for the newly-shown list.
+ * touches routing (no navigation, no reload, no four separate pages).
+ *
+ * SEO pass: every category's group (label + accordion) is always in the
+ * DOM, not just the active one, so all of /faq's questions and answers
+ * — across all four categories — are present in the initial
+ * server-rendered HTML. Only the active category's group is shown; the
+ * rest are hidden via the `hidden` attribute, the same technique
+ * FaqAccordion itself already uses for individual collapsed answers (see
+ * that file). One side effect of no longer unmounting/remounting a
+ * category's accordion on every switch: a category's own open/closed
+ * answers now persist while you're on a different tab, instead of always
+ * resetting to collapsed — expand/collapse itself still works exactly as
+ * before within a category.
  */
 export function FaqSection() {
   const [activeId, setActiveId] = useState(DEFAULT_CATEGORY.id);
-  const activeCategory =
-    FAQ_CATEGORIES.find((category) => category.id === activeId) ?? DEFAULT_CATEGORY;
 
   return (
     <section className="landing-section faq-section">
       <FaqCategories categories={FAQ_CATEGORIES} activeId={activeId} onSelect={setActiveId} />
 
-      <div className="faq-section__group">
-        <p className="faq-section__group-label">
-          <span
-            className={`faq-section__group-dot faq-section__group-dot--${activeCategory.tint}`}
-            aria-hidden="true"
-          />
-          {activeCategory.label}
-        </p>
+      {FAQ_CATEGORIES.map((category) => (
+        <div className="faq-section__group" key={category.id} hidden={category.id !== activeId}>
+          <p className="faq-section__group-label">
+            <span
+              className={`faq-section__group-dot faq-section__group-dot--${category.tint}`}
+              aria-hidden="true"
+            />
+            {category.label}
+          </p>
 
-        <FaqAccordion
-          key={activeCategory.id}
-          items={activeCategory.questions}
-          tint={activeCategory.tint}
-        />
-      </div>
+          <FaqAccordion categoryId={category.id} items={category.questions} tint={category.tint} />
+        </div>
+      ))}
     </section>
   );
 }
