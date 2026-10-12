@@ -32,6 +32,14 @@ const VIVID_GRADIENT_BY_GAME_ID: Partial<Record<string, string>> = {
  * "Pick a game" heading. Which games belong to which group, and which of
  * them actually has a real question set, both come straight from
  * lib/wavelength/ready-made-games.ts — nothing about that data changed.
+ *
+ * Visual-refinement pass: the section also carries a `play-category--
+ * ${group}` modifier class (derived from the `group` prop this component
+ * already receives, not a new prop) so /play/dating-couples' own
+ * alignment/spacing tweaks (app/globals.css) can target it alone without
+ * touching this shared component's markup/behavior or /play/friends,
+ * which gets its own unused `play-category--friends` class and no
+ * matching CSS.
  */
 export function GameCategorySection({
   group,
@@ -50,7 +58,7 @@ export function GameCategorySection({
       : "landing-card-grid game-card-grid";
 
   return (
-    <section className="landing-section landing-how play-category">
+    <section className={`landing-section landing-how play-category play-category--${group}`}>
       <h1 className="landing-section__heading">{heading}</h1>
       <p className="landing-section__text">{text}</p>
       <div className={gridClassName}>

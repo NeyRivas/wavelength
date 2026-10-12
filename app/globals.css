@@ -2579,6 +2579,30 @@ dialog::backdrop {
   gap: 2rem;
 }
 
+/* ── Compatibility quiz page: centered heading/intro, more breathing
+   room before the cards ────────────────────────────────────────────────
+   Scoped to `.play-category--dating-couples` only (see the group-derived
+   modifier class in components/play/game-category-section.tsx) — never
+   matches /play/friends. Same pattern .fc-summary already uses above for
+   a centered heading/text above a 3-card grid: center the section's text,
+   keep .landing-section__text's own max-width (so the paragraph doesn't
+   stretch edge to edge) but center that narrower box too, then reset the
+   grid back to left-aligned so card titles/CTAs are unaffected —
+   `margin-top: 3rem` on the grid is the same gap value .fc-summary__grid
+   already uses for an identical "text, then a 3-card grid" transition. */
+.play-category--dating-couples {
+  text-align: center;
+}
+
+.play-category--dating-couples .landing-section__text {
+  margin-inline: auto;
+}
+
+.play-category--dating-couples .landing-card-grid {
+  margin-top: 3rem;
+  text-align: left;
+}
+
 /* ── "The experience" ────────────────────────────────────────────────── */
 
 .landing-experience {
