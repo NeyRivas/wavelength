@@ -66,6 +66,14 @@ export interface ReadyMadeGame {
    * components/result/friendship-memory-summary.tsx), not shared with
    * `"guess-accuracy"`'s. */
   resultMode?: "guess-accuracy" | "friendship-memory";
+  /** Optional: a second, quieter action on this game's GameCard
+   * (components/play/game-card.tsx), stacked below the primary CTA inside
+   * the same card — same `{ label, href }` shape as WayToPlay's own
+   * `secondary` (components/landing/ways-to-play-modes.tsx), same reason:
+   * a genuine second destination that isn't the primary CTA's game
+   * itself. Omitted for every game but "getting-to-know-you", which links
+   * to its own dedicated SEO preview page. */
+  secondary?: { label: string; href: string };
 }
 
 /**
@@ -593,6 +601,10 @@ export const READY_MADE_GAMES: ReadyMadeGame[] = [
     builderSubtitle: "A conversation quiz to discover more about each other.",
     group: "dating-couples",
     questions: GETTING_TO_KNOW_EACH_OTHER_QUESTIONS,
+    secondary: {
+      label: "More",
+      href: "/play/dating-couples/getting-to-know-each-other-questions",
+    },
   },
   {
     id: "date-night",

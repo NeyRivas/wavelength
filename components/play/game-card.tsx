@@ -4,17 +4,27 @@ import { startReadyMadeGame } from "@/app/actions/ready-made-games";
 
 /**
  * One ready-made game card, used on /play's category screens
- * (/play/dating-couples, /play/friends). Three possible renderings:
+ * (/play/dating-couples, /play/friends). Four possible renderings:
  * - `href` set (e.g. Date Night) → plain navigation (a Link) to a
  *   standalone experience, not a questionnaire draft — takes priority
  *   over `playable`.
- * - `playable` (has a real question set) → submits `startReadyMadeGame`
- *   (app/actions/ready-made-games.ts) via a form whose submit button IS
- *   the card (`display: contents` on the form itself keeps the button as
- *   the actual grid item — see .game-card-form in globals.css), so the
- *   whole card is clickable, not just the "Play" label.
- * - neither → identical markup/styling as a plain, inert block — same
- *   card design, no second visual system, just not wired up yet.
+ * - `playable` with no `secondary` (every game but "getting-to-know-you")
+ *   → submits `startReadyMadeGame` (app/actions/ready-made-games.ts) via a
+ *   form whose submit button IS the card (`display: contents` on the form
+ *   itself keeps the button as the actual grid item — see .game-card-form
+ *   in globals.css), so the whole card is clickable, not just the "Play"
+ *   label.
+ * - `playable` with `secondary` set (currently only "getting-to-know-you",
+ *   via its READY_MADE_GAMES entry) → same startReadyMadeGame submit
+ *   behavior, unchanged, but the card is now a real wrapper <div> holding
+ *   two separate, stacked actions: the submit button (reset to a plain,
+ *   unstyled clickable surface via .game-card__surface, since the card's
+ *   visual styling now lives on the wrapper) and a second `<Link>` below
+ *   it. Keeping these as true siblings — rather than nesting the Link
+ *   inside the button — is what makes this valid, accessible markup.
+ * - neither playable nor href → identical markup/styling as a plain,
+ *   inert block — same card design, no second visual system, just not
+ *   wired up yet.
  *
  * `vividClass` (Dating & Couples visual-refresh pass): an explicit,
  * opt-in modifier — e.g. "game-card--vivid-a" — that layers a pastel
@@ -30,6 +40,7 @@ export function GameCard({
   playable,
   href,
   vividClass,
+  secondary,
 }: {
   id: string;
   title: string;
@@ -38,6 +49,7 @@ export function GameCard({
   playable: boolean;
   href?: string;
   vividClass?: string;
+  secondary?: { label: string; href: string };
 }) {
   const cardClassName = `landing-card game-card${vividClass ? ` game-card--vivid ${vividClass}` : ""}`;
 
@@ -66,6 +78,25 @@ export function GameCard({
     return (
       <div className={`${cardClassName} game-card--inert`} aria-disabled="true">
         {inner}
+      </div>
+    );
+  }
+
+  if (secondary) {
+    return (
+      <div className={cardClassName}>
+        <form action={startReadyMadeGame} className="game-card-form">
+          <input type="hidden" name="gameId" value={id} />
+          <button type="submit" className="game-card__surface">
+            {inner}
+          </button>
+        </form>
+        <Link
+          href={secondary.href}
+          className="landing-button landing-button--outline game-card__more"
+        >
+          {secondary.label}
+        </Link>
       </div>
     );
   }

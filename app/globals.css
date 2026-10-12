@@ -2312,9 +2312,11 @@ dialog::backdrop {
 }
 
 /* The submit button IS the card (game-card.tsx) — display: contents keeps
-   this <form> out of the grid layout entirely, so the <button> below is
-   the actual grid item, sized and positioned exactly like .landing-card
-   would be as a plain div. */
+   this <form> out of layout entirely, so the <button> below is the actual
+   grid item (or, on the one card with a stacked `secondary` Link below
+   it — "getting-to-know-you" — the actual block-flow sibling of that
+   Link), sized and positioned exactly like .landing-card would be as a
+   plain div. */
 .game-card-form {
   display: contents;
 }
@@ -2363,6 +2365,38 @@ dialog::backdrop {
 
 .game-card--inert {
   cursor: default;
+}
+
+/* "Getting to know each other" only (game-card.tsx's `secondary` branch)
+   — the outer wrapper <div> now carries every .game-card visual style
+   (border/padding/background/hover lift), so the submit <button> inside
+   it is reset to a plain, unstyled clickable surface for the same
+   blob/title/cta content every other card's button renders directly.
+   Un-padded/un-bordered so it doesn't double the wrapper's own padding. */
+.game-card__surface {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  appearance: none;
+  cursor: pointer;
+}
+
+/* The "More" link, stacked below .game-card__surface inside the same
+   wrapper — margin-top (not a flex gap) is enough spacing on its own to
+   keep the two from reading as one combined control, since
+   .game-card-form's display: contents already leaves this Link as the
+   surface's plain block-flow sibling. position/z-index match the vivid
+   gradient's own text treatment above (.game-card--vivid .game-card__title
+   etc.) so it stays above that card's decorative corner glow. */
+.game-card__more {
+  position: relative;
+  z-index: 1;
+  margin-top: 1rem;
 }
 
 .game-card__title {

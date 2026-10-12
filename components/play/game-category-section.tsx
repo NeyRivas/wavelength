@@ -72,6 +72,7 @@ export function GameCategorySection({
             playable={game.questions !== null}
             href={game.href}
             vividClass={VIVID_GRADIENT_BY_GAME_ID[game.id]}
+            secondary={game.secondary}
           />
         ))}
       </div>
