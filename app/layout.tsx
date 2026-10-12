@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 
+import { GoogleAnalytics } from "@/components/analytics/google-analytics";
+
 import { SessionBootstrap } from "./session-bootstrap";
 
 import "./globals.css";
@@ -66,6 +68,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <SessionBootstrap />
         {children}
+        <GoogleAnalytics />
       </body>
     </html>
   );
