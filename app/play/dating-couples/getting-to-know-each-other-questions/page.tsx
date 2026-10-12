@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Fraunces, Nunito_Sans } from "next/font/google";
+import Link from "next/link";
 
 import { startReadyMadeGame } from "@/app/actions/ready-made-games";
 import { BackLink } from "@/components/landing/back-link";
@@ -31,6 +32,14 @@ import { getReadyMadeGame } from "@/lib/wavelength/ready-made-games";
  * parallel flow, the identical one, so a draft started from either place
  * is the same resumable draft (see startReadyMadeGame's own doc comment
  * on per-game draft scoping).
+ *
+ * Internal-linking pass: one subtle text link back to /play/dating-couples
+ * sits below the CTA (not above/beside it, so it never competes with or
+ * delays the primary action) — reuses .landing-back-link verbatim (same
+ * small, muted, no-background treatment as the BackLink above), not a
+ * second button, so a visitor who starts the game never sees it, and one
+ * who wants the other couples experiences instead has a clear,
+ * low-emphasis way there.
  */
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -112,6 +121,11 @@ export default function GettingToKnowEachOtherQuestionsPage() {
                 Start getting to know each other <span aria-hidden="true">→</span>
               </button>
             </form>
+            <p className="gtk-cta__more">
+              <Link href="/play/dating-couples" className="landing-back-link">
+                Explore more Dating & Couples experiences
+              </Link>
+            </p>
           </div>
         </section>
       </main>

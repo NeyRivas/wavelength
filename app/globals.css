@@ -4305,6 +4305,18 @@ dialog::backdrop {
   color: var(--wl-muted);
 }
 
+/* Internal-linking pass: the second, plain-text link in .wtp-modes__more
+   (to the getting-to-know-each-other-questions SEO page) — same
+   ink-colored, underlined treatment as .landing-legal__body a, reused
+   for consistency rather than invented fresh, so it reads as inline body
+   text rather than a second button competing with the pill link above
+   it in the same paragraph. */
+.wtp-modes__more-link {
+  color: var(--wl-ink);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
 @media (max-width: 56rem) {
   .wtp-modes__grid {
     grid-template-columns: 1fr;
@@ -6971,4 +6983,8 @@ dialog::backdrop {
 
 .gtk-cta {
   text-align: center;
+}
+
+.gtk-cta__more {
+  margin: 0.75rem 0 0;
 }

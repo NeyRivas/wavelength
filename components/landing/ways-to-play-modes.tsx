@@ -70,12 +70,31 @@ export function WaysToPlayModes() {
           second link would only break that parity for one of the two.
           Reuses .landing-button--outline verbatim (already established
           by for-couples-hero.tsx's own "See how it works" link) rather
-          than inventing a new button style. */}
+          than inventing a new button style.
+
+          Internal-linking pass: a second link to the
+          /play/dating-couples/getting-to-know-each-other-questions SEO
+          landing page was added to this same paragraph rather than as a
+          new block below it — one more full-width centered line here
+          would start to read as a stacked promotional section, not a
+          single contextual aside. Styled as plain underlined text
+          (.wtp-modes__more-link), not a second pill button, so it stays
+          visually secondary to the one outline CTA above and to the two
+          cards' own primary buttons. Descriptive anchor text ("getting to
+          know each other questions"), not generic "click here". */}
       <p className="wtp-modes__more">
         Playing with a partner?{" "}
         <Link href="/for-couples" className="landing-button landing-button--outline">
           More on Sameeeish for couples
-        </Link>
+        </Link>{" "}
+        — or get a taste of our{" "}
+        <Link
+          href="/play/dating-couples/getting-to-know-each-other-questions"
+          className="wtp-modes__more-link"
+        >
+          getting to know each other questions
+        </Link>{" "}
+        first.
       </p>
     </section>
   );
