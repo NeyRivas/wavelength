@@ -38,17 +38,24 @@ const nunitoSans = Nunito_Sans({
   display: "swap",
 });
 
+// SEO pass: title/description reworded around "questions for couples" —
+// this page's own "The questions" section (components/landing/
+// for-couples-questions.tsx, "Small questions. Unexpected answers.") is
+// literally about that, so the phrase describes real on-page content
+// rather than being bolted on. The rest of the approved copy (the
+// "align/differ/worth talking about" sentence) is kept verbatim, just
+// given a short lead-in instead of being replaced.
 const PAGE_DESCRIPTION =
-  "You can know someone well and still discover new things about how they think. See where you align, where you differ, and what's worth talking about.";
+  "Thoughtful questions for couples — even ones who already know each other well. See where you align, where you differ, and what's worth talking about.";
 
 export const metadata: Metadata = {
-  title: "Sameeeish for Couples",
+  title: "Questions for Couples — Sameeeish",
   description: PAGE_DESCRIPTION,
   alternates: {
     canonical: "/for-couples",
   },
   openGraph: {
-    title: "Sameeeish for Couples",
+    title: "Questions for Couples — Sameeeish",
     description: PAGE_DESCRIPTION,
     url: "/for-couples",
     siteName: "Sameeeish",
@@ -56,7 +63,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary",
-    title: "Sameeeish for Couples",
+    title: "Questions for Couples — Sameeeish",
     description: PAGE_DESCRIPTION,
   },
 };

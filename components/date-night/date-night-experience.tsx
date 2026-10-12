@@ -7,23 +7,12 @@ import {
   DATE_NIGHT_QUESTIONS,
   DATE_NIGHT_QUESTIONS_BY_ID,
   MOOD_LABELS,
+  MOOD_TINTS,
   type DateNightQuestion,
   type Mood,
 } from "@/lib/date-night/questions";
 
 type MoodFilter = "all" | Mood;
-
-// Shared by the mood-filter tabs (active-tab highlight) and the Browse
-// Questions group pills below, so both reuse the same color vocabulary
-// instead of two separate mappings drifting apart.
-const MOOD_TINTS: Record<Mood, string> = {
-  flirty: "pink",
-  funny: "peach",
-  romantic: "pink",
-  random: "blue",
-  deep: "lavender",
-  hypothetical: "mint",
-};
 
 const MOOD_FILTERS: { id: MoodFilter; label: string; tint: string }[] = [
   { id: "all", label: "All", tint: "lavender" },

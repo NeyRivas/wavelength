@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Fraunces, Nunito_Sans } from "next/font/google";
 import { redirect } from "next/navigation";
 
@@ -29,6 +30,14 @@ import { getExperienceCopy } from "@/lib/wavelength/experience-copy";
  * answering view. Only the markup changed — the guard's own condition and
  * the redirect below it are untouched.
  */
+
+// SEO pass: see app/w/[token]/page.tsx's own metadata export for why
+// this is here in addition to app/robots.ts's existing disallow — same
+// reasoning, applied to B's answering screen specifically.
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
+
 const fraunces = Fraunces({
   subsets: ["latin"],
   style: ["italic"],

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Fraunces, Nunito_Sans } from "next/font/google";
 import { redirect } from "next/navigation";
 
@@ -23,6 +24,18 @@ import { getReadyMadeGame } from "@/lib/wavelength/ready-made-games";
  * bare markup as before — only the not-a-participant branch's markup
  * changed, not the condition that decides when it renders.
  */
+
+// SEO pass: see app/w/[token]/page.tsx's own metadata export for why
+// this is here in addition to app/robots.ts's existing disallow — same
+// reasoning, applied to the personal results screen specifically. This
+// is also the one page in this flow where it matters most: it's the one
+// branch of app/w/[token]/* that actually contains both participants'
+// real answers, never something that should carry a snippet in search
+// results even accidentally.
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
+
 const fraunces = Fraunces({
   subsets: ["latin"],
   style: ["italic"],

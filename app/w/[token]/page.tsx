@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Fraunces, Nunito_Sans } from "next/font/google";
 import { redirect } from "next/navigation";
 
@@ -43,6 +44,18 @@ import { getExperienceCopy } from "@/lib/wavelength/experience-copy";
  * with the param stripped, falls back to `getExperienceCopy(undefined)`'s
  * generic-but-still-warm copy, same as Make Your Own.
  */
+
+// SEO pass: this token-scoped route (invite/join screen, or A's own
+// Review & Share screen) is already disallowed in app/robots.ts, but
+// disallow alone doesn't stop Google from indexing a URL it learns about
+// some other way — a noindex tag is the actual backstop, and it only
+// works if a crawler can reach the page to read it. Static (not
+// generateMetadata) since every branch of this route is private/
+// personal regardless of which one renders; no behavior change below.
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
+
 const fraunces = Fraunces({
   subsets: ["latin"],
   style: ["italic"],

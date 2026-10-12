@@ -4268,6 +4268,19 @@ dialog::backdrop {
   margin-top: auto;
 }
 
+/* SEO pass: the single contextual link to /for-couples below the grid
+   (ways-to-play-modes.tsx) — layout/spacing only, no new colors or
+   typography. Sits outside and below both cards so it never touches
+   their established "equal weight" parity (see the comment above
+   .wtp-modes__grid). .landing-button--outline itself is untouched,
+   already defined elsewhere for for-couples-hero.tsx's own
+   "See how it works" link. */
+.wtp-modes__more {
+  margin: 2rem 0 0;
+  text-align: center;
+  color: var(--wl-muted);
+}
+
 @media (max-width: 56rem) {
   .wtp-modes__grid {
     grid-template-columns: 1fr;

@@ -2,9 +2,12 @@
  * Date Night — Conversation Starters: a static local question library.
  * Not a questionnaire, not scored, not stored in Supabase — just a fixed
  * list a Client Component (components/date-night/date-night-experience.tsx)
- * filters/shuffles entirely in the browser. Deliberately plain data (no
- * database, no API route) so it can grow from 60 questions to hundreds
- * later by just appending entries here.
+ * filters/shuffles entirely in the browser, and (SEO pass) a Server
+ * Component (date-night-preview.tsx) renders a small static sample from.
+ * Deliberately plain data (no database, no API route, no "use client")
+ * so it can grow from 60 questions to hundreds later by just appending
+ * entries here, and so both the client tool and the server preview can
+ * import it with no client-boundary concerns.
  */
 
 export const MOODS = ["flirty", "funny", "romantic", "random", "deep", "hypothetical"] as const;
@@ -18,6 +21,21 @@ export const MOOD_LABELS: Record<Mood, string> = {
   random: "Random",
   deep: "Deep",
   hypothetical: "Hypothetical",
+};
+
+/** SEO pass: moved here from date-night-experience.tsx (where it was
+ * previously a client-only local const) so date-night-preview.tsx's
+ * Server Component can share the exact same mood → tint vocabulary
+ * instead of a second, drifting copy. Same values as before — nothing
+ * about the client tool's own mood-filter tabs or Browse Questions
+ * pills changed. */
+export const MOOD_TINTS: Record<Mood, string> = {
+  flirty: "pink",
+  funny: "peach",
+  romantic: "pink",
+  random: "blue",
+  deep: "lavender",
+  hypothetical: "mint",
 };
 
 export interface DateNightQuestion {

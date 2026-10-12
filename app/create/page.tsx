@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Fraunces, Nunito_Sans } from "next/font/google";
 
 import { CreateHeader } from "@/components/questionnaire/create-header";
@@ -8,6 +9,19 @@ import { requireUserId } from "@/lib/supabase/identity";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getExperienceCopy } from "@/lib/wavelength/experience-copy";
 import { getReadyMadeGame, READY_MADE_GAMES } from "@/lib/wavelength/ready-made-games";
+
+// SEO pass: app/robots.ts already disallows crawling this whole path, but
+// disallow alone doesn't stop a URL from being indexed (as a bare link
+// with no snippet) if Google learns about it some other way — it only
+// stops the crawl that would let Google see a noindex tag in the first
+// place. This renders a real `<meta name="robots" content="noindex,
+// nofollow">` tag for the (rare, since it's disallowed) case a crawler
+// does reach this page directly. No behavior change: this route still
+// requires requireUserId() below and renders a personal in-progress
+// draft exactly as before.
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 const MAKE_YOUR_OWN_HEADING = "Make Your Own";
 const MAKE_YOUR_OWN_SUBTITLE = "Create your own relationship quiz with questions that matter.";

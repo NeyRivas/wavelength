@@ -56,6 +56,27 @@ export function WaysToPlayModes() {
           </div>
         ))}
       </div>
+
+      {/* SEO pass: a single contextual link to /for-couples — a real,
+          substantial page (components/landing/for-couples-*) that has no
+          other internal link pointing to it anywhere in the app (its old
+          nav entry was deliberately retired in favor of this page, see
+          landing-header.tsx's own doc comment; not restored here).
+          Deliberately placed below the two-card grid rather than as a
+          second link on the "For couples" card itself — that card and
+          "For friends" are an intentionally equal pair (see this file's
+          own WAYS_TO_PLAY comment and .wtp-mode-card's CSS comment:
+          "same card style, same button style, same order weight"), so a
+          second link would only break that parity for one of the two.
+          Reuses .landing-button--outline verbatim (already established
+          by for-couples-hero.tsx's own "See how it works" link) rather
+          than inventing a new button style. */}
+      <p className="wtp-modes__more">
+        Playing with a partner?{" "}
+        <Link href="/for-couples" className="landing-button landing-button--outline">
+          More on Sameeeish for couples
+        </Link>
+      </p>
     </section>
   );
 }

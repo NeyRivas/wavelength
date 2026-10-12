@@ -27,7 +27,16 @@ const nunitoSans = Nunito_Sans({
   display: "swap",
 });
 
-const PAGE_DESCRIPTION = "Ready-made games for the two of you.";
+// SEO pass: description expanded to name the three real games this page
+// actually hosts (lib/wavelength/ready-made-games.ts: "Are we on the same
+// page?" subtitled "Compatibility Quiz", "Getting to know each other",
+// and "Date Night") instead of the generic "Ready-made games" line — an
+// accurate description of real on-page content, not three keywords
+// bolted on; title is left as the approved "Dating & Couples", which
+// already accurately scopes the page (it covers all three games, not
+// just one of them).
+const PAGE_DESCRIPTION =
+  "Ready-made games for the two of you — a relationship compatibility quiz, a getting-to-know-you conversation game, and date night questions.";
 
 export const metadata: Metadata = {
   title: "Dating & Couples — Sameeeish",
