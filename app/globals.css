@@ -4288,16 +4288,21 @@ dialog::backdrop {
   margin-bottom: 1.25rem;
 }
 
-.wtp-mode-card .landing-button {
+/* Fix pass: the primary CTA and (when present) the secondary outline
+   button now stack inside their own .wtp-mode-card__actions column
+   (ways-to-play-modes.tsx) rather than margin-top: auto living directly
+   on .landing-button — that let a lone primary button sit flush with a
+   second button added right after it, with no gap between them. Moving
+   the auto push to this wrapper keeps both buttons anchored to the
+   card's bottom edge as one group (unchanged for the Friends card, which
+   still renders only one button here), with gap providing the spacing
+   between them when there are two. */
+.wtp-mode-card__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
   margin-top: auto;
-}
-
-/* The per-card secondary link (ways-to-play-modes.tsx) — sits directly
-   under the primary button, which is already pushed to the card's
-   bottom edge by the margin-top: auto above, so this only needs a small
-   top gap of its own, not another auto push. */
-.wtp-mode-card__more {
-  margin-top: 0.75rem;
 }
 
 /* SEO pass: the single contextual link to /for-couples below the grid

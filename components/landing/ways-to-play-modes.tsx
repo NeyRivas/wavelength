@@ -7,11 +7,12 @@ interface WayToPlay {
   ctaLabel: string;
   href: string;
   blobClass: string;
-  /** Secondary-link label (e.g. "More about couples") — shares `href`
-   * with the primary CTA above it (see WaysToPlayModes' own doc comment
-   * on why that's intentional, not a mistake) rather than a second,
-   * separately-maintained destination field. */
-  secondaryLabel: string;
+  /** A genuine informational page about this category, distinct from
+   * the primary CTA's game destination above — omitted entirely when no
+   * such page exists (see the Friends entry below and this file's own
+   * WaysToPlayModes doc comment) rather than pointing at the same
+   * destination as the primary button or at an unrelated page. */
+  secondary?: { label: string; href: string };
 }
 
 /**
@@ -31,7 +32,7 @@ const WAYS_TO_PLAY: WayToPlay[] = [
     ctaLabel: "Play for couples",
     href: "/play/dating-couples",
     blobClass: "landing-card__blob--pink",
-    secondaryLabel: "More about couples",
+    secondary: { label: "More about couples", href: "/for-couples" },
   },
   {
     id: "friends",
@@ -41,24 +42,35 @@ const WAYS_TO_PLAY: WayToPlay[] = [
     ctaLabel: "Play with friends",
     href: "/play/friends",
     blobClass: "landing-card__blob--blue",
-    secondaryLabel: "More about friends",
+    // No `secondary` here: unlike /for-couples (a real, substantial
+    // informational page — components/landing/for-couples-*), there is
+    // no equivalent informational page for Friends anywhere in the app
+    // (confirmed by inspecting app/ and grepping the codebase for
+    // "for-friends"/"ForFriends"/etc. — nothing exists). /play/friends
+    // is the game listing itself, the same place the primary CTA above
+    // already goes, so reusing it as a "secondary" destination would
+    // violate the explicit instruction this fix is addressing. Rather
+    // than inventing a page or misusing an unrelated one (About, FAQ),
+    // this card simply keeps its one primary button until a real Friends
+    // informational page exists.
   },
 ];
 
 /**
- * Each card's own secondary link (below this component's definition —
- * see WaysToPlayModes) adds a quieter, text-only way into the same
- * destination the primary CTA already points to: "Play for couples" and
- * "More about couples" both go to /play/dating-couples, "Play with
- * friends" and "More about friends" both go to /play/friends. Both cards
- * get this symmetrically (not just one), so it doesn't touch the
- * established "equal pair" parity above (see WAYS_TO_PLAY's own
- * comment) — unlike the single, deliberately one-sided /for-couples link
- * below the grid. Reuses .landing-back-link verbatim (the same small,
- * muted, no-background treatment already used for "← Back" and the
- * getting-to-know-each-other-questions page's own secondary link) rather
- * than a second pill button, so it reads as clearly quieter than
- * `.landing-button--primary` above it.
+ * Fix pass: each card's secondary button (when `secondary` is set — see
+ * WAYS_TO_PLAY above) is a distinct, separately-rendered <Link>, stacked
+ * below the primary CTA inside a dedicated .wtp-mode-card__actions
+ * column — never merged into one link/button, and never pointing at the
+ * same destination as the primary CTA above it. Styled with
+ * .landing-button--outline (a real outlined pill, not plain text) so it
+ * still reads as a proper button, just visually quieter than
+ * `.landing-button--primary` next to it — the same outline treatment
+ * already established by for-couples-hero.tsx's "See how it works" link
+ * and the /for-couples link below this grid, not a new button style.
+ * Conditional: the Friends card has no `secondary` entry at all (no
+ * genuine informational page exists for it — see that entry's own
+ * comment), so it simply renders with one button, same as every card did
+ * before any of this linking work started.
  */
 export function WaysToPlayModes() {
   return (
@@ -69,33 +81,41 @@ export function WaysToPlayModes() {
             <div className={`landing-card__blob ${mode.blobClass}`} aria-hidden="true" />
             <h2 className="landing-card__title">{mode.title}</h2>
             <p className="landing-card__text wtp-mode-card__text">{mode.description}</p>
-            <Link
-              href={mode.href}
-              className="landing-button landing-button--primary landing-button--play"
-            >
-              {mode.ctaLabel} <span aria-hidden="true">→</span>
-            </Link>
-            <Link href={mode.href} className="landing-back-link wtp-mode-card__more">
-              {mode.secondaryLabel}
-            </Link>
+            <div className="wtp-mode-card__actions">
+              <Link
+                href={mode.href}
+                className="landing-button landing-button--primary landing-button--play"
+              >
+                {mode.ctaLabel} <span aria-hidden="true">→</span>
+              </Link>
+              {mode.secondary && (
+                <Link href={mode.secondary.href} className="landing-button landing-button--outline">
+                  {mode.secondary.label}
+                </Link>
+              )}
+            </div>
           </div>
         ))}
       </div>
 
-      {/* SEO pass: a single contextual link to /for-couples — a real,
-          substantial page (components/landing/for-couples-*) that has no
-          other internal link pointing to it anywhere in the app (its old
-          nav entry was deliberately retired in favor of this page, see
-          landing-header.tsx's own doc comment; not restored here).
-          Deliberately placed below the two-card grid rather than as a
-          second link on the "For couples" card itself — that card and
-          "For friends" are an intentionally equal pair (see this file's
-          own WAYS_TO_PLAY comment and .wtp-mode-card's CSS comment:
-          "same card style, same button style, same order weight"), so a
-          second link would only break that parity for one of the two.
-          Reuses .landing-button--outline verbatim (already established
-          by for-couples-hero.tsx's own "See how it works" link) rather
-          than inventing a new button style.
+      {/* SEO pass: a contextual link to /for-couples — a real, substantial
+          page (components/landing/for-couples-*). Originally placed here,
+          below the two-card grid, specifically to avoid breaking the
+          cards' "equal pair" parity by adding a second link to only one
+          of them (see this file's own WAYS_TO_PLAY comment and
+          .wtp-mode-card's CSS comment: "same card style, same button
+          style, same order weight"). A fix pass later added the Couples
+          card its own "More about couples" button pointing at this same
+          /for-couples page (Friends has no equivalent informational page
+          to match it with, so it stays without a second button — see
+          that entry's own comment) — intentionally not removed or merged
+          with this one: this is a page-level aside reachable regardless
+          of which card a visitor is looking at, the card's own button is
+          a card-level action; two entry points to the same real page
+          from different contexts isn't a conflict. Reuses
+          .landing-button--outline verbatim (already established by
+          for-couples-hero.tsx's own "See how it works" link) rather than
+          inventing a new button style.
 
           Internal-linking pass: a second link to the
           /play/dating-couples/getting-to-know-each-other-questions SEO
