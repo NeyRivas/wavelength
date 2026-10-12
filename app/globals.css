@@ -6972,15 +6972,3 @@ dialog::backdrop {
 .gtk-cta {
   text-align: center;
 }
-
-/* ── Dating & Couples: contextual link to the new page ──────────────────
-   Same 3-property pattern as .wtp-modes__more (components/landing/
-   ways-to-play-modes.tsx) — a centered, muted-text line below the
-   existing 3-card grid, not a new visual idea. Named separately rather
-   than reusing .wtp-modes__more directly, consistent with this section's
-   own naming rationale above. */
-.play-dating-couples__more {
-  margin: 2rem 0 0;
-  text-align: center;
-  color: var(--wl-muted);
-}

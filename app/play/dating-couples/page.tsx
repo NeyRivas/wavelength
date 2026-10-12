@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Fraunces, Nunito_Sans } from "next/font/google";
-import Link from "next/link";
 
 import { BackLink } from "@/components/landing/back-link";
 import { LandingFooter } from "@/components/landing/landing-footer";
@@ -27,14 +26,14 @@ import { GameCategorySection } from "@/components/play/game-category-section";
 // (shared with /play/friends) is untouched — only this page's own
 // `heading`/`text` props changed.
 //
-// SEO pass: a single contextual link to the new dedicated
-// /play/dating-couples/getting-to-know-each-other-questions landing
-// page, added as a new sibling element after GameCategorySection rather
-// than inside it — this page's own approved heading/text/metadata/
-// canonical (and the alignment/spacing CSS scoped to
-// .play-category--dating-couples) are untouched, and the "Getting to
-// know each other" card itself still submits startReadyMadeGame exactly
-// as before, unchanged.
+// UX pass: a contextual link to the new dedicated
+// /play/dating-couples/getting-to-know-each-other-questions landing page
+// was briefly added below the three cards, then removed — it duplicated
+// the "Getting to know each other" card immediately above it and added
+// an extra step to an already-working gameplay path for no real benefit.
+// That SEO page stays public, indexed, and linked from the sitemap; it
+// just isn't inserted into this page's own flow. The "Getting to know
+// each other" card still submits startReadyMadeGame directly, unchanged.
 const fraunces = Fraunces({
   subsets: ["latin"],
   style: ["italic"],
@@ -94,15 +93,6 @@ export default function DatingCouplesPlayPage() {
           heading="A Compatibility Quiz for Couples"
           text="Answer the same questions on your own, then compare notes together. It's not a science — just a quick, honest way to see where you align, where you see things differently, and what's worth talking about. This page also has a getting-to-know-you conversation game and a set of date night questions, if you'd rather start there."
         />
-        <p className="play-dating-couples__more">
-          Want a closer look at the getting-to-know-you questions first?{" "}
-          <Link
-            href="/play/dating-couples/getting-to-know-each-other-questions"
-            className="landing-button landing-button--outline"
-          >
-            See getting to know each other questions
-          </Link>
-        </p>
       </main>
       <LandingFooter />
     </div>

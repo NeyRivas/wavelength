@@ -30,7 +30,7 @@ const LAST_MODIFIED = {
   terms: new Date("2026-10-09"),
   contact: new Date("2026-10-09"),
   play: new Date("2026-10-03"),
-  playDatingCouples: new Date("2026-10-12"), // added the new-page contextual link (this pass)
+  playDatingCouples: new Date("2026-10-12"), // removed the redundant contextual link (this pass)
   playFriends: new Date("2026-09-26"),
   dateNight: new Date("2026-10-11"), // server-rendered question preview added (this pass)
   gettingToKnowEachOther: new Date("2026-10-12"), // new dedicated landing page (this pass)
