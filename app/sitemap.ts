@@ -8,7 +8,8 @@ const BASE_URL = "https://sameeeish.com";
  * matching disallow + noindex on those). Includes /play and its four
  * subroutes — real, indexable content (the actual "Let's play"/"Start
  * playing" destination, plus Dating & Couples, Friends, Date Night, and
- * the dedicated "getting to know each other questions" landing page).
+ * the dedicated "getting to know each other questions" landing page) —
+ * and both category informational pages, /for-couples and /for-friends.
  *
  * `lastModified` dates are static, not `new Date()` recomputed on every
  * build/request — a sitemap that claims every page changed "right now"
@@ -22,8 +23,9 @@ const BASE_URL = "https://sameeeish.com";
 const LAST_MODIFIED = {
   home: new Date("2026-10-11"), // app/page.tsx: added home metadata (this pass)
   howItWorks: new Date("2026-09-26"),
-  waysToPlay: new Date("2026-10-11"), // added the /for-couples contextual link (this pass)
+  waysToPlay: new Date("2026-10-12"), // Friends card's secondary button, removed redundant paragraph (this pass)
   forCouples: new Date("2026-10-11"), // title/description reworked (this pass)
+  forFriends: new Date("2026-10-12"), // new informational page (this pass)
   faq: new Date("2026-09-26"),
   about: new Date("2026-10-09"),
   privacy: new Date("2026-10-09"),
@@ -69,6 +71,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     {
       url: `${BASE_URL}/for-couples`,
       lastModified: LAST_MODIFIED.forCouples,
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
+    {
+      // The Friends-side equivalent of /for-couples — same priority tier.
+      url: `${BASE_URL}/for-friends`,
+      lastModified: LAST_MODIFIED.forFriends,
       changeFrequency: "monthly",
       priority: 0.7,
     },

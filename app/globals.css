@@ -4288,46 +4288,22 @@ dialog::backdrop {
   margin-bottom: 1.25rem;
 }
 
-/* Fix pass: the primary CTA and (when present) the secondary outline
-   button now stack inside their own .wtp-mode-card__actions column
-   (ways-to-play-modes.tsx) rather than margin-top: auto living directly
-   on .landing-button — that let a lone primary button sit flush with a
-   second button added right after it, with no gap between them. Moving
-   the auto push to this wrapper keeps both buttons anchored to the
-   card's bottom edge as one group (unchanged for the Friends card, which
-   still renders only one button here), with gap providing the spacing
-   between them when there are two. */
+/* The primary CTA and secondary outline button stack inside their own
+   .wtp-mode-card__actions column (ways-to-play-modes.tsx) rather than
+   margin-top: auto living directly on .landing-button — that let a lone
+   primary button sit flush with a second button added right after it,
+   with no gap between them. Moving the auto push to this wrapper keeps
+   both buttons anchored to the card's bottom edge as one group, with gap
+   providing the spacing between them. Both cards now always render two
+   buttons (/for-couples and /for-friends are each a real informational
+   page), so both action columns are the same height and align
+   consistently at the same position across the row. */
 .wtp-mode-card__actions {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 0.75rem;
   margin-top: auto;
-}
-
-/* SEO pass: the single contextual link to /for-couples below the grid
-   (ways-to-play-modes.tsx) — layout/spacing only, no new colors or
-   typography. Sits outside and below both cards so it never touches
-   their established "equal weight" parity (see the comment above
-   .wtp-modes__grid). .landing-button--outline itself is untouched,
-   already defined elsewhere for for-couples-hero.tsx's own
-   "See how it works" link. */
-.wtp-modes__more {
-  margin: 2rem 0 0;
-  text-align: center;
-  color: var(--wl-muted);
-}
-
-/* Internal-linking pass: the second, plain-text link in .wtp-modes__more
-   (to the getting-to-know-each-other-questions SEO page) — same
-   ink-colored, underlined treatment as .landing-legal__body a, reused
-   for consistency rather than invented fresh, so it reads as inline body
-   text rather than a second button competing with the pill link above
-   it in the same paragraph. */
-.wtp-modes__more-link {
-  color: var(--wl-ink);
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
 }
 
 @media (max-width: 56rem) {
@@ -7000,4 +6976,137 @@ dialog::backdrop {
 
 .gtk-cta__more {
   margin: 0.75rem 0 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   /for-friends
+   ═══════════════════════════════════════════════════════════════════════
+   New, page-scoped classes mirroring other pages' already-approved
+   values rather than cross-referencing their page-scoped names, same
+   convention as every other marketing page in this file (.fc-*, .wtp-*,
+   .gtk-*). */
+
+/* ── hero — identical shape/dot/wave values to .faq-hero and .wtp-hero,
+   plus its own .ff-hero__actions (same layout .fc-hero__actions already
+   uses for for-couples-hero.tsx's two-button row). */
+.ff-hero__shapes {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.ff-hero__shape {
+  position: absolute;
+  border-radius: 50%;
+}
+
+.ff-hero__shape--lavender {
+  width: 14rem;
+  height: 14rem;
+  top: -3rem;
+  left: 6%;
+  background: var(--wl-lavender);
+  opacity: 0.4;
+}
+
+.ff-hero__shape--mint {
+  width: 12rem;
+  height: 12rem;
+  top: -2rem;
+  right: 4%;
+  background: var(--wl-mint);
+  opacity: 0.35;
+}
+
+.ff-hero__wave {
+  position: absolute;
+  top: -1.25rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(30rem, 85%);
+  height: auto;
+  opacity: 0.7;
+}
+
+.ff-hero__dot {
+  position: absolute;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+}
+
+.ff-hero__dot--pink {
+  top: -3.5rem;
+  left: 30%;
+  background: var(--wl-pink);
+}
+
+.ff-hero__dot--blue {
+  top: -2.25rem;
+  right: 28%;
+  background: var(--wl-blue);
+}
+
+.ff-hero__content {
+  position: relative;
+  z-index: 1;
+  max-width: 36rem;
+  margin: 0 auto;
+}
+
+.ff-hero__eyebrow {
+  justify-content: center;
+}
+
+.ff-hero__heading {
+  margin-inline: auto;
+  text-align: center;
+}
+
+.ff-hero__text {
+  margin-inline: auto;
+  text-align: center;
+}
+
+.ff-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+/* ── "The two games" — reuses .landing-card-grid/.landing-card as-is;
+   only the 2-column override is new, same pattern as .wtp-modes__grid. */
+.ff-games__grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* ── reassurance band — mirrors .fc-reassure*'s exact values. */
+.ff-how {
+  background: color-mix(in srgb, var(--wl-lavender) 28%, white);
+  padding: clamp(3.5rem, 8vw, 5.5rem) clamp(1.5rem, 4vw, 4rem);
+  text-align: center;
+}
+
+.ff-how__inner {
+  max-width: 38rem;
+  margin: 0 auto;
+}
+
+.ff-how__heading {
+  margin: 0 0 1.25rem;
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  color: var(--wl-ink);
+}
+
+.ff-how__text {
+  margin: 0;
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  color: var(--wl-muted);
 }

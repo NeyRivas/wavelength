@@ -42,35 +42,41 @@ const WAYS_TO_PLAY: WayToPlay[] = [
     ctaLabel: "Play with friends",
     href: "/play/friends",
     blobClass: "landing-card__blob--blue",
-    // No `secondary` here: unlike /for-couples (a real, substantial
-    // informational page — components/landing/for-couples-*), there is
-    // no equivalent informational page for Friends anywhere in the app
-    // (confirmed by inspecting app/ and grepping the codebase for
-    // "for-friends"/"ForFriends"/etc. — nothing exists). /play/friends
-    // is the game listing itself, the same place the primary CTA above
-    // already goes, so reusing it as a "secondary" destination would
-    // violate the explicit instruction this fix is addressing. Rather
-    // than inventing a page or misusing an unrelated one (About, FAQ),
-    // this card simply keeps its one primary button until a real Friends
-    // informational page exists.
+    // /for-friends (app/for-friends/page.tsx) — the Friends-side
+    // equivalent of /for-couples, added in this same pass so this card
+    // can finally get a real secondary button instead of none at all.
+    secondary: { label: "More about friends", href: "/for-friends" },
   },
 ];
 
 /**
- * Fix pass: each card's secondary button (when `secondary` is set — see
- * WAYS_TO_PLAY above) is a distinct, separately-rendered <Link>, stacked
- * below the primary CTA inside a dedicated .wtp-mode-card__actions
- * column — never merged into one link/button, and never pointing at the
- * same destination as the primary CTA above it. Styled with
- * .landing-button--outline (a real outlined pill, not plain text) so it
- * still reads as a proper button, just visually quieter than
- * `.landing-button--primary` next to it — the same outline treatment
- * already established by for-couples-hero.tsx's "See how it works" link
- * and the /for-couples link below this grid, not a new button style.
- * Conditional: the Friends card has no `secondary` entry at all (no
- * genuine informational page exists for it — see that entry's own
- * comment), so it simply renders with one button, same as every card did
- * before any of this linking work started.
+ * Each card's secondary button (`secondary` on its WAYS_TO_PLAY entry —
+ * both cards have one now: /for-couples and /for-friends are each a
+ * real, substantial informational page, components/landing/for-couples-*
+ * and components/landing/for-friends-*) is a distinct, separately-
+ * rendered <Link>, stacked below the primary CTA inside a dedicated
+ * .wtp-mode-card__actions column — never merged into one link/button,
+ * and never pointing at the same destination as the primary CTA above
+ * it. Styled with .landing-button--outline (a real outlined pill, not
+ * plain text) so it still reads as a proper button, just visually
+ * quieter than `.landing-button--primary` next to it — the same outline
+ * treatment already established by for-couples-hero.tsx's "See how it
+ * works" link.
+ *
+ * Cleanup pass: the paragraph that used to sit below this grid ("Playing
+ * with a partner? More on Sameeeish for couples — or get a taste of our
+ * getting to know each other questions first.") is gone. It existed
+ * only because /for-couples had no other way in before the Couples
+ * card's own secondary button existed; now that both cards link to their
+ * own real informational page directly, that paragraph was pure
+ * duplication — same /for-couples destination the card's own button
+ * already covers, and a getting-to-know-each-other-questions link that
+ * belongs to that SEO page's own linking strategy, not this grid (see
+ * app/play/dating-couples/getting-to-know-each-other-questions and
+ * app/play/dating-couples/page.tsx for where that page is actually
+ * linked from — not re-added here). The two cards are now the only
+ * category-navigation elements in this section, each with exactly two
+ * buttons: play the game, or learn more about the category first.
  */
 export function WaysToPlayModes() {
   return (
@@ -97,50 +103,6 @@ export function WaysToPlayModes() {
           </div>
         ))}
       </div>
-
-      {/* SEO pass: a contextual link to /for-couples — a real, substantial
-          page (components/landing/for-couples-*). Originally placed here,
-          below the two-card grid, specifically to avoid breaking the
-          cards' "equal pair" parity by adding a second link to only one
-          of them (see this file's own WAYS_TO_PLAY comment and
-          .wtp-mode-card's CSS comment: "same card style, same button
-          style, same order weight"). A fix pass later added the Couples
-          card its own "More about couples" button pointing at this same
-          /for-couples page (Friends has no equivalent informational page
-          to match it with, so it stays without a second button — see
-          that entry's own comment) — intentionally not removed or merged
-          with this one: this is a page-level aside reachable regardless
-          of which card a visitor is looking at, the card's own button is
-          a card-level action; two entry points to the same real page
-          from different contexts isn't a conflict. Reuses
-          .landing-button--outline verbatim (already established by
-          for-couples-hero.tsx's own "See how it works" link) rather than
-          inventing a new button style.
-
-          Internal-linking pass: a second link to the
-          /play/dating-couples/getting-to-know-each-other-questions SEO
-          landing page was added to this same paragraph rather than as a
-          new block below it — one more full-width centered line here
-          would start to read as a stacked promotional section, not a
-          single contextual aside. Styled as plain underlined text
-          (.wtp-modes__more-link), not a second pill button, so it stays
-          visually secondary to the one outline CTA above and to the two
-          cards' own primary buttons. Descriptive anchor text ("getting to
-          know each other questions"), not generic "click here". */}
-      <p className="wtp-modes__more">
-        Playing with a partner?{" "}
-        <Link href="/for-couples" className="landing-button landing-button--outline">
-          More on Sameeeish for couples
-        </Link>{" "}
-        — or get a taste of our{" "}
-        <Link
-          href="/play/dating-couples/getting-to-know-each-other-questions"
-          className="wtp-modes__more-link"
-        >
-          getting to know each other questions
-        </Link>{" "}
-        first.
-      </p>
     </section>
   );
 }
