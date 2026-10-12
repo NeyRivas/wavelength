@@ -12,6 +12,19 @@ import { GameCategorySection } from "@/components/play/game-category-section";
 // "Getting to know each other" seed a questionnaire draft, while "Date
 // Night" is plain navigation to its own standalone experience
 // (app/play/dating-couples/date-night) rather than a questionnaire.
+//
+// SEO pass: heading/intro reworked around this page's primary search
+// intent, "compatibility quiz for couples" — "Compatibility Quiz" is
+// already this page's own established vocabulary (the "Are we on the
+// same page?" card's `subtitle` in ready-made-games.ts), not an invented
+// term. The intro below stays accurate to what the page actually offers
+// (three cards, not one): it leads with the compatibility quiz, states
+// plainly that it's a conversation starter rather than a scientific
+// assessment (matching the existing FAQ answer to "Is this a
+// compatibility test?"), and still names the other two games so the copy
+// doesn't overclaim the page's scope. GameCategorySection itself
+// (shared with /play/friends) is untouched — only this page's own
+// `heading`/`text` props changed.
 const fraunces = Fraunces({
   subsets: ["latin"],
   style: ["italic"],
@@ -27,25 +40,27 @@ const nunitoSans = Nunito_Sans({
   display: "swap",
 });
 
-// SEO pass: description expanded to name the three real games this page
-// actually hosts (lib/wavelength/ready-made-games.ts: "Are we on the same
-// page?" subtitled "Compatibility Quiz", "Getting to know each other",
-// and "Date Night") instead of the generic "Ready-made games" line — an
-// accurate description of real on-page content, not three keywords
-// bolted on; title is left as the approved "Dating & Couples", which
-// already accurately scopes the page (it covers all three games, not
-// just one of them).
+// SEO pass: title/description reworked around this page's primary search
+// intent, "compatibility quiz for couples" (see the doc comment above).
+// Description still names all three real games this page hosts
+// (lib/wavelength/ready-made-games.ts: "Are we on the same page?"
+// subtitled "Compatibility Quiz", "Getting to know each other", and
+// "Date Night") — leading with the quiz, not replacing the other two,
+// since the page genuinely offers all three. Distinct from /ways-to-play
+// (title "Ways to Play — Sameeeish", H1 "Ways to play"): that page is a
+// parent picker between couples/friends, this one is the couples
+// experience itself.
 const PAGE_DESCRIPTION =
-  "Ready-made games for the two of you — a relationship compatibility quiz, a getting-to-know-you conversation game, and date night questions.";
+  "A compatibility quiz for couples, plus a getting-to-know-you conversation game and date night questions — all for the two of you.";
 
 export const metadata: Metadata = {
-  title: "Dating & Couples — Sameeeish",
+  title: "Compatibility Quiz for Couples — Sameeeish",
   description: PAGE_DESCRIPTION,
   alternates: {
     canonical: "/play/dating-couples",
   },
   openGraph: {
-    title: "Dating & Couples — Sameeeish",
+    title: "Compatibility Quiz for Couples — Sameeeish",
     description: PAGE_DESCRIPTION,
     url: "/play/dating-couples",
     siteName: "Sameeeish",
@@ -53,7 +68,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary",
-    title: "Dating & Couples — Sameeeish",
+    title: "Compatibility Quiz for Couples — Sameeeish",
     description: PAGE_DESCRIPTION,
   },
 };
@@ -66,8 +81,8 @@ export default function DatingCouplesPlayPage() {
         <BackLink href="/play" />
         <GameCategorySection
           group="dating-couples"
-          heading="Dating & Couples"
-          text="For the two of you."
+          heading="A Compatibility Quiz for Couples"
+          text="Answer the same questions on your own, then compare notes together. It's not a science — just a quick, honest way to see where you align, where you see things differently, and what's worth talking about. This page also has a getting-to-know-you conversation game and a set of date night questions, if you'd rather start there."
         />
       </main>
       <LandingFooter />
