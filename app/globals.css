@@ -4292,6 +4292,14 @@ dialog::backdrop {
   margin-top: auto;
 }
 
+/* The per-card secondary link (ways-to-play-modes.tsx) — sits directly
+   under the primary button, which is already pushed to the card's
+   bottom edge by the margin-top: auto above, so this only needs a small
+   top gap of its own, not another auto push. */
+.wtp-mode-card__more {
+  margin-top: 0.75rem;
+}
+
 /* SEO pass: the single contextual link to /for-couples below the grid
    (ways-to-play-modes.tsx) — layout/spacing only, no new colors or
    typography. Sits outside and below both cards so it never touches

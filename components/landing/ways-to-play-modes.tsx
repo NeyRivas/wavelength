@@ -7,6 +7,11 @@ interface WayToPlay {
   ctaLabel: string;
   href: string;
   blobClass: string;
+  /** Secondary-link label (e.g. "More about couples") — shares `href`
+   * with the primary CTA above it (see WaysToPlayModes' own doc comment
+   * on why that's intentional, not a mistake) rather than a second,
+   * separately-maintained destination field. */
+  secondaryLabel: string;
 }
 
 /**
@@ -26,6 +31,7 @@ const WAYS_TO_PLAY: WayToPlay[] = [
     ctaLabel: "Play for couples",
     href: "/play/dating-couples",
     blobClass: "landing-card__blob--pink",
+    secondaryLabel: "More about couples",
   },
   {
     id: "friends",
@@ -35,9 +41,25 @@ const WAYS_TO_PLAY: WayToPlay[] = [
     ctaLabel: "Play with friends",
     href: "/play/friends",
     blobClass: "landing-card__blob--blue",
+    secondaryLabel: "More about friends",
   },
 ];
 
+/**
+ * Each card's own secondary link (below this component's definition —
+ * see WaysToPlayModes) adds a quieter, text-only way into the same
+ * destination the primary CTA already points to: "Play for couples" and
+ * "More about couples" both go to /play/dating-couples, "Play with
+ * friends" and "More about friends" both go to /play/friends. Both cards
+ * get this symmetrically (not just one), so it doesn't touch the
+ * established "equal pair" parity above (see WAYS_TO_PLAY's own
+ * comment) — unlike the single, deliberately one-sided /for-couples link
+ * below the grid. Reuses .landing-back-link verbatim (the same small,
+ * muted, no-background treatment already used for "← Back" and the
+ * getting-to-know-each-other-questions page's own secondary link) rather
+ * than a second pill button, so it reads as clearly quieter than
+ * `.landing-button--primary` above it.
+ */
 export function WaysToPlayModes() {
   return (
     <section className="landing-section landing-how wtp-modes">
@@ -52,6 +74,9 @@ export function WaysToPlayModes() {
               className="landing-button landing-button--primary landing-button--play"
             >
               {mode.ctaLabel} <span aria-hidden="true">→</span>
+            </Link>
+            <Link href={mode.href} className="landing-back-link wtp-mode-card__more">
+              {mode.secondaryLabel}
             </Link>
           </div>
         ))}
