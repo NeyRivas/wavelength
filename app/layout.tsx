@@ -25,6 +25,18 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/",
   },
+  // Pinterest domain verification (Pinterest Business → Claim your website).
+  // `verification.other` is the Metadata API's mechanism for a provider
+  // that isn't one of the built-in google/yandex/yahoo keys — it renders
+  // as `<meta name="p:domain_verify" content="...">`, same as every other
+  // `verification` entry. Set only here on the root layout (not a field
+  // any child route's own metadata touches) so Next.js's metadata merging
+  // inherits it onto every route's <head> unchanged.
+  verification: {
+    other: {
+      "p:domain_verify": "fd13435d7b3d839f8ac60830ab5c87bd",
+    },
+  },
   openGraph: {
     title: "Sameeeish",
     description: SITE_DESCRIPTION,
