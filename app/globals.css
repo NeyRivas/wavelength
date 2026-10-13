@@ -2392,11 +2392,46 @@ dialog::backdrop {
    .game-card-form's display: contents already leaves this Link as the
    surface's plain block-flow sibling. position/z-index match the vivid
    gradient's own text treatment above (.game-card--vivid .game-card__title
-   etc.) so it stays above that card's decorative corner glow. */
+   etc.) so it stays above that card's decorative corner glow.
+   A self-contained small pill (not .landing-button/.landing-button--outline
+   — that flat, solid-ink-bordered style read as a mismatched, generic
+   form control sitting on this card's own frosted-glass CTA language) —
+   same shape family as .game-card__cta just visibly quieter: smaller
+   padding/font, a hairline border instead of a solid one, no glass fill
+   by default. The vivid-card treatment just below layers on the actual
+   glass look, matching .game-card__cta's own blur/translucency but at
+   roughly half its opacity so "More" reads as clearly secondary next to
+   it rather than a second primary action. */
 .game-card__more {
   position: relative;
   z-index: 1;
-  margin-top: 1rem;
+  display: inline-flex;
+  align-items: center;
+  margin-top: 0.875rem;
+  padding: 0.4rem 0.9375rem;
+  border-radius: 999px;
+  font-family: var(--font-nunito), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 0.8125rem;
+  text-decoration: none;
+  color: var(--wl-ink);
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--wl-ink) 35%, transparent);
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.15s ease;
+}
+
+@media (hover: hover) {
+  .game-card__more:hover {
+    border-color: var(--wl-ink);
+  }
+}
+
+.game-card__more:focus-visible {
+  outline: 2px solid var(--wl-ink);
+  outline-offset: 2px;
 }
 
 .game-card__title {
@@ -2542,6 +2577,26 @@ dialog::backdrop {
     background: rgba(255, 255, 255, 0.6);
     box-shadow: 0 10px 22px -8px rgba(24, 24, 32, 0.28);
     transform: translateY(-2px);
+  }
+}
+
+/* "More" (game-card.tsx's `secondary` link) picks up the same
+   frosted-glass material as .game-card__cta right above — translucent
+   white + blur, not a flat ink-bordered pill — just at roughly half the
+   opacity/blur and with no lift/shadow on hover, so it stays legible as
+   the same design language while reading unmistakably as the quieter,
+   secondary pill next to it. */
+.game-card--vivid .game-card__more {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+@media (hover: hover) {
+  .game-card--vivid:hover .game-card__more {
+    background: rgba(255, 255, 255, 0.36);
+    border-color: rgba(255, 255, 255, 0.7);
   }
 }
 

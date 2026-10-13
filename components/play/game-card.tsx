@@ -91,10 +91,7 @@ export function GameCard({
             {inner}
           </button>
         </form>
-        <Link
-          href={secondary.href}
-          className="landing-button landing-button--outline game-card__more"
-        >
+        <Link href={secondary.href} className="game-card__more">
           {secondary.label}
         </Link>
       </div>
