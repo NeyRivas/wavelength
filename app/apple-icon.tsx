@@ -11,11 +11,14 @@ const LAVENDER = "#c9c3f4";
  * app/icon.tsx (components/landing/logo-mark.tsx), just larger (180x180,
  * Apple's recommended touch-icon size) and on a solid white backing
  * instead of transparent, since iOS renders touch icons on the home
- * screen without the surrounding page context a browser tab has.
+ * screen without the surrounding page context a browser tab has. Same
+ * refined proportions (stroke 2.25/24, dot diameter 7.5/24) and the same
+ * flat-lavender-ring tradeoff as app/icon.tsx — see that file's doc
+ * comment for why.
  */
 export default function AppleIcon() {
-  const stroke = Math.round(size.width * (2 / 24));
-  const dot = Math.round(size.width * (6.5 / 24));
+  const stroke = Math.round(size.width * (2.25 / 24));
+  const dot = Math.round(size.width * (7.5 / 24));
 
   return new ImageResponse(
     <div
