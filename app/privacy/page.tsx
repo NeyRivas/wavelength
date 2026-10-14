@@ -8,7 +8,8 @@ import { LandingHeader } from "@/components/landing/landing-header";
 // /privacy — describes what Sameeeish actually does with data today,
 // based on reading the real implementation (anonymous Supabase Auth,
 // the wavelengths/questions/answers tables and their row-level security,
-// and the absence of any analytics/tracking script or deletion flow) —
+// Google Analytics on public pages only (components/analytics/
+// google-analytics.tsx), and the absence of any deletion flow) —
 // not a generic template. Same pattern as every other marketing route
 // (own font instantiation, shared LandingHeader/LandingFooter,
 // .landing--internal wrapper, BackLink). No new functionality, routing,
@@ -81,8 +82,27 @@ export default function PrivacyPage() {
               answered, and completed.
             </p>
             <p>
-              We don&apos;t collect your IP address or device information, and Sameeeish has no
-              analytics, advertising, or tracking scripts of any kind.
+              Sameeeish doesn&apos;t store your IP address or device information alongside your
+              Wavelengths, and there are no advertising scripts.
+            </p>
+
+            <h2>Analytics</h2>
+            <p>
+              We use Google Analytics to understand how many people visit Sameeeish&apos;s public
+              pages (like the home page, the game pages, and the FAQ), which of those pages they
+              view, and how they found us. Google Analytics sets its own cookies and receives
+              standard information from your browser, such as your approximate location, device
+              type, and the page you came from.
+            </p>
+            <p>
+              Google Analytics is switched off on every page where you build, share, answer, or view
+              a Wavelength, so it never sees your questions, answers, aliases, or share links. You
+              can block it at any time with your browser&apos;s privacy settings, a content blocker,
+              or Google&apos;s{" "}
+              <a href="https://tools.google.com/dlpage/gaoptout" rel="noopener noreferrer">
+                opt-out add-on
+              </a>
+              , and Sameeeish keeps working normally.
             </p>
 
             <h2>Who can see a Wavelength</h2>
@@ -98,16 +118,18 @@ export default function PrivacyPage() {
 
             <h2>Cookies</h2>
             <p>
-              The only cookies Sameeeish sets are the ones needed to keep your anonymous session
-              working, so your answers stay tied to you instead of being lost on refresh. We
-              don&apos;t use cookies for advertising or analytics.
+              Sameeeish sets the cookies needed to keep your anonymous session working, so your
+              answers stay tied to you instead of being lost on refresh. On public pages, Google
+              Analytics also sets its own cookies, as described above. We don&apos;t use cookies for
+              advertising.
             </p>
 
             <h2>Third-party services</h2>
             <p>
               Sameeeish is built on Supabase, which hosts the database and runs the anonymous
               authentication described above. Supabase is the only third-party service that
-              processes Sameeeish data.
+              processes your Wavelengths, questions, and answers. Google Analytics, described above,
+              only receives visit information from public pages.
             </p>
 
             <h2>Retention and deletion</h2>
