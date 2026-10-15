@@ -4,47 +4,26 @@ import { GoogleAnalytics as NextGoogleAnalytics, sendGAEvent } from "@next/third
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 
+import { isPrivatePath } from "@/lib/analytics/ga-privacy-guard";
+
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
 // Module-level rather than a ref so it survives this component unmounting
-// and remounting (see the fail-closed effect below): only the first public
-// pathname this document shows is covered by gtag's own `config` pageview,
-// and a later remount must still report its route instead of skipping it.
+// and remounting (e.g. Next swapping the root layout for an error page
+// after a failed navigation): only the first public pathname this document
+// shows is covered by gtag's own `config` pageview, and a later remount must
+// still report its route instead of skipping it.
 let initialPageViewHandled = false;
 
 /**
- * Same two private path prefixes app/robots.ts already disallows. Those
- * routes carry a questionnaire share token (or lead straight to one) and
- * can hold personal answers/aliases in the URL or page content — never
- * safe to turn into a GA hit (page_path/page_location/page_title), so this
- * component sends nothing at all for them: no script, no request, no
- * cookie, not even a redacted hit.
- */
-function isExcludedPath(pathname: string): boolean {
-  return pathname.startsWith("/create") || pathname.startsWith("/w/");
-}
-
-/**
- * Not rendering the script only covers a *fresh load* of a private route.
- * Once gtag.js has loaded on a public page it stays loaded across App
- * Router client-side navigations, and GA4's own Enhanced Measurement then
- * sends hits on its own — a history-change page_view, plus
- * user_engagement/scroll — each carrying the current page_location. Real
- * GA data showed exactly that: page_views for /create?game=… despite the
- * exclusion above. Google's documented opt-out flag
- * (`window['ga-disable-<ID>'] = true`) makes gtag drop every hit while
- * it's set, so it's flipped on for private routes and back off for public
- * ones. It's set during render rather than in an effect on purpose: render
- * of the new route happens before the App Router commits and pushes the
- * new URL into history, so the flag is already in place by the time GA's
- * history listener fires.
- */
-function setGADisabled(disabled: boolean) {
-  if (!GA_MEASUREMENT_ID || typeof window === "undefined") return;
-  (window as unknown as Record<string, unknown>)[`ga-disable-${GA_MEASUREMENT_ID}`] = disabled;
-}
-
-/**
+ * /create and /w/[token]/* (see lib/analytics/ga-privacy-guard.ts) carry a
+ * questionnaire share token or lead straight to one, and can hold personal
+ * answers/aliases in the URL or page content. This component never loads
+ * gtag.js or sends a page_view for them. What gtag does on its own once
+ * it's loaded — and everything that must still hold if this component
+ * unmounts — is handled by the guard script the root layout puts in
+ * <head>, not here.
+ *
  * The official GoogleAnalytics component only fires its one automatic
  * `gtag('config', ...)` pageview on mount — it has no listener for
  * subsequent App Router client-side navigations (confirmed by reading
@@ -61,21 +40,7 @@ function setGADisabled(disabled: boolean) {
  */
 export function GoogleAnalytics() {
   const pathname = usePathname();
-  const excluded = isExcludedPath(pathname);
-
-  setGADisabled(excluded);
-
-  // Fail closed. If this component unmounts while gtag.js stays loaded —
-  // e.g. a navigation into /w/[token] throws and Next swaps the whole root
-  // layout for its default error page — it never renders with the new
-  // pathname, so the flag above would be left at the previous public
-  // route's `false` while gtag keeps sending user_engagement/scroll hits
-  // for the private URL. Leave GA off instead; the next mount re-enables it
-  // for public routes.
-  useEffect(() => {
-    setGADisabled(excluded);
-    return () => setGADisabled(true);
-  }, [excluded]);
+  const excluded = isPrivatePath(pathname);
 
   useEffect(() => {
     if (excluded) return;
