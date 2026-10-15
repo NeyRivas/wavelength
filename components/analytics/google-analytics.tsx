@@ -2,9 +2,9 @@
 
 import { GoogleAnalytics as NextGoogleAnalytics, sendGAEvent } from "@next/third-parties/google";
 import { usePathname } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 
-import { isPrivatePath } from "@/lib/analytics/ga-privacy-guard";
+import { isGuardInstalled, isPrivatePath } from "@/lib/analytics/ga-privacy-guard";
 
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
@@ -14,6 +14,9 @@ const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 // shows is covered by gtag's own `config` pageview, and a later remount must
 // still report its route instead of skipping it.
 let initialPageViewHandled = false;
+
+// The guard installs once, before hydration, and never changes afterwards.
+const noSubscription = () => () => {};
 
 /**
  * /create and /w/[token]/* (see lib/analytics/ga-privacy-guard.ts) carry a
@@ -41,9 +44,12 @@ let initialPageViewHandled = false;
 export function GoogleAnalytics() {
   const pathname = usePathname();
   const excluded = isPrivatePath(pathname);
+  // Fail closed: no GA in a document the <head> guard isn't protecting.
+  // `false` on the server, so hydration matches and GA mounts right after.
+  const guardReady = useSyncExternalStore(noSubscription, isGuardInstalled, () => false);
 
   useEffect(() => {
-    if (excluded) return;
+    if (!guardReady || excluded) return;
     // The first public route this document shows is reported by gtag's own
     // `config` call when <NextGoogleAnalytics> mounts — including when the
     // visit started on a private route, where GA wasn't loaded at all.
@@ -52,9 +58,9 @@ export function GoogleAnalytics() {
       return;
     }
     sendGAEvent("event", "page_view", { page_path: pathname });
-  }, [pathname, excluded]);
+  }, [pathname, excluded, guardReady]);
 
-  if (!GA_MEASUREMENT_ID || excluded) {
+  if (!GA_MEASUREMENT_ID || excluded || !guardReady) {
     return null;
   }
 

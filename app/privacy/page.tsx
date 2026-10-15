@@ -9,7 +9,8 @@ import { LandingHeader } from "@/components/landing/landing-header";
 // based on reading the real implementation (anonymous Supabase Auth,
 // the wavelengths/questions/answers tables and their row-level security,
 // Google Analytics on public pages only (components/analytics/
-// google-analytics.tsx), and the absence of any deletion flow) —
+// google-analytics.tsx + lib/analytics/ga-privacy-guard.ts), and the
+// absence of any deletion flow) —
 // not a generic template. Same pattern as every other marketing route
 // (own font instantiation, shared LandingHeader/LandingFooter,
 // .landing--internal wrapper, BackLink). No new functionality, routing,
@@ -93,14 +94,16 @@ export default function PrivacyPage() {
               We use Google Analytics to understand how many people visit Sameeeish&apos;s public
               pages (like the home page, the game pages, and the FAQ), which of those pages they
               view, and how they found us. Google Analytics sets its own cookies and receives
-              standard information from your browser, such as your approximate location, device
-              type, and the page you came from.
+              standard information from your browser, such as your IP address (which Google uses to
+              estimate your approximate location), your device and browser type, and the page you
+              came from.
             </p>
             <p>
-              Google Analytics is switched off on every page where you build, share, answer, or view
-              a Wavelength, so it never sees your questions, answers, aliases, or share links. You
-              can block it at any time with your browser&apos;s privacy settings, a content blocker,
-              or Google&apos;s{" "}
+              Google Analytics isn&apos;t loaded on the pages where you build, share, answer, or
+              view a Wavelength, and Sameeeish is built to keep those pages&apos; addresses — which
+              contain your share link — and their contents, such as your questions, answers, and
+              aliases, out of what Google Analytics receives. You can block Google Analytics at any
+              time with your browser&apos;s privacy settings, a content blocker, or Google&apos;s{" "}
               <a href="https://tools.google.com/dlpage/gaoptout" rel="noopener noreferrer">
                 opt-out add-on
               </a>
