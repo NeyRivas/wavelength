@@ -2,9 +2,15 @@
 
 import { GoogleAnalytics as NextGoogleAnalytics, sendGAEvent } from "@next/third-parties/google";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+
+// Module-level rather than a ref so it survives this component unmounting
+// and remounting (see the fail-closed effect below): only the first public
+// pathname this document shows is covered by gtag's own `config` pageview,
+// and a later remount must still report its route instead of skipping it.
+let initialPageViewHandled = false;
 
 /**
  * Same two private path prefixes app/robots.ts already disallows. Those
@@ -44,7 +50,7 @@ function setGADisabled(disabled: boolean) {
  * subsequent App Router client-side navigations (confirmed by reading
  * node_modules/@next/third-parties' own source). The effect below covers
  * those later navigations manually via the package's own sendGAEvent,
- * skipping the very first pathname so that initial automatic pageview
+ * skipping the first public pathname so that initial automatic pageview
  * isn't double-counted. It only ever sends `page_path`, never a title,
  * query string, or anything else that could carry a token.
  *
@@ -55,17 +61,31 @@ function setGADisabled(disabled: boolean) {
  */
 export function GoogleAnalytics() {
   const pathname = usePathname();
-  const isFirstRender = useRef(true);
   const excluded = isExcludedPath(pathname);
 
   setGADisabled(excluded);
 
+  // Fail closed. If this component unmounts while gtag.js stays loaded —
+  // e.g. a navigation into /w/[token] throws and Next swaps the whole root
+  // layout for its default error page — it never renders with the new
+  // pathname, so the flag above would be left at the previous public
+  // route's `false` while gtag keeps sending user_engagement/scroll hits
+  // for the private URL. Leave GA off instead; the next mount re-enables it
+  // for public routes.
   useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
+    setGADisabled(excluded);
+    return () => setGADisabled(true);
+  }, [excluded]);
+
+  useEffect(() => {
+    if (excluded) return;
+    // The first public route this document shows is reported by gtag's own
+    // `config` call when <NextGoogleAnalytics> mounts — including when the
+    // visit started on a private route, where GA wasn't loaded at all.
+    if (!initialPageViewHandled) {
+      initialPageViewHandled = true;
       return;
     }
-    if (excluded) return;
     sendGAEvent("event", "page_view", { page_path: pathname });
   }, [pathname, excluded]);
 

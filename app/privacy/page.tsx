@@ -82,8 +82,10 @@ export default function PrivacyPage() {
               answered, and completed.
             </p>
             <p>
-              Sameeeish doesn&apos;t store your IP address or device information alongside your
-              Wavelengths, and there are no advertising scripts.
+              Your Wavelengths, questions, and answers don&apos;t include your IP address or device
+              information. Supabase, which runs the anonymous sign-in, may record technical
+              connection details such as IP address and browser type as part of providing that
+              service. There are no advertising scripts.
             </p>
 
             <h2>Analytics</h2>
