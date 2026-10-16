@@ -4,6 +4,7 @@ import {
   GUARD_MARKER_KEY,
   type GuardWindow,
   PRIVATE_PATH_SOURCE,
+  PUBLIC_PATHS,
   PUBLIC_PATH_SOURCE,
   gaPrivacyGuardScript,
   installGAPrivacyGuard,
@@ -14,18 +15,19 @@ const ID = "G-TEST123";
 const ORIGIN = "https://sameeeish.com";
 const COLLECT = "https://region1.google-analytics.com/g/collect";
 
-function fakeWindow(pathname: string) {
+/** A fake window at `path` (which may carry a query string and fragment). */
+function fakeWindow(path: string) {
   const listeners: Record<string, Array<() => void>> = {};
   const beacons: Array<{ url: string; data: unknown }> = [];
+  const goTo = (url: unknown) => {
+    const { pathname, search, hash } = new URL(String(url), ORIGIN);
+    Object.assign(win.location, { pathname, search, hash });
+  };
   const win: GuardWindow = {
-    location: { pathname, origin: ORIGIN, host: "sameeeish.com" },
+    location: { pathname: "/", search: "", hash: "", origin: ORIGIN, host: "sameeeish.com" },
     history: {
-      pushState: (_state: unknown, _title: unknown, url: unknown) => {
-        win.location.pathname = new URL(String(url), ORIGIN).pathname;
-      },
-      replaceState: (_state: unknown, _title: unknown, url: unknown) => {
-        win.location.pathname = new URL(String(url), ORIGIN).pathname;
-      },
+      pushState: (_state: unknown, _title: unknown, url: unknown) => goTo(url),
+      replaceState: (_state: unknown, _title: unknown, url: unknown) => goTo(url),
     },
     addEventListener: (type, listener) => {
       (listeners[type] ??= []).push(listener);
@@ -37,6 +39,7 @@ function fakeWindow(pathname: string) {
       },
     },
   };
+  goTo(path);
   return { win, listeners, beacons };
 }
 
@@ -350,6 +353,261 @@ describe("installGAPrivacyGuard: hardening", () => {
   it("leaves GA disabled if the guard script throws outright", () => {
     const win = { location: null } as unknown as GuardWindow;
     new Function("window", gaPrivacyGuardScript(ID))(win);
+    expect(win[`ga-disable-${ID}`]).toBe(true);
+  });
+});
+
+describe("installGAPrivacyGuard: private data in query strings, fragments and encodings", () => {
+  // Made-up values only: a token-shaped hex string that isn't any real share
+  // token, a record-ID-shaped UUID, and a share path that isn't token-shaped
+  // at all (the filter mustn't depend on the token's format).
+  const FAKE_TOKEN = "0123456789abcdef0123456789abcdef";
+  const FAKE_UUID = "00000000-0000-4000-8000-000000000000";
+  const FAKE_SHARE = "/w/not-a-real-token";
+
+  const { win } = fakeWindow("/");
+  const { sanitize } = installGAPrivacyGuard(win, ID, PUBLIC_PATH_SOURCE, PRIVATE_PATH_SOURCE);
+
+  /** The params of the cleaned hit, or null if it was dropped. */
+  function sent(params: Record<string, string>) {
+    const clean = sanitize(hit(params));
+    return clean && new URL(clean.url).searchParams;
+  }
+
+  function encodeTimes(value: string, times: number) {
+    for (let i = 0; i < times; i++) value = encodeURIComponent(value);
+    return value;
+  }
+
+  const PRIVATE_VARIANTS = [
+    FAKE_SHARE,
+    "/W/not-a-real-token",
+    "//w//not-a-real-token",
+    "\\w\\not-a-real-token",
+    "\\/w\\/not-a-real-token", // JSON-escaped
+    "/./w/not-a-real-token",
+    "/play/../w/not-a-real-token",
+    "/%77/not-a-real-token",
+    "%2Fw%2Fnot-a-real-token",
+    "/create",
+    "/Create/",
+    "/create?game=x",
+    `${ORIGIN}/w/not-a-real-token/result`,
+    `${ORIGIN}//W/not-a-real-token`,
+    `${ORIGIN}/w${FAKE_TOKEN}`, // a 404 on this site
+    `//sameeeish.com/w/not-a-real-token`,
+  ];
+
+  it("keeps a page_view on a public page but strips private data from its query string", () => {
+    for (const query of [
+      `t=${FAKE_TOKEN}`,
+      `ref=${FAKE_SHARE}`,
+      `ref=${encodeURIComponent(ORIGIN + FAKE_SHARE)}`,
+      `next=${encodeTimes(FAKE_SHARE, 3)}`,
+      `id=${FAKE_UUID}`,
+      "session=anything", // unknown parameters aren't kept, whatever they hold
+    ]) {
+      const params = sent({ en: "page_view", dl: `${ORIGIN}/faq?${query}` });
+      expect(params?.get("dl"), query).toBe(`${ORIGIN}/faq`);
+    }
+  });
+
+  it("strips the fragment, whatever it holds", () => {
+    for (const hash of [FAKE_SHARE, `token=${FAKE_TOKEN}`, "section"]) {
+      expect(sent({ en: "page_view", dl: `${ORIGIN}/faq#${hash}` })?.get("dl"), hash).toBe(
+        `${ORIGIN}/faq`,
+      );
+    }
+  });
+
+  it("keeps campaign parameters exactly as sent", () => {
+    const dl = `${ORIGIN}/play/friends?utm_source=newsletter&utm_medium=email&utm_campaign=fall_launch&utm_content=a&utm_term=b`;
+    for (const url of [
+      dl,
+      `${ORIGIN}/?fbclid=IwAR0FakeClickId_x-y`,
+      `${ORIGIN}/for-couples?gclid=Cj0KCQFakeClickId&gbraid=0AAAFake&wbraid=FakeW`,
+    ]) {
+      const request = hit({ en: "page_view", dl: url, dr: "https://www.google.com/" });
+      expect(sanitize(request), url).toEqual({ url: request, body: undefined });
+    }
+  });
+
+  it("keeps campaign parameters but drops the rest, and any campaign value that looks private", () => {
+    const params = sent({
+      en: "page_view",
+      dl: `${ORIGIN}/?utm_source=ig&ref=friend&utm_campaign=${encodeURIComponent(FAKE_SHARE)}&utm_content=${FAKE_TOKEN}&gclid=abc#top`,
+    });
+    expect(params?.get("dl")).toBe(`${ORIGIN}/?utm_source=ig&gclid=abc`);
+  });
+
+  it("catches a private path or token under any number of layers of percent-encoding", () => {
+    for (let times = 0; times <= 8; times++) {
+      for (const secret of [ORIGIN + FAKE_SHARE, FAKE_SHARE, FAKE_TOKEN]) {
+        const value = encodeTimes(secret, times);
+        const label = `${secret} x${times}`;
+        // As its own content parameter: the hit is dropped.
+        expect(sent({ en: "click", "ep.link_url": value }), label).toBe(null);
+        expect(sent({ en: "page_view", dt: `Sameeeish ${value}` }), label).toBe(null);
+        // As a referrer: scrubbed to the origin.
+        expect(sent({ en: "page_view", dl: `${ORIGIN}/`, dr: value })?.get("dr"), label).toBe(
+          `${ORIGIN}/`,
+        );
+        // Inside page_location's query string: stripped.
+        expect(
+          sent({ en: "page_view", dl: `${ORIGIN}/faq?utm_term=${value}` })?.get("dl"),
+          label,
+        ).toBe(`${ORIGIN}/faq`);
+      }
+      // Private paths are also caught in parameters that aren't content.
+      expect(sent({ en: "page_view", xyz: encodeTimes(ORIGIN + FAKE_SHARE, times) })).toBe(null);
+    }
+  });
+
+  it("fails closed on a value still decoding after 10 layers", () => {
+    expect(sent({ en: "click", "ep.note": encodeTimes("%", 10) + "harmless" })).not.toBeNull();
+    expect(sent({ en: "click", "ep.note": encodeTimes("%", 11) + "harmless" })).toBe(null);
+  });
+
+  it("isn't fooled by malformed percent-encoding around a private path", () => {
+    for (const value of [
+      `%E0%A4%${FAKE_SHARE}`,
+      `%ZZ${encodeURIComponent(FAKE_SHARE)}`,
+      `%${FAKE_TOKEN}`,
+    ]) {
+      expect(sent({ en: "click", "ep.link_url": value }), value).toBe(null);
+    }
+    // Malformed but harmless values still go through.
+    expect(sent({ en: "page_view", dl: `${ORIGIN}/faq`, "ep.note": "100%" })).not.toBeNull();
+  });
+
+  it.each(PRIVATE_VARIANTS)("treats %s as private in every content field", (variant) => {
+    expect(
+      sent({
+        en: "page_view",
+        dl:
+          variant.startsWith("/") || variant.startsWith("http") ? variant : `${ORIGIN}/${variant}`,
+      }),
+    ).toBe(null);
+    expect(sent({ en: "page_view", "ep.page_path": variant })).toBe(null);
+    expect(sent({ en: "click", "ep.link_url": variant })).toBe(null);
+    expect(sent({ en: "page_view", dl: `${ORIGIN}/`, dr: variant })?.get("dr")).toBe(`${ORIGIN}/`);
+    expect(
+      sent({ en: "page_view", dl: `${ORIGIN}/`, "ep.page_referrer": variant })?.get(
+        "ep.page_referrer",
+      ),
+    ).toBe(`${ORIGIN}/`);
+  });
+
+  it("drops token- or ID-shaped values in titles, event and user parameters", () => {
+    expect(sent({ en: "page_view", dt: `Results ${FAKE_TOKEN}` })).toBe(null);
+    expect(sent({ en: "page_view", dt: FAKE_TOKEN.toUpperCase() })).toBe(null);
+    expect(sent({ en: "click", "ep.ref": FAKE_UUID })).toBe(null);
+    expect(sent({ en: "click", "up.id": `x${FAKE_TOKEN}0000` })).toBe(null);
+    expect(sent({ en: "click", [`ep.${FAKE_TOKEN}`]: "1" })).toBe(null);
+  });
+
+  it("reduces another site's URL to its origin and path, unless it looks private", () => {
+    expect(
+      sent({
+        en: "page_view",
+        dl: `${ORIGIN}/`,
+        dr: "https://www.google.com/search?q=sameeeish#x",
+      })?.get("dr"),
+    ).toBe("https://www.google.com/search");
+    // A host that merely starts with a private word isn't a private path.
+    expect(
+      sent({ en: "page_view", dl: `${ORIGIN}/`, dr: "https://create.example.com/" })?.get("dr"),
+    ).toBe("https://create.example.com/");
+    expect(
+      sent({ en: "click", "ep.link_url": "https://vercel.com/legal/privacy-notice" })?.get(
+        "ep.link_url",
+      ),
+    ).toBe("https://vercel.com/legal/privacy-notice");
+  });
+
+  it("drops an unparseable URL in page_location", () => {
+    expect(sent({ en: "page_view", dl: "https://[not-a-host/faq" })).toBe(null);
+  });
+
+  it("sends every public page's page_view unchanged, with gtag's technical parameters", () => {
+    for (const path of PUBLIC_PATHS) {
+      const request =
+        `${COLLECT}?v=2&tid=${ID}&gtm=45je5a10v9&_p=1760000000000&gcd=13l3l3l3l1l1&npa=0&dma=0` +
+        `&cid=1234567890.1760000000&ul=en-us&sr=1280x720&uaa=x86&uab=64&uafvl=Chromium%3B141.0.0.0` +
+        `&uamb=0&uam=&uap=Linux&uapv=6.1&uaw=0&are=1&frm=0&pscdl=noapi&_s=1&tag_exp=101509157~103116026` +
+        `&sid=1760000000&sct=1&seg=0&dl=${encodeURIComponent(ORIGIN + path)}&dr=${encodeURIComponent("https://www.google.com/")}` +
+        `&dt=Sameeeish&en=page_view&_fv=1&_ss=1&_ee=1&tfd=500`;
+      expect(sanitize(request), path).toEqual({ url: request, body: undefined });
+      expect(sanitize(hit({ en: "page_view", "ep.page_path": path })), path).not.toBeNull();
+    }
+  });
+});
+
+describe("installGAPrivacyGuard: documents opened with private data in the query or fragment", () => {
+  const FAKE_TOKEN = "fedcba9876543210fedcba9876543210";
+
+  function isolated(path: string) {
+    const fake = fakeWindow(path);
+    const navigations: string[] = [];
+    let reloads = 0;
+    fake.win.location.href = ORIGIN + path;
+    fake.win.location.assign = (url: string) => navigations.push("assign " + url);
+    fake.win.location.replace = (url: string) => navigations.push("replace " + url);
+    fake.win.location.reload = () => {
+      reloads++;
+    };
+    const { sanitize } = installGAPrivacyGuard(
+      fake.win,
+      ID,
+      PUBLIC_PATH_SOURCE,
+      PRIVATE_PATH_SOURCE,
+    );
+    return { ...fake, sanitize, navigations, reloads: () => reloads };
+  }
+
+  it.each([
+    `/faq?t=${FAKE_TOKEN}`,
+    "/?ref=/w/not-a-real-token",
+    `/?ref=${encodeURIComponent(encodeURIComponent("/w/not-a-real-token"))}`,
+    `/?r=${encodeURIComponent(`${ORIGIN}/W/not-a-real-token`)}`,
+    "/faq#/w/not-a-real-token",
+    `/faq#${FAKE_TOKEN}`,
+    "/play?next=/create",
+  ])("keeps GA off and unmarked in a public page opened at %s", (path) => {
+    const { win, sanitize } = isolated(path);
+    expect(win[`ga-disable-${ID}`]).toBe(true);
+    expect(win[GUARD_MARKER_KEY]).toBeUndefined();
+    expect(sanitize(hit({ en: "page_view", dl: `${ORIGIN}/faq` }))).toBe(null);
+  });
+
+  it.each([
+    "/?utm_source=newsletter&utm_medium=email",
+    "/faq?fbclid=IwAR0Fake",
+    "/how-it-works#rules",
+    "/play?x=1",
+  ])("runs GA normally on a public page opened at %s", (path) => {
+    const { win } = isolated(path);
+    expect(win[`ga-disable-${ID}`]).toBe(false);
+    expect(win[GUARD_MARKER_KEY]).toBe(true);
+  });
+
+  it("leaves the public document when a pushState would put private data in its URL", () => {
+    const { win, navigations } = isolated("/faq");
+    win.history.pushState({}, "", "/faq?ref=/w/not-a-real-token");
+    win.history.replaceState({}, "", `/faq#${FAKE_TOKEN}`);
+    expect(navigations).toEqual([
+      `assign ${ORIGIN}/faq?ref=/w/not-a-real-token`,
+      `replace ${ORIGIN}/faq#${FAKE_TOKEN}`,
+    ]);
+    expect(`${win.location.search}${win.location.hash}`).toBe("");
+    expect(win[`ga-disable-${ID}`]).toBe(false);
+  });
+
+  it("reloads when the fragment changes to something private", () => {
+    const { win, listeners, reloads } = isolated("/faq");
+    win.location.hash = "#/w/not-a-real-token";
+    listeners.hashchange?.forEach((listener) => listener());
+    expect(reloads()).toBe(1);
     expect(win[`ga-disable-${ID}`]).toBe(true);
   });
 });

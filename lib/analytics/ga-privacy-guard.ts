@@ -20,7 +20,9 @@
  * gtag.js loads, with three independent layers:
  *
  * 0. Isolation. Every document is either entirely public or entirely
- *    private, fixed by the URL it was loaded at. A pushState/replaceState
+ *    private, fixed by the URL it was loaded at: private unless its path
+ *    is on PUBLIC_PATHS *and* its query string and fragment carry nothing
+ *    that looks private (see `sensitive` below). A pushState/replaceState
  *    that would cross between the two is turned into a full navigation
  *    (location.assign/replace) *before* the URL changes, so a public
  *    document — the only kind that ever loads gtag.js — is never at a
@@ -34,17 +36,23 @@
  *    src, an attribute set via Element.prototype, innerHTML, …), none of
  *    which layer 2 can see.
  * 1. URL-synced opt-out. Google's documented `window['ga-disable-<ID>']`
- *    flag is set from `location.pathname` immediately, after every
+ *    flag is set from the current URL immediately, after every
  *    pushState/replaceState (wrapped here first, so both Next's own patch
  *    and gtag's history listener end up calling through this wrapper) and
- *    on popstate (registered before anyone else's listener).
+ *    on popstate/hashchange (registered before anyone else's listener).
  * 2. Transport filter. sendBeacon, fetch, XMLHttpRequest and <img>.src
- *    requests to Google hosts are inspected before they leave the page:
- *    a referrer-type parameter pointing at a private route is replaced
- *    with the bare origin; any other parameter mentioning a private route
- *    — or a body that can't be inspected synchronously — drops the whole
- *    request, and so does every Google request made while the current
- *    URL is private. Requests to any other host (Supabase included) pass
+ *    requests to Google hosts are inspected before they leave the page.
+ *    Every parameter, at every level of percent-encoding, is checked for a
+ *    private route; the ones that carry page content (page_location,
+ *    page_referrer, title, event and user parameters) are also checked for
+ *    anything shaped like a share token or record ID, and a URL in them is
+ *    rebuilt from parts known to be safe: for this site, a public path plus
+ *    campaign parameters (utm_*, fbclid, gclid, gbraid, wbraid) — any other
+ *    query parameter and the fragment are dropped; for another site, its
+ *    origin and path. A referrer that fails this becomes the bare origin;
+ *    anything else that fails it — or a body that can't be inspected
+ *    synchronously — drops the whole request, and so does every Google
+ *    request made while the current URL is private. Requests to any other host (Supabase included) pass
  *    through untouched. Layers 1 and 2 only matter if layer 0 is bypassed
  *    (e.g. its full navigation fails, or a popstate reload is pending).
  *
@@ -107,7 +115,7 @@ export const PUBLIC_PATH_SOURCE =
  * insensitively, anywhere inside an outgoing Google request as an extra
  * signal.
  */
-export const PRIVATE_PATH_SOURCE = "/(?:w/|create)";
+export const PRIVATE_PATH_SOURCE = "/(?:w/|create(?![\\w-]))";
 
 const PUBLIC_PATHNAME = new RegExp(PUBLIC_PATH_SOURCE);
 
@@ -119,6 +127,8 @@ export function isPublicPath(pathname: string): boolean {
 export interface GuardWindow {
   location: {
     pathname: string;
+    search?: string;
+    hash?: string;
     origin: string;
     host: string;
     href?: string;
@@ -166,15 +176,25 @@ export function installGAPrivacyGuard(
   var origin = loc.origin;
   var escapedHost = loc.host.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   var publicPathname = new RegExp(publicPathSource);
-  // A known private prefix at the start of a value or right after this
-  // site's host, in any letter case.
-  var privateMention = new RegExp("(?:^|//" + escapedHost + ")" + privatePathSource, "i");
+  // A known private prefix anywhere in a value, as a path segment (not a
+  // host: "//create.example.com" doesn't count), in any letter case.
+  var privateMention = new RegExp("(?:^|[^/])" + privatePathSource, "i");
   // Every path on this site that a value names: absolute URLs anywhere in
   // it, or the whole value when it is itself a path.
   var ownUrl = new RegExp("//" + escapedHost + "(/[^?#&\\s\"'<>]*)?", "gi");
   var googleHost =
     /(^|\.)(google-analytics\.com|googletagmanager\.com|doubleclick\.net|googlesyndication\.com|googleadservices\.com|google\.(com|[a-z]{2}|co\.[a-z]{2}|com\.[a-z]{2}))$/;
   var referrerKeys: Record<string, true> = { dr: true, "ep.page_referrer": true };
+  // Hit parameters that carry page content rather than gtag's own
+  // technical values: page location/referrer/title/path, event name, and
+  // event, user and item parameters.
+  var contentKey = /^(?:dl|dr|dt|dp|en|ep\..+|up\..+|pr\d+)$/;
+  // Something shaped like a share token (32+ hex digits) or a record ID
+  // (UUID). Only looked for in content parameters.
+  var idShape =
+    /(?:^|[^0-9a-f])[0-9a-f]{32,}(?:[^0-9a-f]|$)|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
+  var urlLike = /^(?:https?:)?\/\/|^\//i;
+  var campaignKey = /^(?:utm_[a-z0-9_]+|fbclid|gclid|gbraid|wbraid)$/i;
   var disableKey = "ga-disable-" + measurementId;
 
   // Set if any part of the guard failed to install: GA then stays off.
@@ -184,8 +204,12 @@ export function installGAPrivacyGuard(
     return !publicPathname.test(pathname);
   }
 
+  function isPrivateLocation(pathname: string, search: string, hash: string) {
+    return isPrivatePathname(pathname) || sensitive(search, true) || sensitive(hash, true);
+  }
+
   function isPrivateNow() {
-    return isPrivatePathname(loc.pathname);
+    return isPrivateLocation(loc.pathname, loc.search || "", loc.hash || "");
   }
 
   // Layer 0: whether this document is a private one is fixed at load time.
@@ -200,7 +224,8 @@ export function installGAPrivacyGuard(
   function isPrivateUrl(url: unknown): boolean | null {
     if (url === undefined || url === null) return null;
     try {
-      return isPrivatePathname(new URL(String(url), loc.href || origin).pathname);
+      var target = new URL(String(url), loc.href || origin);
+      return isPrivateLocation(target.pathname, target.search, target.hash);
     } catch (e) {
       return null;
     }
@@ -217,33 +242,79 @@ export function installGAPrivacyGuard(
     }
   }
 
-  function namesPrivatePath(text: string) {
-    if (privateMention.test(text)) return true;
+  // Backslashes as slashes, no "." / ".." segments, no repeated slashes
+  // (except right after a scheme), so "\\W\\", "//w//" and "/x/../w/"
+  // all read as "/w/".
+  function normalize(text: string) {
+    return text
+      .replace(/\\/g, "/")
+      .replace(/\/\.{1,2}(?=\/|$)/g, "")
+      .replace(/(^|[^:])\/{2,}/g, "$1/");
+  }
+
+  function namesPrivatePath(text: string, ids: boolean) {
+    if (privateMention.test(normalize(text))) return true;
+    if (ids && idShape.test(text)) return true;
     if (text.charAt(0) === "/" && text.charAt(1) !== "/") {
-      if (isPrivatePathname(text.split(/[?#]/)[0] as string)) return true;
+      if (isPrivatePathname(normalize(text.split(/[?#]/)[0] as string))) return true;
     }
     var match;
     ownUrl.lastIndex = 0;
     while ((match = ownUrl.exec(text))) {
-      if (isPrivatePathname(match[1] || "/")) return true;
+      if (isPrivatePathname(normalize(match[1] || "/"))) return true;
     }
     return false;
   }
 
-  // Checks the value as sent and up to two levels of percent-decoding.
-  function mentionsPrivate(value: string) {
+  // Whether `value` names a private page (or, with `ids`, carries something
+  // shaped like a token or ID) as sent or under any number of layers of
+  // percent-encoding. Decoding is byte by byte, so malformed sequences
+  // can't hide what follows them; a value still changing after 10 layers
+  // counts as private.
+  function sensitive(value: string, ids: boolean) {
     var text = value;
-    for (var i = 0; i < 3; i++) {
-      if (namesPrivatePath(text)) return true;
-      try {
-        var decoded = decodeURIComponent(text);
-      } catch (e) {
-        return false;
-      }
+    for (var i = 0; i <= 10; i++) {
+      if (namesPrivatePath(text, ids)) return true;
+      var decoded = text.replace(/%([0-9a-f]{2})/gi, function (_m: string, hex: string) {
+        return String.fromCharCode(parseInt(hex, 16));
+      });
       if (decoded === text) return false;
       text = decoded;
     }
-    return false;
+    return true;
+  }
+
+  // A URL in a content parameter, reduced to parts known to be safe: for
+  // this site, a public path plus campaign parameters (fragment and any
+  // other parameter dropped); for another site, its origin and path, and
+  // only if nothing in the full URL looks private. null if it names a
+  // private page of this site, looks private, or can't be parsed.
+  function cleanUrl(value: string): string | null {
+    try {
+      var url = new URL(value, origin);
+    } catch (e) {
+      return null;
+    }
+    if (url.protocol !== "https:" && url.protocol !== "http:") return null;
+    if (url.host !== loc.host) return sensitive(value, true) ? null : url.origin + url.pathname;
+    if (isPrivatePathname(url.pathname)) return null;
+    var kept = new URLSearchParams();
+    url.searchParams.forEach(function (v, k) {
+      if (campaignKey.test(k) && !sensitive(v, true)) kept.append(k, v);
+    });
+    var query = kept.toString();
+    // A bare path (page_path) stays a bare path.
+    var relative = value.charAt(0) === "/" && value.charAt(1) !== "/";
+    return (relative ? "" : url.origin) + url.pathname + (query ? "?" + query : "");
+  }
+
+  // The value to send for one hit parameter, or null to drop the request.
+  function cleanParam(key: string, value: string): string | null {
+    var content = contentKey.test(key);
+    if (sensitive(key, content)) return null;
+    var clean = content && urlLike.test(value) ? cleanUrl(value) : value;
+    if (clean !== null && !sensitive(clean, content)) return clean;
+    return referrerKeys[key] ? origin + "/" : null;
   }
 
   function isGoogleUrl(url: string) {
@@ -261,18 +332,17 @@ export function installGAPrivacyGuard(
     var drop = false;
     var changed = false;
     params.forEach(function (value, key) {
-      if (!mentionsPrivate(value) && !mentionsPrivate(key)) {
-        out.append(key, value);
-      } else if (referrerKeys[key]) {
-        out.append(key, origin + "/");
-        changed = true;
-      } else {
+      var clean = cleanParam(key, value);
+      if (clean === null) {
         drop = true;
+      } else {
+        out.append(key, clean);
+        if (clean !== value) changed = true;
       }
     });
     if (drop) return null;
     // Re-serializing changes the encoding (e.g. %20 -> +), so only do it
-    // when a value actually had to be replaced.
+    // when a value actually had to be changed.
     return changed ? out.toString() : query;
   }
 
@@ -356,6 +426,7 @@ export function installGAPrivacyGuard(
   });
   install(function () {
     win.addEventListener("popstate", onUrlChange, true);
+    win.addEventListener("hashchange", onUrlChange, true);
   });
 
   // Layer 2: transport filter.

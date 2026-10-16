@@ -33,4 +33,13 @@ describe("privacy policy", () => {
     expect(policy).toMatch(/only runs on Sameeeish's public pages/);
     expect(policy).toMatch(/page not found/i);
   });
+
+  it("lists the only query parameters the guard keeps in page addresses", () => {
+    const guard = read("lib/analytics/ga-privacy-guard.ts");
+    expect(guard).toContain(
+      "var campaignKey = /^(?:utm_[a-z0-9_]+|fbclid|gclid|gbraid|wbraid)$/i;",
+    );
+    expect(policy).toMatch(/trimmed to the page itself plus standard campaign tags/);
+    for (const name of ["utm_source", "fbclid", "gclid"]) expect(policy).toContain(name);
+  });
 });

@@ -112,8 +112,11 @@ export default function PrivacyPage() {
               that isn&apos;t one of those public pages (such as a &quot;page not found&quot; page),
               and Sameeeish is built to keep those pages&apos; addresses — which can contain your
               share link — and their contents, such as your questions, answers, and aliases, out of
-              what Google Analytics receives. You can block Google Analytics at any time with your
-              browser&apos;s privacy settings, a content blocker, or Google&apos;s{" "}
+              what Google Analytics receives. On public pages, the page address sent to Google
+              Analytics is trimmed to the page itself plus standard campaign tags (such as{" "}
+              <code>utm_source</code>, <code>fbclid</code>, or <code>gclid</code>); anything else in
+              it is left out. You can block Google Analytics at any time with your browser&apos;s
+              privacy settings, a content blocker, or Google&apos;s{" "}
               <a href="https://tools.google.com/dlpage/gaoptout" rel="noopener noreferrer">
                 opt-out add-on
               </a>
