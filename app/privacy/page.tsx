@@ -8,6 +8,8 @@ import { LandingHeader } from "@/components/landing/landing-header";
 // /privacy — describes what Sameeeish actually does with data today,
 // based on reading the real implementation (anonymous Supabase Auth,
 // the wavelengths/questions/answers tables and their row-level security,
+// the hosting provider that serves every request (named generically: the
+// production host isn't recorded anywhere in this repo),
 // Google Analytics on public pages only (components/analytics/
 // google-analytics.tsx + lib/analytics/ga-privacy-guard.ts), and the
 // absence of any deletion flow) —
@@ -84,9 +86,10 @@ export default function PrivacyPage() {
             </p>
             <p>
               Your Wavelengths, questions, and answers don&apos;t include your IP address or device
-              information. Supabase, which runs the anonymous sign-in, may record technical
-              connection details such as IP address and browser type as part of providing that
-              service. There are no advertising scripts.
+              information. Supabase, which runs the anonymous sign-in, and the hosting provider that
+              serves the website (see &quot;Third-party services&quot; below) may record technical
+              connection details such as IP address and browser type as part of providing their
+              services. There are no advertising scripts.
             </p>
 
             <h2>Analytics</h2>
@@ -131,10 +134,20 @@ export default function PrivacyPage() {
 
             <h2>Third-party services</h2>
             <p>
-              Sameeeish is built on Supabase, which hosts the database and runs the anonymous
-              authentication described above. Supabase is the only third-party service that
-              processes your Wavelengths, questions, and answers. Google Analytics, described above,
-              only receives visit information from public pages.
+              Sameeeish is built on Supabase, which stores your Wavelengths, questions, and answers
+              and runs the anonymous authentication described above.
+            </p>
+            <p>
+              The website itself runs on a hosting provider, which processes every request your
+              browser makes to Sameeeish — including what you submit when you create or answer a
+              Wavelength, on its way to Supabase. Depending on its configuration and its own
+              policies, the hosting provider may log technical details of those requests, such as
+              the address of the page requested (for a Wavelength, that address contains its share
+              link), your IP address, and your browser type.
+            </p>
+            <p>
+              Google Analytics, described above, is set up to receive visit information from public
+              pages only.
             </p>
 
             <h2>Retention and deletion</h2>
