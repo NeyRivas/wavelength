@@ -44,15 +44,15 @@ const noSubscription = () => () => {};
 export function GoogleAnalytics() {
   const pathname = usePathname();
   const excluded = isPrivatePath(pathname);
-  // Fail closed: no GA in a document the <head> guard isn't protecting.
+  // Fail closed: no GA in a document the <head> guard isn't protecting, or
+  // in one that was loaded at a private URL (the guard never marks those).
   // `false` on the server, so hydration matches and GA mounts right after.
   const guardReady = useSyncExternalStore(noSubscription, isGuardInstalled, () => false);
 
   useEffect(() => {
     if (!guardReady || excluded) return;
-    // The first public route this document shows is reported by gtag's own
-    // `config` call when <NextGoogleAnalytics> mounts — including when the
-    // visit started on a private route, where GA wasn't loaded at all.
+    // The route this (public) document was loaded at is reported by gtag's
+    // own `config` call when <NextGoogleAnalytics> mounts.
     if (!initialPageViewHandled) {
       initialPageViewHandled = true;
       return;

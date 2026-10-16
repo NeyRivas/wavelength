@@ -16,15 +16,20 @@
  * So this runs as an inline <head> script, before hydration and before
  * gtag.js loads, with three independent layers:
  *
- * 0. Isolation. gtag.js never runs in a document whose URL is private: a
- *    direct load of a private route never loads it (the component skips
- *    it), and when an already-analytics-enabled document's URL turns
- *    private — pushState/replaceState or Back/Forward — the guard forces a
- *    full page load, so the private page renders in a fresh document with
- *    no gtag.js at all. This is what makes the guarantee independent of
- *    which transport gtag happens to use (a <script>/<iframe> src, an
- *    attribute set via Element.prototype, innerHTML, …), none of which
- *    layer 2 can see.
+ * 0. Isolation. Every document is either entirely public or entirely
+ *    private, fixed by the URL it was loaded at. A pushState/replaceState
+ *    that would cross between the two is turned into a full navigation
+ *    (location.assign/replace) *before* the URL changes, so a public
+ *    document — the only kind that ever loads gtag.js — is never at a
+ *    private URL and has no share-link (/w/…) URL in its history or
+ *    performance timeline (Next.js may still prefetch /create's route data
+ *    there, which carries no token or user data), and a private document
+ *    never loads gtag.js at all, even after navigating to a public page.
+ *    A Back/Forward that still crosses the boundary inside one document is
+ *    caught on popstate and reloaded. This is what makes the protection independent
+ *    of what gtag reads and which transport it uses (a <script>/<iframe>
+ *    src, an attribute set via Element.prototype, innerHTML, …), none of
+ *    which layer 2 can see.
  * 1. URL-synced opt-out. Google's documented `window['ga-disable-<ID>']`
  *    flag is set from `location.pathname` immediately, after every
  *    pushState/replaceState (wrapped here first, so both Next's own patch
@@ -37,8 +42,8 @@
  *    — or a body that can't be inspected synchronously — drops the whole
  *    request, and so does every Google request made while the current
  *    URL is private. Requests to any other host (Supabase included) pass
- *    through untouched. Layers 1 and 2 cover the moment between a private
- *    URL being pushed and layer 0's reload taking effect.
+ *    through untouched. Layers 1 and 2 only matter if layer 0 is bypassed
+ *    (e.g. its full navigation fails, or a popstate reload is pending).
  *
  * Every wrapper fails closed for Google requests if it throws, and if the
  * guard can't install itself completely it leaves GA disabled for the
@@ -70,7 +75,15 @@ export function isPrivatePath(pathname: string): boolean {
 
 /** Minimal slice of `window` the guard touches — lets tests pass a fake. */
 export interface GuardWindow {
-  location: { pathname: string; origin: string; host: string; reload?: () => void };
+  location: {
+    pathname: string;
+    origin: string;
+    host: string;
+    href?: string;
+    reload?: () => void;
+    assign?: (url: string) => void;
+    replace?: (url: string) => void;
+  };
   history: {
     pushState: (...args: unknown[]) => unknown;
     replaceState: (...args: unknown[]) => unknown;
@@ -125,24 +138,33 @@ export function installGAPrivacyGuard(
     return privatePathname.test(loc.pathname);
   }
 
+  // Layer 0: whether this document is a private one is fixed at load time.
+  var privateDocument = isPrivateNow();
+
   function syncFlag() {
-    win[disableKey] = degraded || isPrivateNow();
+    win[disableKey] = degraded || privateDocument || isPrivateNow();
   }
 
-  // Layer 0: a document that initialized GA (the component creates
-  // `dataLayer` only on public routes) must not stay alive on a private
-  // URL — reload so the private page gets a fresh, analytics-free document.
-  function isolate() {
-    if (isPrivateNow() && win.dataLayer) {
+  // Whether `url` (as passed to pushState/replaceState) is a private route;
+  // null if it can't be resolved.
+  function isPrivateUrl(url: unknown): boolean | null {
+    if (url === undefined || url === null) return null;
+    try {
+      return privatePathname.test(new URL(String(url), loc.href || origin).pathname);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // Fallback for URL changes layer 0 couldn't intercept up front (Back/
+  // Forward, or a failed assign): never stay in the wrong kind of document.
+  function onUrlChange() {
+    syncFlag();
+    if (isPrivateNow() !== privateDocument) {
       try {
         if (loc.reload) loc.reload();
       } catch (e) {}
     }
-  }
-
-  function onUrlChange() {
-    syncFlag();
-    isolate();
   }
 
   function mentionsPrivate(value: string) {
@@ -240,7 +262,20 @@ export function installGAPrivacyGuard(
     ["pushState", "replaceState"].forEach(function (method) {
       var history = win.history as unknown as Record<string, (...args: unknown[]) => unknown>;
       const original = history[method] as (...args: unknown[]) => unknown;
-      history[method] = function (this: unknown) {
+      history[method] = function (this: unknown, state: unknown, unused: unknown, url?: unknown) {
+        var targetPrivate = isPrivateUrl(url);
+        if (targetPrivate !== null && targetPrivate !== privateDocument) {
+          // Crossing the public/private boundary: leave this document
+          // instead of letting its URL change.
+          try {
+            var next = new URL(String(url), loc.href || origin).toString();
+            var navigate = method === "pushState" ? loc.assign : loc.replace;
+            if (navigate) {
+              navigate.call(loc, next);
+              return;
+            }
+          } catch (e) {}
+        }
         try {
           return original.apply(this, arguments as unknown as unknown[]);
         } finally {
@@ -359,8 +394,9 @@ export function installGAPrivacyGuard(
   // components/analytics/google-analytics.tsx only loads gtag.js when this
   // is set, so GA can never run in a document the guard isn't protecting —
   // e.g. Next's default error document, served without the root layout
-  // (and so without this script) when a private route fails on the server.
-  if (!degraded) win[GUARD_MARKER_KEY] = true;
+  // (and so without this script) when a private route fails on the server
+  // — nor in a private document.
+  if (!degraded && !privateDocument) win[GUARD_MARKER_KEY] = true;
 
   return { sanitize: sanitize };
 }

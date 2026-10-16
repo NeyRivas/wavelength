@@ -156,39 +156,85 @@ describe("gaPrivacyGuardScript", () => {
 });
 
 describe("installGAPrivacyGuard: isolation (layer 0)", () => {
-  function withReload(pathname: string, dataLayer: boolean) {
+  function isolated(pathname: string) {
     const fake = fakeWindow(pathname);
+    const navigations: string[] = [];
     let reloads = 0;
+    fake.win.location.href = ORIGIN + pathname;
+    fake.win.location.assign = (url: string) => navigations.push("assign " + url);
+    fake.win.location.replace = (url: string) => navigations.push("replace " + url);
     fake.win.location.reload = () => {
       reloads++;
     };
-    if (dataLayer) fake.win.dataLayer = [];
     installGAPrivacyGuard(fake.win, ID, PRIVATE_PATH_SOURCE);
-    return { ...fake, reloads: () => reloads };
+    return { ...fake, navigations, reloads: () => reloads };
   }
 
-  it("reloads when a GA-enabled document's URL turns private", () => {
-    const { win, reloads } = withReload("/", true);
-    win.history.pushState({}, "", "/faq");
-    expect(reloads()).toBe(0);
+  it("turns a public-to-private pushState into a full navigation before the URL changes", () => {
+    const { win, navigations } = isolated("/play");
     win.history.pushState({}, "", "/create?game=x");
-    expect(reloads()).toBe(1);
-    win.history.replaceState({}, "", "/w/secret-token");
-    expect(reloads()).toBe(2);
+    expect(navigations).toEqual([`assign ${ORIGIN}/create?game=x`]);
+    // The public document's URL never became private.
+    expect(win.location.pathname).toBe("/play");
+    expect(win[`ga-disable-${ID}`]).toBe(false);
   });
 
-  it("reloads on Back/Forward into a private URL", () => {
-    const { win, listeners, reloads } = withReload("/faq", true);
+  it("uses location.replace for replaceState, keeping history length the same", () => {
+    const { win, navigations } = isolated("/");
+    win.history.replaceState({}, "", "/w/secret-token");
+    expect(navigations).toEqual([`replace ${ORIGIN}/w/secret-token`]);
+    expect(win.location.pathname).toBe("/");
+  });
+
+  it("leaves a private document for a public route the same way", () => {
+    const { win, navigations } = isolated("/w/secret-token/result");
+    win.history.pushState({}, "", "/play");
+    expect(navigations).toEqual([`assign ${ORIGIN}/play`]);
+    expect(win.location.pathname).toBe("/w/secret-token/result");
+  });
+
+  it("keeps same-kind navigations client-side (no reload loops)", () => {
+    const { win, navigations, reloads } = isolated("/");
+    win.history.pushState({}, "", "/faq");
+    win.history.replaceState({}, "", "/faq");
+    win.history.pushState({}, "", "/play/friends?x=1");
+    expect(win.location.pathname).toBe("/play/friends");
+    const priv = isolated("/w/secret-token");
+    priv.win.history.replaceState({}, "", "/w/secret-token");
+    priv.win.history.pushState({}, "", "/w/secret-token/answer");
+    priv.win.history.pushState({}, "", "/create");
+    expect([...navigations, ...priv.navigations]).toEqual([]);
+    expect(reloads() + priv.reloads()).toBe(0);
+  });
+
+  it("reloads when Back/Forward lands on the other kind of URL", () => {
+    const { win, listeners, reloads } = isolated("/faq");
     win.location.pathname = "/w/secret-token/result";
     listeners.popstate?.forEach((listener) => listener());
     expect(reloads()).toBe(1);
+    expect(win[`ga-disable-${ID}`]).toBe(true);
   });
 
-  it("never reloads a document that hasn't initialized GA (no loop)", () => {
-    const { win, reloads } = withReload("/w/secret-token", false);
-    win.history.replaceState({}, "", "/w/secret-token");
+  it("falls back to letting the URL change, then reloading, if it can't navigate", () => {
+    const { win } = fakeWindow("/");
+    let reloads = 0;
+    win.location.reload = () => {
+      reloads++;
+    };
+    installGAPrivacyGuard(win, ID, PRIVATE_PATH_SOURCE); // no assign/replace available
     win.history.pushState({}, "", "/create");
-    expect(reloads()).toBe(0);
+    expect(win.location.pathname).toBe("/create");
+    expect(win[`ga-disable-${ID}`]).toBe(true);
+    expect(reloads).toBe(1);
+  });
+
+  it("keeps GA disabled for the whole life of a private document", () => {
+    const { win } = fakeWindow("/w/secret-token");
+    installGAPrivacyGuard(win, ID, PRIVATE_PATH_SOURCE); // no assign: URL changes in place
+    win.history.pushState({}, "", "/play");
+    expect(win[`ga-disable-${ID}`]).toBe(true);
+    // ...and never tells the component it may load gtag.js.
+    expect(win[GUARD_MARKER_KEY]).toBeUndefined();
   });
 });
 

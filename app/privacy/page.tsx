@@ -124,12 +124,17 @@ export default function PrivacyPage() {
               private invitation: only send it to the person you actually want to play with.
             </p>
 
-            <h2>Cookies</h2>
+            <h2>Cookies and local storage</h2>
             <p>
               Sameeeish sets the cookies needed to keep your anonymous session working, so your
               answers stay tied to you instead of being lost on refresh. On public pages, Google
               Analytics also sets its own cookies, as described above. We don&apos;t use cookies for
               advertising.
+            </p>
+            <p>
+              The Date Night page remembers the ideas you mark as favorites in your browser&apos;s
+              local storage. That list stays on your device; it isn&apos;t sent to Sameeeish or to
+              anyone else.
             </p>
 
             <h2>Third-party services</h2>
