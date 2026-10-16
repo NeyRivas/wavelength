@@ -4,9 +4,10 @@ import {
   GUARD_MARKER_KEY,
   type GuardWindow,
   PRIVATE_PATH_SOURCE,
+  PUBLIC_PATH_SOURCE,
   gaPrivacyGuardScript,
   installGAPrivacyGuard,
-  isPrivatePath,
+  isPublicPath,
 } from "../../lib/analytics/ga-privacy-guard";
 
 const ID = "G-TEST123";
@@ -43,23 +44,35 @@ function hit(params: Record<string, string>) {
   return COLLECT + "?" + new URLSearchParams({ v: "2", tid: ID, ...params }).toString();
 }
 
-describe("isPrivatePath", () => {
-  it("matches /create and /w/ routes only", () => {
-    expect(isPrivatePath("/create")).toBe(true);
-    expect(isPrivatePath("/create?game=x")).toBe(true);
-    expect(isPrivatePath("/w/abc")).toBe(true);
-    expect(isPrivatePath("/w/abc/result")).toBe(true);
-    expect(isPrivatePath("/")).toBe(false);
-    expect(isPrivatePath("/faq")).toBe(false);
-    expect(isPrivatePath("/ways-to-play")).toBe(false);
-    expect(isPrivatePath("/play/dating-couples")).toBe(false);
+describe("isPublicPath", () => {
+  it("allows the known public pages, with or without a trailing slash", () => {
+    for (const path of ["/", "/faq", "/faq/", "/ways-to-play", "/play/dating-couples/date-night"]) {
+      expect(isPublicPath(path)).toBe(true);
+    }
+  });
+
+  it("treats private routes and every unknown path (404s) as not public", () => {
+    for (const path of [
+      "/create",
+      "/w/abc",
+      "/w/abc/result",
+      "/W/abc", // mistyped share link
+      "/wabc0123456789", // share link that lost its slash
+      "/%77/abc",
+      "/play/unknown",
+      "/faq/extra",
+      "//faq",
+      "/FAQ",
+    ]) {
+      expect(isPublicPath(path)).toBe(false);
+    }
   });
 });
 
 describe("installGAPrivacyGuard: opt-out flag", () => {
   it("follows the URL through pushState, replaceState and popstate", () => {
     const { win, listeners } = fakeWindow("/");
-    installGAPrivacyGuard(win, ID, PRIVATE_PATH_SOURCE);
+    installGAPrivacyGuard(win, ID, PUBLIC_PATH_SOURCE, PRIVATE_PATH_SOURCE);
     expect(win[`ga-disable-${ID}`]).toBe(false);
 
     win.history.pushState({}, "", "/w/secret-token/answer");
@@ -75,14 +88,14 @@ describe("installGAPrivacyGuard: opt-out flag", () => {
 
   it("is set immediately on a private first load", () => {
     const { win } = fakeWindow("/w/secret-token");
-    installGAPrivacyGuard(win, ID, PRIVATE_PATH_SOURCE);
+    installGAPrivacyGuard(win, ID, PUBLIC_PATH_SOURCE, PRIVATE_PATH_SOURCE);
     expect(win[`ga-disable-${ID}`]).toBe(true);
   });
 });
 
 describe("installGAPrivacyGuard: transport filter", () => {
   const { win, beacons } = fakeWindow("/");
-  const { sanitize } = installGAPrivacyGuard(win, ID, PRIVATE_PATH_SOURCE);
+  const { sanitize } = installGAPrivacyGuard(win, ID, PUBLIC_PATH_SOURCE, PRIVATE_PATH_SOURCE);
 
   it("passes public hits through unchanged in content", () => {
     const url = hit({ en: "page_view", dl: `${ORIGIN}/faq`, dr: "https://facebook.com/" });
@@ -166,7 +179,7 @@ describe("installGAPrivacyGuard: isolation (layer 0)", () => {
     fake.win.location.reload = () => {
       reloads++;
     };
-    installGAPrivacyGuard(fake.win, ID, PRIVATE_PATH_SOURCE);
+    installGAPrivacyGuard(fake.win, ID, PUBLIC_PATH_SOURCE, PRIVATE_PATH_SOURCE);
     return { ...fake, navigations, reloads: () => reloads };
   }
 
@@ -221,7 +234,7 @@ describe("installGAPrivacyGuard: isolation (layer 0)", () => {
     win.location.reload = () => {
       reloads++;
     };
-    installGAPrivacyGuard(win, ID, PRIVATE_PATH_SOURCE); // no assign/replace available
+    installGAPrivacyGuard(win, ID, PUBLIC_PATH_SOURCE, PRIVATE_PATH_SOURCE); // no assign/replace available
     win.history.pushState({}, "", "/create");
     expect(win.location.pathname).toBe("/create");
     expect(win[`ga-disable-${ID}`]).toBe(true);
@@ -230,7 +243,7 @@ describe("installGAPrivacyGuard: isolation (layer 0)", () => {
 
   it("keeps GA disabled for the whole life of a private document", () => {
     const { win } = fakeWindow("/w/secret-token");
-    installGAPrivacyGuard(win, ID, PRIVATE_PATH_SOURCE); // no assign: URL changes in place
+    installGAPrivacyGuard(win, ID, PUBLIC_PATH_SOURCE, PRIVATE_PATH_SOURCE); // no assign: URL changes in place
     win.history.pushState({}, "", "/play");
     expect(win[`ga-disable-${ID}`]).toBe(true);
     // ...and never tells the component it may load gtag.js.
@@ -238,10 +251,60 @@ describe("installGAPrivacyGuard: isolation (layer 0)", () => {
   });
 });
 
+describe("installGAPrivacyGuard: unknown paths (404s) are private", () => {
+  const TOKEN = "0123456789abcdef0123456789abcdef";
+
+  it("keeps GA off in a document loaded at a mistyped share link", () => {
+    for (const path of [`/W/${TOKEN}`, `/w${TOKEN}`, "/play/unknown"]) {
+      const { win } = fakeWindow(path);
+      installGAPrivacyGuard(win, ID, PUBLIC_PATH_SOURCE, PRIVATE_PATH_SOURCE);
+      expect(win[`ga-disable-${ID}`]).toBe(true);
+      expect(win[GUARD_MARKER_KEY]).toBeUndefined();
+    }
+  });
+
+  it("drops a hit that names an unlisted path on this site, and scrubs it as a referrer", () => {
+    const { win } = fakeWindow("/");
+    const { sanitize } = installGAPrivacyGuard(win, ID, PUBLIC_PATH_SOURCE, PRIVATE_PATH_SOURCE);
+    expect(sanitize(hit({ en: "page_view", dl: `${ORIGIN}/W/${TOKEN}` }))).toBe(null);
+    expect(sanitize(hit({ en: "page_view", dl: `${ORIGIN}/w${TOKEN}` }))).toBe(null);
+    expect(sanitize(hit({ en: "page_view", "ep.page_path": "/play/unknown" }))).toBe(null);
+    const clean = sanitize(
+      hit({ en: "page_view", dl: `${ORIGIN}/faq`, dr: `${ORIGIN}/W/${TOKEN}` }),
+    );
+    expect(clean).not.toBeNull();
+    expect(clean!.url).not.toContain(TOKEN);
+    expect(new URL(clean!.url).searchParams.get("dr")).toBe(`${ORIGIN}/`);
+  });
+
+  it("still lets public hits through, query strings included", () => {
+    const { win } = fakeWindow("/");
+    const { sanitize } = installGAPrivacyGuard(win, ID, PUBLIC_PATH_SOURCE, PRIVATE_PATH_SOURCE);
+    const url = hit({
+      en: "page_view",
+      dl: `${ORIGIN}/?utm_source=fb`,
+      dr: "https://l.facebook.com/",
+    });
+    expect(sanitize(url)).toEqual({ url, body: undefined });
+    expect(sanitize(hit({ en: "page_view", "ep.page_path": "/play/friends" }))).not.toBeNull();
+  });
+
+  it("isolates a public document from a 404 the same way as from a private route", () => {
+    const { win } = fakeWindow("/play");
+    const navigations: string[] = [];
+    win.location.href = ORIGIN + "/play";
+    win.location.assign = (url: string) => navigations.push(url);
+    installGAPrivacyGuard(win, ID, PUBLIC_PATH_SOURCE, PRIVATE_PATH_SOURCE);
+    win.history.pushState({}, "", `/W/${TOKEN}`);
+    expect(navigations).toEqual([`${ORIGIN}/W/${TOKEN}`]);
+    expect(win.location.pathname).toBe("/play");
+  });
+});
+
 describe("installGAPrivacyGuard: hardening", () => {
   it("drops every Google request while the current URL is private", () => {
     const { win } = fakeWindow("/w/secret-token");
-    const { sanitize } = installGAPrivacyGuard(win, ID, PRIVATE_PATH_SOURCE);
+    const { sanitize } = installGAPrivacyGuard(win, ID, PUBLIC_PATH_SOURCE, PRIVATE_PATH_SOURCE);
     // Even one that names only a public page.
     expect(sanitize(hit({ en: "page_view", dl: `${ORIGIN}/faq` }))).toBe(null);
     expect(sanitize("https://xyz.supabase.co/rest/v1/x")).not.toBeNull();
@@ -249,7 +312,7 @@ describe("installGAPrivacyGuard: hardening", () => {
 
   it("leaves untouched hits byte-for-byte as gtag encoded them", () => {
     const { win } = fakeWindow("/");
-    const { sanitize } = installGAPrivacyGuard(win, ID, PRIVATE_PATH_SOURCE);
+    const { sanitize } = installGAPrivacyGuard(win, ID, PUBLIC_PATH_SOURCE, PRIVATE_PATH_SOURCE);
     const url = `${COLLECT}?v=2&en=page_view&dt=Sameeeish%20FAQ&dl=${encodeURIComponent(`${ORIGIN}/faq`)}`;
     const body = "en=scroll&dt=Sameeeish%20FAQ\r\nen=user_engagement&_et=12";
     expect(sanitize(url, body)).toEqual({ url, body });
@@ -257,7 +320,7 @@ describe("installGAPrivacyGuard: hardening", () => {
 
   it("covers country-code Google domains", () => {
     const { win } = fakeWindow("/");
-    const { sanitize } = installGAPrivacyGuard(win, ID, PRIVATE_PATH_SOURCE);
+    const { sanitize } = installGAPrivacyGuard(win, ID, PUBLIC_PATH_SOURCE, PRIVATE_PATH_SOURCE);
     const leak = `?dl=${encodeURIComponent(`${ORIGIN}/w/secret-token`)}`;
     expect(sanitize("https://www.google.es/ads/ga-audiences" + leak)).toBe(null);
     expect(sanitize("https://www.google.co.uk/ads/ga-audiences" + leak)).toBe(null);
@@ -269,7 +332,7 @@ describe("installGAPrivacyGuard: hardening", () => {
     win.addEventListener = () => {
       throw new Error("boom");
     };
-    installGAPrivacyGuard(win, ID, PRIVATE_PATH_SOURCE);
+    installGAPrivacyGuard(win, ID, PUBLIC_PATH_SOURCE, PRIVATE_PATH_SOURCE);
     expect(win[`ga-disable-${ID}`]).toBe(true);
     win.history.pushState({}, "", "/play");
     expect(win[`ga-disable-${ID}`]).toBe(true);
@@ -280,7 +343,7 @@ describe("installGAPrivacyGuard: hardening", () => {
   it("marks itself installed only after installing completely", () => {
     const { win } = fakeWindow("/faq");
     expect(win[GUARD_MARKER_KEY]).toBeUndefined();
-    installGAPrivacyGuard(win, ID, PRIVATE_PATH_SOURCE);
+    installGAPrivacyGuard(win, ID, PUBLIC_PATH_SOURCE, PRIVATE_PATH_SOURCE);
     expect(win[GUARD_MARKER_KEY]).toBe(true);
   });
 

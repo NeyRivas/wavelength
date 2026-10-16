@@ -70,11 +70,15 @@ export default function PrivacyPage() {
           <div className="landing-legal__body">
             <h2>No accounts, no sign-up</h2>
             <p>
-              Sameeeish doesn&apos;t ask for a name, email address, or password to use it. When you
-              open the app, it automatically starts an anonymous session through Supabase, the
-              service that runs Sameeeish&apos;s backend — this lets the app recognize
-              &quot;you&quot; as you create and answer questionnaires, without you providing any
-              identifying information.
+              Sameeeish doesn&apos;t ask for an email address or a password, and there&apos;s no
+              account to create. When you open the app, it automatically starts an anonymous session
+              through Supabase, the service that runs Sameeeish&apos;s backend — this lets the app
+              recognize &quot;you&quot; as you create and answer questionnaires.
+            </p>
+            <p>
+              To finish creating a Wavelength, or to join one, you do type a name (up to 60
+              characters). It doesn&apos;t have to be your real name — a nickname works — and
+              it&apos;s stored with that Wavelength and shown to the other participant.
             </p>
 
             <h2>What we store</h2>
@@ -103,11 +107,13 @@ export default function PrivacyPage() {
               came from.
             </p>
             <p>
-              Google Analytics isn&apos;t loaded on the pages where you build, share, answer, or
-              view a Wavelength, and Sameeeish is built to keep those pages&apos; addresses — which
-              contain your share link — and their contents, such as your questions, answers, and
-              aliases, out of what Google Analytics receives. You can block Google Analytics at any
-              time with your browser&apos;s privacy settings, a content blocker, or Google&apos;s{" "}
+              Google Analytics only runs on Sameeeish&apos;s public pages. It isn&apos;t loaded on
+              the pages where you build, share, answer, or view a Wavelength, or on any other page
+              that isn&apos;t one of those public pages (such as a &quot;page not found&quot; page),
+              and Sameeeish is built to keep those pages&apos; addresses — which can contain your
+              share link — and their contents, such as your questions, answers, and aliases, out of
+              what Google Analytics receives. You can block Google Analytics at any time with your
+              browser&apos;s privacy settings, a content blocker, or Google&apos;s{" "}
               <a href="https://tools.google.com/dlpage/gaoptout" rel="noopener noreferrer">
                 opt-out add-on
               </a>

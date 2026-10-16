@@ -1,6 +1,9 @@
 /**
- * Keeps every private Sameeeish URL — /create and /w/[token]/* — out of
- * Google Analytics, independently of React.
+ * Keeps every non-public Sameeeish URL — /create, /w/[token]/*, and any
+ * path that isn't one of the known public pages (a 404 for a mistyped
+ * share link like /W/<token> included) — out of Google Analytics,
+ * independently of React. "Private" below means exactly that: any path not
+ * on the PUBLIC_PATHS allowlist.
  *
  * components/analytics/google-analytics.tsx already skips loading gtag.js
  * on a private route, but once gtag.js has loaded on a public page it stays
@@ -64,13 +67,52 @@ export function isGuardInstalled(): boolean {
   );
 }
 
-/** Path prefixes that must never reach GA (same ones app/robots.ts disallows). */
+/**
+ * The only pages Google Analytics may run on — an allowlist, not a
+ * denylist, so an unknown path (a 404, e.g. a share link with a mistyped
+ * /W/ or a missing slash) is treated as private rather than reported with
+ * its token in page_location. tests/unit/analytics-routes.test.ts fails if
+ * a page under app/ is neither listed here nor under a private prefix, so a
+ * new public page has to be added here to be measured.
+ */
+export const PUBLIC_PATHS = [
+  "/",
+  "/about",
+  "/contact",
+  "/faq",
+  "/for-couples",
+  "/for-friends",
+  "/how-it-works",
+  "/play",
+  "/play/dating-couples",
+  "/play/dating-couples/date-night",
+  "/play/dating-couples/getting-to-know-each-other-questions",
+  "/play/friends",
+  "/privacy",
+  "/terms",
+  "/ways-to-play",
+] as const;
+
+/** Exact match on one of PUBLIC_PATHS, optionally with a trailing slash. */
+export const PUBLIC_PATH_SOURCE =
+  "^(?:" +
+  PUBLIC_PATHS.map((path) =>
+    path === "/" ? "" : path.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+  ).join("|") +
+  ")/?$";
+
+/**
+ * Known private prefixes (the ones app/robots.ts disallows). Not what
+ * decides where GA runs — PUBLIC_PATHS does — but also matched, case-
+ * insensitively, anywhere inside an outgoing Google request as an extra
+ * signal.
+ */
 export const PRIVATE_PATH_SOURCE = "/(?:w/|create)";
 
-const PRIVATE_PATHNAME = new RegExp("^" + PRIVATE_PATH_SOURCE);
+const PUBLIC_PATHNAME = new RegExp(PUBLIC_PATH_SOURCE);
 
-export function isPrivatePath(pathname: string): boolean {
-  return PRIVATE_PATHNAME.test(pathname);
+export function isPublicPath(pathname: string): boolean {
+  return PUBLIC_PATHNAME.test(pathname);
 }
 
 /** Minimal slice of `window` the guard touches — lets tests pass a fake. */
@@ -114,6 +156,7 @@ export interface GuardApi {
 export function installGAPrivacyGuard(
   win: GuardWindow,
   measurementId: string,
+  publicPathSource: string,
   privatePathSource: string,
 ): GuardApi {
   var GUARD_MARKER_KEY = "__sameeeishGAPrivacyGuard";
@@ -122,10 +165,13 @@ export function installGAPrivacyGuard(
   var loc = win.location;
   var origin = loc.origin;
   var escapedHost = loc.host.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  var privatePathname = new RegExp("^" + privatePathSource);
-  // A private path at the start of a value, or right after this site's
-  // host anywhere inside it (absolute URLs, URLs embedded in other text).
-  var privateMention = new RegExp("(?:^|//" + escapedHost + ")" + privatePathSource);
+  var publicPathname = new RegExp(publicPathSource);
+  // A known private prefix at the start of a value or right after this
+  // site's host, in any letter case.
+  var privateMention = new RegExp("(?:^|//" + escapedHost + ")" + privatePathSource, "i");
+  // Every path on this site that a value names: absolute URLs anywhere in
+  // it, or the whole value when it is itself a path.
+  var ownUrl = new RegExp("//" + escapedHost + "(/[^?#&\\s\"'<>]*)?", "gi");
   var googleHost =
     /(^|\.)(google-analytics\.com|googletagmanager\.com|doubleclick\.net|googlesyndication\.com|googleadservices\.com|google\.(com|[a-z]{2}|co\.[a-z]{2}|com\.[a-z]{2}))$/;
   var referrerKeys: Record<string, true> = { dr: true, "ep.page_referrer": true };
@@ -134,8 +180,12 @@ export function installGAPrivacyGuard(
   // Set if any part of the guard failed to install: GA then stays off.
   var degraded = false;
 
+  function isPrivatePathname(pathname: string) {
+    return !publicPathname.test(pathname);
+  }
+
   function isPrivateNow() {
-    return privatePathname.test(loc.pathname);
+    return isPrivatePathname(loc.pathname);
   }
 
   // Layer 0: whether this document is a private one is fixed at load time.
@@ -150,7 +200,7 @@ export function installGAPrivacyGuard(
   function isPrivateUrl(url: unknown): boolean | null {
     if (url === undefined || url === null) return null;
     try {
-      return privatePathname.test(new URL(String(url), loc.href || origin).pathname);
+      return isPrivatePathname(new URL(String(url), loc.href || origin).pathname);
     } catch (e) {
       return null;
     }
@@ -167,13 +217,33 @@ export function installGAPrivacyGuard(
     }
   }
 
-  function mentionsPrivate(value: string) {
-    if (privateMention.test(value)) return true;
-    try {
-      return privateMention.test(decodeURIComponent(value));
-    } catch (e) {
-      return false;
+  function namesPrivatePath(text: string) {
+    if (privateMention.test(text)) return true;
+    if (text.charAt(0) === "/" && text.charAt(1) !== "/") {
+      if (isPrivatePathname(text.split(/[?#]/)[0] as string)) return true;
     }
+    var match;
+    ownUrl.lastIndex = 0;
+    while ((match = ownUrl.exec(text))) {
+      if (isPrivatePathname(match[1] || "/")) return true;
+    }
+    return false;
+  }
+
+  // Checks the value as sent and up to two levels of percent-decoding.
+  function mentionsPrivate(value: string) {
+    var text = value;
+    for (var i = 0; i < 3; i++) {
+      if (namesPrivatePath(text)) return true;
+      try {
+        var decoded = decodeURIComponent(text);
+      } catch (e) {
+        return false;
+      }
+      if (decoded === text) return false;
+      text = decoded;
+    }
+    return false;
   }
 
   function isGoogleUrl(url: string) {
@@ -410,6 +480,8 @@ export function gaPrivacyGuardScript(measurementId: string): string {
     installGAPrivacyGuard.toString() +
     ")(window," +
     id +
+    "," +
+    JSON.stringify(PUBLIC_PATH_SOURCE) +
     "," +
     JSON.stringify(PRIVATE_PATH_SOURCE) +
     ")}catch(e){window['ga-disable-'+" +

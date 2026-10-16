@@ -4,7 +4,7 @@ import { GoogleAnalytics as NextGoogleAnalytics, sendGAEvent } from "@next/third
 import { usePathname } from "next/navigation";
 import { useEffect, useSyncExternalStore } from "react";
 
-import { isGuardInstalled, isPrivatePath } from "@/lib/analytics/ga-privacy-guard";
+import { isGuardInstalled, isPublicPath } from "@/lib/analytics/ga-privacy-guard";
 
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
@@ -19,10 +19,12 @@ let initialPageViewHandled = false;
 const noSubscription = () => () => {};
 
 /**
- * /create and /w/[token]/* (see lib/analytics/ga-privacy-guard.ts) carry a
+ * GA only runs on the public pages listed in PUBLIC_PATHS
+ * (lib/analytics/ga-privacy-guard.ts). /create and /w/[token]/* carry a
  * questionnaire share token or lead straight to one, and can hold personal
- * answers/aliases in the URL or page content. This component never loads
- * gtag.js or sends a page_view for them. What gtag does on its own once
+ * answers/aliases in the URL or page content; any other unlisted path (a
+ * 404, e.g. a mistyped share link) could carry a token too. This component
+ * never loads gtag.js or sends a page_view for any of them. What gtag does on its own once
  * it's loaded — and everything that must still hold if this component
  * unmounts — is handled by the guard script the root layout puts in
  * <head>, not here.
@@ -43,7 +45,8 @@ const noSubscription = () => () => {};
  */
 export function GoogleAnalytics() {
   const pathname = usePathname();
-  const excluded = isPrivatePath(pathname);
+  // Anything not on the public allowlist — private routes and 404s alike.
+  const excluded = !isPublicPath(pathname);
   // Fail closed: no GA in a document the <head> guard isn't protecting, or
   // in one that was loaded at a private URL (the guard never marks those).
   // `false` on the server, so hydration matches and GA mounts right after.
