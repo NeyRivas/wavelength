@@ -9,6 +9,8 @@ const config = [
       "node_modules/**",
       "supabase/migrations/**",
       "lib/supabase/database.types.ts",
+      // Instagram content tooling (Node scripts + generated page), not app code.
+      "marketing/**",
     ],
   },
 ];

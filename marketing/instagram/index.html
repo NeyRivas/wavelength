@@ -1,0 +1,745 @@
+<title>Calendario Sameeeish</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+/* Layout: one editorial column of dated posts, grouped by week; previews scroll sideways inside each post. */
+:root {
+  --bg: #f7f6f2; --surface: #ffffff; --fg: #181820; --muted: #5d5a6e; --line: #e4e1ec;
+  --accent: #6c5fd0; --lavender: #c9c3f4; --ink: #181820; --ready: #2f7d5b; --todo: #a35a14;
+  --display: "Fraunces", Georgia, serif; --body: "Nunito", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #121218; --surface: #1b1b23; --fg: #f1effa; --muted: #a9a5bd; --line: #2c2b37;
+  --accent: #b3abf2; --lavender: #3a3560; --ink: #f1effa; --ready: #6fd1a4; --todo: #f0b070; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #121218; --surface: #1b1b23; --fg: #f1effa; --muted: #a9a5bd; --line: #2c2b37;
+  --accent: #b3abf2; --lavender: #3a3560; --ink: #f1effa; --ready: #6fd1a4; --todo: #f0b070; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 16px; line-height: 1.55; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-block: 48px 96px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1, h2, h3 { font-family: var(--display); font-weight: 600; text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
+h1 { font-size: clamp(2.2rem, 5vw, 3.6rem); line-height: 1.05; }
+h1 em { font-style: italic; font-weight: 500; color: var(--accent); }
+.lede { color: var(--muted); max-width: 62ch; margin: 16px 0 0; font-size: 1.05rem; }
+.system { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 32px 0 8px; }
+.sys { display: flex; gap: 12px; align-items: center; padding: 12px 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); min-width: 0; }
+.sw { flex: none; width: 34px; height: 42px; border-radius: 6px; border: 1px solid var(--line); }
+.sys b { display: block; font-size: .95rem; }
+.sys span { color: var(--muted); font-size: .85rem; }
+.toolbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); padding-block: 14px;
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center; border-bottom: 1px solid var(--line); margin-top: 24px; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.toolbar .totals { margin-left: auto; color: var(--muted); font-size: .9rem; font-variant-numeric: tabular-nums; }
+.filter { font: inherit; font-weight: 700; font-size: .9rem; padding: 7px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); cursor: pointer; }
+.filter[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.filter:focus-visible, .copy-btn:focus-visible, .strip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.week { margin-top: 48px; }
+.week > h2 { font-size: 1.5rem; display: flex; align-items: baseline; gap: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.week > h2 small { font-family: var(--body); font-size: .9rem; font-weight: 600; color: var(--muted); }
+.post { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 20px; padding: 28px 0; border-bottom: 1px solid var(--line); }
+.post[hidden] { display: none !important; }
+.when { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
+.when .n { font-family: var(--display); font-style: italic; color: var(--accent); font-size: 1.1rem; }
+.when .day { text-transform: uppercase; letter-spacing: .12em; font-weight: 800; font-size: .75rem; color: var(--muted); }
+.when .date { font-family: var(--display); font-size: 1.35rem; font-weight: 600; line-height: 1.1; }
+.body { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); grid-template-areas: "head head" "frames copy"; gap: 16px 28px; min-width: 0; }
+.head { grid-area: head; display: flex; flex-direction: column; gap: 10px; }
+.head h3 { font-size: 1.35rem; line-height: 1.2; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font-size: .75rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+.chip--reel { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.chip--carousel { background: var(--surface); color: var(--fg); }
+.chip--post { background: var(--lavender); color: var(--fg); border-color: transparent; }
+.chip--ready { color: var(--ready); border-color: currentColor; }
+.chip--todo { color: var(--todo); border-color: currentColor; }
+.chip--pin { color: var(--accent); border-color: currentColor; }
+.frames { grid-area: frames; min-width: 0; }
+.frames img, .frames video { display: block; max-width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); }
+.frames > img, .frames > video { width: min(100%, 340px); }
+.strip { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 8px; }
+.strip img { flex: none; width: 240px; scroll-snap-align: start; }
+.copy { grid-area: copy; min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+.caption-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.label { text-transform: uppercase; letter-spacing: .12em; font-weight: 800; font-size: .75rem; color: var(--muted); }
+.copy-btn { font: inherit; font-weight: 800; font-size: .85rem; padding: 7px 14px; border-radius: 999px; border: 0; background: var(--ink); color: var(--bg); cursor: pointer; }
+.caption { margin: 0; white-space: pre-wrap; word-break: break-word; font-family: var(--body); font-size: .95rem; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+details summary { cursor: pointer; font-weight: 800; font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.script { margin: 10px 0 0; padding-left: 20px; display: grid; gap: 6px; font-size: .95rem; }
+.meta { margin: 0; display: grid; gap: 8px; font-size: .92rem; }
+.meta div { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 8px; }
+.meta dt { font-weight: 800; color: var(--muted); }
+.meta dd { margin: 0; }
+@media (max-width: 760px) {
+  .post { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .when { flex-direction: row; align-items: baseline; gap: 10px; }
+  .body { grid-template-columns: minmax(0, 1fr); grid-template-areas: "head" "frames" "copy"; }
+  .strip img { width: 200px; }
+}
+@media (prefers-reduced-motion: reduce) { .strip { scroll-behavior: auto; } }
+</style>
+<div class="wrap">
+  <h1>Calendario de Instagram, <em>los primeros 30</em></h1>
+  <p class="lede">Del 20 de octubre al 23 de noviembre de 2026, 6 publicaciones por semana. Los posts, carruseles y Reels animados están listos para subir; los Reels grabados traen su guion y portada. Los textos de los posts van en inglés porque el producto está en inglés.</p>
+  <div class="system" aria-label="Sistema visual">
+    <div class="sys"><span class="sw" style="background:#f7f6f2"></span><div><b>Papel</b><span>Carruseles · 11</span></div></div>
+    <div class="sys"><span class="sw" style="background:#181820"></span><div><b>Tinta</b><span>Reels · 14</span></div></div>
+    <div class="sys"><span class="sw" style="background:#c9c3f4"></span><div><b>Lavanda</b><span>Posts · 5</span></div></div>
+  </div>
+  <div class="toolbar" role="toolbar" aria-label="Filtrar por formato">
+    <button type="button" class="filter" id="f-all" data-f="all" aria-pressed="true">Todos</button>
+    <button type="button" class="filter" id="f-reel" data-f="reel" aria-pressed="false">Reels</button>
+    <button type="button" class="filter" id="f-carousel" data-f="carousel" aria-pressed="false">Carruseles</button>
+    <button type="button" class="filter" id="f-post" data-f="post" aria-pressed="false">Posts</button>
+    <button type="button" class="filter" id="f-film" data-f="film" aria-pressed="false">Por grabar</button>
+    <span class="totals">30 publicaciones · 6 por grabar</span>
+  </div>
+  <section class="week"><h2>Semana 1 <small>19 oct – 25 oct</small></h2><article class="post" data-format="reel" id="p1">
+  <div class="when"><span class="n">1</span><span class="day">mar</span><span class="date">20 oct</span></div>
+  <div class="body">
+    <header class="head">
+      <h3>What is Sameeeish?</h3>
+      <div class="chips"><span class="chip chip--reel">Reel</span><span class="chip">Producto</span><span class="chip chip--ready">Listo para subir</span><span class="chip chip--pin">Fijar</span></div>
+    </header>
+    <div class="frames"><video src="out/01-reel.mp4" poster="out/01-reel-cover.png" controls muted loop playsinline preload="none" width="1080" height="1920"></video></div>
+    <div class="copy">
+      <div class="caption-head"><span class="label">Caption</span><button type="button" class="copy-btn" data-copy="c1">Copiar caption</button></div>
+      <pre class="caption" id="c1">Two people. Same questions. Answered separately — then you see where you're the same… and where you're -ish. 💜
+
+It's not a compatibility score. It's the conversation you haven't had yet.
+
+Play it free (no sign up) → link in bio
+
+#questionsforcouples #bestfriendquiz #conversationstarters #twoplayergame</pre>
+      
+      <dl class="meta"><div><dt>Audio</dt><dd>Audio tendencia suave/lo-fi; texto ya está en pantalla</dd></div><div><dt>Nota</dt><dd>Post fijado #1. Es la presentación de la marca: debe ser lo primero que vea quien llega al perfil.</dd></div></dl>
+    </div>
+  </div>
+</article><article class="post" data-format="carousel" id="p2">
+  <div class="when"><span class="n">2</span><span class="day">mié</span><span class="date">21 oct</span></div>
+  <div class="body">
+    <header class="head">
+      <h3>10 first-date questions that aren't boring</h3>
+      <div class="chips"><span class="chip chip--carousel">Carrusel</span><span class="chip">Preguntas</span><span class="chip chip--ready">Listo para subir</span><span class="chip chip--pin">Fijar</span></div>
+    </header>
+    <div class="frames strip" tabindex="0" aria-label="Slides del carrusel"><img src="out/02-carousel/01.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/02-carousel/02.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/02-carousel/03.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/02-carousel/04.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/02-carousel/05.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/02-carousel/06.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/02-carousel/07.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/02-carousel/08.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/02-carousel/09.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/02-carousel/10.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/02-carousel/11.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/02-carousel/12.png" alt="" loading="lazy" width="1080" height="1350"></div>
+    <div class="copy">
+      <div class="caption-head"><span class="label">Caption</span><button type="button" class="copy-btn" data-copy="c2">Copiar caption</button></div>
+      <pre class="caption" id="c2">&quot;So… what do you do?&quot; — we can do better. 😅
+
+10 first-date questions that actually start a conversation. Save this for your next date (or send it to the friend who has one tonight).
+
+Want to know how they'd answer before you ask? Play them in Sameeeish — you each answer separately, then compare.
+Play it free (no sign up) → link in bio
+
+#firstdatequestions #datingtips #conversationstarters #gettingtoknowyou</pre>
+      
+      <dl class="meta"><div><dt>Nota</dt><dd>Post fijado #2. Carrusel de guardados: la métrica a mirar son los saves.</dd></div></dl>
+    </div>
+  </div>
+</article><article class="post" data-format="reel" id="p3">
+  <div class="when"><span class="n">3</span><span class="day">jue</span><span class="date">22 oct</span></div>
+  <div class="body">
+    <header class="head">
+      <h3>Which reality show would we fail at?</h3>
+      <div class="chips"><span class="chip chip--reel">Reel</span><span class="chip">We played it</span><span class="chip chip--todo">Hay que grabar</span></div>
+    </header>
+    <div class="frames"><img src="out/03-reel-cover.png" alt="" loading="lazy" width="1080" height="1920"></div>
+    <div class="copy">
+      <div class="caption-head"><span class="label">Caption</span><button type="button" class="copy-btn" data-copy="c3">Copiar caption</button></div>
+      <pre class="caption" id="c3">We answered separately. We did NOT agree. 😂
+
+&quot;If we had to compete on a reality show together, which one would we absolutely fail at?&quot;
+
+Tell us what you two would say 👇 — then play the full game together. Play it free (no sign up) → link in bio
+
+#couplesquestions #questionsforcouples #relationshipquestions #datenightideas</pre>
+      <details open><summary>Guion</summary><ol class="script"><li>0–2 s · Hook en pantalla: “We answered this separately. Then compared.” Los dos mirando su celular, serios.</li><li>2–5 s · Texto: “If we had to compete on a reality show together, which one would we absolutely fail at?”</li><li>5–9 s · Él/ella lee su respuesta en voz alta. Corte. La otra persona lee la suya.</li><li>9–12 s · Reacción real (risa, “¿¡en serio!?”). Si coinciden: “SAME 💜”. Si no: “…-ish.”</li><li>12–14 s · Cierre en pantalla: “What would you two say? 👇”</li></ol></details>
+      <dl class="meta"><div><dt>Audio</dt><dd>Audio original (las reacciones son el contenido)</dd></div><div><dt>Nota</dt><dd>Grabar con una pareja real (amigos sirven). Vertical, luz natural, sin guion para las reacciones.</dd></div></dl>
+    </div>
+  </div>
+</article><article class="post" data-format="post" id="p4">
+  <div class="when"><span class="n">4</span><span class="day">vie</span><span class="date">23 oct</span></div>
+  <div class="body">
+    <header class="head">
+      <h3>If we won $10 million tomorrow, what's the first thing you think we'd do?</h3>
+      <div class="chips"><span class="chip chip--post">Post</span><span class="chip">Preguntas</span><span class="chip chip--ready">Listo para subir</span></div>
+    </header>
+    <div class="frames"><img src="out/04-post.png" alt="" loading="lazy" width="1080" height="1350"></div>
+    <div class="copy">
+      <div class="caption-head"><span class="label">Caption</span><button type="button" class="copy-btn" data-copy="c4">Copiar caption</button></div>
+      <pre class="caption" id="c4">Answer first. Then tag them and see if they say the same thing. 👀
+
+(If one of you said &quot;pay off debt&quot; and the other said &quot;buy a boat&quot;… that's a conversation.)
+
+Play it free (no sign up) → link in bio
+
+#couplesquestions #questionsforcouples #relationshipquestions #datenightideas</pre>
+      
+      <dl class="meta"><div><dt>Nota</dt><dd>Post de comentarios: responde a todos en la primera hora.</dd></div></dl>
+    </div>
+  </div>
+</article><article class="post" data-format="carousel" id="p5">
+  <div class="when"><span class="n">5</span><span class="day">sáb</span><span class="date">24 oct</span></div>
+  <div class="body">
+    <header class="head">
+      <h3>A date night in, sorted.</h3>
+      <div class="chips"><span class="chip chip--carousel">Carrusel</span><span class="chip">Date night</span><span class="chip chip--ready">Listo para subir</span></div>
+    </header>
+    <div class="frames strip" tabindex="0" aria-label="Slides del carrusel"><img src="out/05-carousel/01.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/05-carousel/02.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/05-carousel/03.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/05-carousel/04.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/05-carousel/05.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/05-carousel/06.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/05-carousel/07.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/05-carousel/08.png" alt="" loading="lazy" width="1080" height="1350"></div>
+    <div class="copy">
+      <div class="caption-head"><span class="label">Caption</span><button type="button" class="copy-btn" data-copy="c5">Copiar caption</button></div>
+      <pre class="caption" id="c5">Date night in, no planning required. 🕯️
+
+1. Phones down, snacks out
+2. Pick a vibe
+3. Say your answer BEFORE you hear theirs
+
+5 questions inside, one for every mood. Want 60 more? Our Date Night deck is free — play it free (no sign up) → link in bio
+
+#couplesquestions #questionsforcouples #relationshipquestions #datenightideas</pre>
+      
+      <dl class="meta"><div><dt>Nota</dt><dd>El link de bio puede apuntar a /play/dating-couples/date-night esta semana.</dd></div></dl>
+    </div>
+  </div>
+</article></section><section class="week"><h2>Semana 2 <small>26 oct – 1 nov</small></h2><article class="post" data-format="reel" id="p6">
+  <div class="when"><span class="n">6</span><span class="day">lun</span><span class="date">26 oct</span></div>
+  <div class="body">
+    <header class="head">
+      <h3>Best friends: how well do you know me?</h3>
+      <div class="chips"><span class="chip chip--reel">Reel</span><span class="chip">We played it</span><span class="chip chip--todo">Hay que grabar</span></div>
+    </header>
+    <div class="frames"><img src="out/06-reel-cover.png" alt="" loading="lazy" width="1080" height="1920"></div>
+    <div class="copy">
+      <div class="caption-head"><span class="label">Caption</span><button type="button" class="copy-btn" data-copy="c6">Copiar caption</button></div>
+      <pre class="caption" id="c6">10 years of friendship vs. one question: &quot;Which fictional character would I defend with my life?&quot; 💙
+
+Send this to your best friend and make them prove it. Play it free (no sign up) → link in bio
+
+#bestfriendquiz #howwelldoyouknowme #bestfriends #friendshipgoals</pre>
+      <details open><summary>Guion</summary><ol class="script"><li>0–2 s · Hook: “Best friends of [X] years. How well do we actually know each other?”</li><li>2–6 s · Pregunta en pantalla: “Which fictional character would I defend with my life?” Ambas escriben en el celular.</li><li>6–9 s · Revelan al mismo tiempo (giran los celulares a cámara).</li><li>9–13 s · Segunda pregunta rápida: “What's my most irrational opinion?” → reacción.</li><li>13–15 s · Texto final: “Score: SAME-ish 💙 Send this to your best friend.”</li></ol></details>
+      <dl class="meta"><div><dt>Audio</dt><dd>Audio tendencia de amistad o audio original</dd></div><div><dt>Nota</dt><dd>Ideal con dos amigas reales. Mostrar los celulares con la app abierta 1 segundo (product placement natural).</dd></div></dl>
+    </div>
+  </div>
+</article><article class="post" data-format="carousel" id="p7">
+  <div class="when"><span class="n">7</span><span class="day">mar</span><span class="date">27 oct</span></div>
+  <div class="body">
+    <header class="head">
+      <h3>Ask these before moving in together</h3>
+      <div class="chips"><span class="chip chip--carousel">Carrusel</span><span class="chip">Preguntas</span><span class="chip chip--ready">Listo para subir</span></div>
+    </header>
+    <div class="frames strip" tabindex="0" aria-label="Slides del carrusel"><img src="out/07-carousel/01.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/07-carousel/02.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/07-carousel/03.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/07-carousel/04.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/07-carousel/05.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/07-carousel/06.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/07-carousel/07.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/07-carousel/08.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/07-carousel/09.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/07-carousel/10.png" alt="" loading="lazy" width="1080" height="1350"></div>
+    <div class="copy">
+      <div class="caption-head"><span class="label">Caption</span><button type="button" class="copy-btn" data-copy="c7">Copiar caption</button></div>
+      <pre class="caption" id="c7">Moving in together? Ask these first. 🏡
+
+Not to &quot;pass a test&quot; — just so you're not finding out about the alone-time thing on day three.
+
+Tip: answer them separately in Sameeeish so neither of you just agrees with the other. Play it free (no sign up) → link in bio
+
+#deepquestions #relationshipquestions #couplesquestions #conversationstarters</pre>
+      
+      <dl class="meta"><div><dt>Nota</dt><dd>Contenido de alto guardado. Responder comentarios con empatía (tema serio).</dd></div></dl>
+    </div>
+  </div>
+</article><article class="post" data-format="post" id="p8">
+  <div class="when"><span class="n">8</span><span class="day">mié</span><span class="date">28 oct</span></div>
+  <div class="body">
+    <header class="head">
+      <h3>No score. No sign up. Just  two perspectives. </h3>
+      <div class="chips"><span class="chip chip--post">Post</span><span class="chip">Producto</span><span class="chip chip--ready">Listo para subir</span></div>
+    </header>
+    <div class="frames"><img src="out/08-post.png" alt="" loading="lazy" width="1080" height="1350"></div>
+    <div class="copy">
+      <div class="caption-head"><span class="label">Caption</span><button type="button" class="copy-btn" data-copy="c8">Copiar caption</button></div>
+      <pre class="caption" id="c8">We're not here to tell you if you're &quot;compatible.&quot; 💜
+
+Sameeeish shows you where you think the same — and where you're -ish. The -ish is the good part: that's the conversation.
+
+Play it free (no sign up) → link in bio
+
+#questionsforcouples #bestfriendquiz #conversationstarters #twoplayergame</pre>
+      
+      <dl class="meta"><div><dt>Nota</dt><dd>Post manifiesto. Cierra la primera fila del grid con la propuesta de valor.</dd></div></dl>
+    </div>
+  </div>
+</article><article class="post" data-format="reel" id="p9">
+  <div class="when"><span class="n">9</span><span class="day">jue</span><span class="date">29 oct</span></div>
+  <div class="body">
+    <header class="head">
+      <h3>How it works in 15 seconds</h3>
+      <div class="chips"><span class="chip chip--reel">Reel</span><span class="chip">Producto</span><span class="chip chip--todo">Hay que grabar</span><span class="chip chip--pin">Fijar</span></div>
+    </header>
+    <div class="frames"><img src="out/09-reel-cover.png" alt="" loading="lazy" width="1080" height="1920"></div>
+    <div class="copy">
+      <div class="caption-head"><span class="label">Caption</span><button type="button" class="copy-btn" data-copy="c9">Copiar caption</button></div>
+      <pre class="caption" id="c9">How it works:
+1. Pick a game (or write your own questions)
+2. Answer them yourself
+3. Send the link to your person
+4. See where you're the same… and where you're -ish 💜
+
+No app to download. No account. Play it free (no sign up) → link in bio
+
+#questionsforcouples #bestfriendquiz #conversationstarters #twoplayergame</pre>
+      <details open><summary>Guion</summary><ol class="script"><li>Grabación de pantalla del celular (sin cara). Texto grande arriba en cada paso.</li><li>0–3 s · “Pick a game” → tocar Date Night / Friendship Check en sameeeish.com.</li><li>3–7 s · “Answer the questions” → responder 2 preguntas rápido.</li><li>7–10 s · “Send the link” → compartir por WhatsApp/iMessage.</li><li>10–13 s · “See where you're same… or -ish” → pantalla de resultados.</li><li>13–15 s · “Free. No account. Link in bio.”</li></ol></details>
+      <dl class="meta"><div><dt>Audio</dt><dd>Audio tendencia upbeat</dd></div><div><dt>Nota</dt><dd>Post fijado #3. Graba la pantalla del celular en el sitio real; acelera a 1.5x si hace falta.</dd></div></dl>
+    </div>
+  </div>
+</article><article class="post" data-format="carousel" id="p10">
+  <div class="when"><span class="n">10</span><span class="day">vie</span><span class="date">30 oct</span></div>
+  <div class="body">
+    <header class="head">
+      <h3>Spooky-ish questions for two</h3>
+      <div class="chips"><span class="chip chip--carousel">Carrusel</span><span class="chip">Fechas</span><span class="chip chip--ready">Listo para subir</span></div>
+    </header>
+    <div class="frames strip" tabindex="0" aria-label="Slides del carrusel"><img src="out/10-carousel/01.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/10-carousel/02.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/10-carousel/03.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/10-carousel/04.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/10-carousel/05.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/10-carousel/06.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/10-carousel/07.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/10-carousel/08.png" alt="" loading="lazy" width="1080" height="1350"></div>
+    <div class="copy">
+      <div class="caption-head"><span class="label">Caption</span><button type="button" class="copy-btn" data-copy="c10">Copiar caption</button></div>
+      <pre class="caption" id="c10">Halloween plans: blanket, candy, and arguing about who dies first. 🎃👻
+
+Save for tomorrow night. Answer at the same time — the one who hesitates is lying.
+
+Play it free (no sign up) → link in bio
+
+#halloweendate #couplesquestions #halloweennight #datenightideas</pre>
+      
+      <dl class="meta"><div><dt>Nota</dt><dd>Preguntas propias de temporada (no están en la app). Publicar viernes para que lo guarden para el sábado.</dd></div></dl>
+    </div>
+  </div>
+</article><article class="post" data-format="reel" id="p11">
+  <div class="when"><span class="n">11</span><span class="day">sáb</span><span class="date">31 oct</span></div>
+  <div class="body">
+    <header class="head">
+      <h3>If we were in a horror movie, which one of us dies first?</h3>
+      <div class="chips"><span class="chip chip--reel">Reel</span><span class="chip">Fechas</span><span class="chip chip--ready">Listo para subir</span></div>
+    </header>
+    <div class="frames"><video src="out/11-reel.mp4" poster="out/11-reel-cover.png" controls muted loop playsinline preload="none" width="1080" height="1920"></video></div>
+    <div class="copy">
+      <div class="caption-head"><span class="label">Caption</span><button type="button" class="copy-btn" data-copy="c11">Copiar caption</button></div>
+      <pre class="caption" id="c11">Say it at the same time. No hesitating. 🎃
+
+Comment who you both said 👇
+
+Play it free (no sign up) → link in bio
+
+#halloween #couplesquestions #halloweennight #couplegoals</pre>
+      
+      <dl class="meta"><div><dt>Audio</dt><dd>Audio de suspenso/terror en tendencia</dd></div><div><dt>Nota</dt><dd>Listo para subir; solo añade un audio de Halloween en Instagram.</dd></div></dl>
+    </div>
+  </div>
+</article></section><section class="week"><h2>Semana 3 <small>2 nov – 8 nov</small></h2><article class="post" data-format="reel" id="p12">
+  <div class="when"><span class="n">12</span><span class="day">lun</span><span class="date">2 nov</span></div>
+  <div class="body">
+    <header class="head">
+      <h3>If I got arrested, what would you assume I had done?</h3>
+      <div class="chips"><span class="chip chip--reel">Reel</span><span class="chip">Preguntas</span><span class="chip chip--ready">Listo para subir</span></div>
+    </header>
+    <div class="frames"><video src="out/12-reel.mp4" poster="out/12-reel-cover.png" controls muted loop playsinline preload="none" width="1080" height="1920"></video></div>
+    <div class="copy">
+      <div class="caption-head"><span class="label">Caption</span><button type="button" class="copy-btn" data-copy="c12">Copiar caption</button></div>
+      <pre class="caption" id="c12">Be honest. 😂
+
+Answer at the same time, then comment both answers 👇
+
+Play it free (no sign up) → link in bio
+
+#couplesquestions #questionsforcouples #relationshipquestions #datenightideas</pre>
+      
+      <dl class="meta"><div><dt>Audio</dt><dd>Audio cómico en tendencia</dd></div><div><dt>Nota</dt><dd>Funciona igual para parejas y amigos: la pregunta más compartible del banco.</dd></div></dl>
+    </div>
+  </div>
+</article><article class="post" data-format="carousel" id="p13">
+  <div class="when"><span class="n">13</span><span class="day">mar</span><span class="date">3 nov</span></div>
+  <div class="body">
+    <header class="head">
+      <h3>7 flirty questions to ask tonight</h3>
+      <div class="chips"><span class="chip chip--carousel">Carrusel</span><span class="chip">Preguntas</span><span class="chip chip--ready">Listo para subir</span></div>
+    </header>
+    <div class="frames strip" tabindex="0" aria-label="Slides del carrusel"><img src="out/13-carousel/01.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/13-carousel/02.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/13-carousel/03.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/13-carousel/04.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/13-carousel/05.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/13-carousel/06.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/13-carousel/07.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/13-carousel/08.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/13-carousel/09.png" alt="" loading="lazy" width="1080" height="1350"></div>
+    <div class="copy">
+      <div class="caption-head"><span class="label">Caption</span><button type="button" class="copy-btn" data-copy="c13">Copiar caption</button></div>
+      <pre class="caption" id="c13">For when you're past &quot;what's your favorite color.&quot; 😏
+
+Save it, send it, and let them answer first.
+
+Play it free (no sign up) → link in bio
+
+#firstdatequestions #datingtips #conversationstarters #gettingtoknowyou</pre>
+      
+      
+    </div>
+  </div>
+</article><article class="post" data-format="post" id="p14">
+  <div class="when"><span class="n">14</span><span class="day">mié</span><span class="date">4 nov</span></div>
+  <div class="body">
+    <header class="head">
+      <h3>What's the first thing you actually noticed about me?</h3>
+      <div class="chips"><span class="chip chip--post">Post</span><span class="chip">Preguntas</span><span class="chip chip--ready">Listo para subir</span></div>
+    </header>
+    <div class="frames"><img src="out/14-post.png" alt="" loading="lazy" width="1080" height="1350"></div>
+    <div class="copy">
+      <div class="caption-head"><span class="label">Caption</span><button type="button" class="copy-btn" data-copy="c14">Copiar caption</button></div>
+      <pre class="caption" id="c14">Tag them. Make them answer in the comments. 👀
+
+Bonus points if it's not &quot;your eyes.&quot;
+
+Play it free (no sign up) → link in bio
+
+#couplesquestions #questionsforcouples #relationshipquestions #datenightideas</pre>
+      
+      
+    </div>
+  </div>
+</article><article class="post" data-format="reel" id="p15">
+  <div class="when"><span class="n">15</span><span class="day">jue</span><span class="date">5 nov</span></div>
+  <div class="body">
+    <header class="head">
+      <h3>6 years together, still surprised</h3>
+      <div class="chips"><span class="chip chip--reel">Reel</span><span class="chip">We played it</span><span class="chip chip--todo">Hay que grabar</span></div>
+    </header>
+    <div class="frames"><img src="out/15-reel-cover.png" alt="" loading="lazy" width="1080" height="1920"></div>
+    <div class="copy">
+      <div class="caption-head"><span class="label">Caption</span><button type="button" class="copy-btn" data-copy="c15">Copiar caption</button></div>
+      <pre class="caption" id="c15">6 years together and the alone-time question still got us. 😅
+
+The answers where you DON'T match are the best part — that's the conversation you didn't know you needed.
+
+Play it free (no sign up) → link in bio
+
+#couplesquestions #questionsforcouples #relationshipquestions #datenightideas</pre>
+      <details open><summary>Guion</summary><ol class="script"><li>0–2 s · Hook: “Together 6 years. We thought we'd match on everything.”</li><li>2–5 s · Muestran el resultado en la app (“same on 7/10”).</li><li>5–10 s · Cuentan la pregunta donde NO coincidieron (p. ej. “How much alone time do you need?”) y qué respondió cada uno.</li><li>10–14 s · Momento real: “I had no idea you felt that way.”</li><li>14–16 s · Texto: “The -ish is the good part. 💜”</li></ol></details>
+      <dl class="meta"><div><dt>Audio</dt><dd>Audio original con subtítulos</dd></div><div><dt>Nota</dt><dd>El testimonio más importante del mes. Pide a la pareja que juegue de verdad antes de grabar.</dd></div></dl>
+    </div>
+  </div>
+</article><article class="post" data-format="carousel" id="p16">
+  <div class="when"><span class="n">16</span><span class="day">vie</span><span class="date">6 nov</span></div>
+  <div class="body">
+    <header class="head">
+      <h3>How well do you really know me?</h3>
+      <div class="chips"><span class="chip chip--carousel">Carrusel</span><span class="chip">Preguntas</span><span class="chip chip--ready">Listo para subir</span></div>
+    </header>
+    <div class="frames strip" tabindex="0" aria-label="Slides del carrusel"><img src="out/16-carousel/01.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/16-carousel/02.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/16-carousel/03.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/16-carousel/04.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/16-carousel/05.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/16-carousel/06.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/16-carousel/07.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/16-carousel/08.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/16-carousel/09.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/16-carousel/10.png" alt="" loading="lazy" width="1080" height="1350"></div>
+    <div class="copy">
+      <div class="caption-head"><span class="label">Caption</span><button type="button" class="copy-btn" data-copy="c16">Copiar caption</button></div>
+      <pre class="caption" id="c16">8 questions your best friend should ace. Should. 💙
+
+Send this to them. Or better: play it in Sameeeish so they can't see your answers first.
+
+Play it free (no sign up) → link in bio
+
+#bestfriendquiz #howwelldoyouknowme #bestfriends #friendshipgoals</pre>
+      
+      
+    </div>
+  </div>
+</article><article class="post" data-format="reel" id="p17">
+  <div class="when"><span class="n">17</span><span class="day">sáb</span><span class="date">7 nov</span></div>
+  <div class="body">
+    <header class="head">
+      <h3>If your personality came with a warning label, what would it say?</h3>
+      <div class="chips"><span class="chip chip--reel">Reel</span><span class="chip">Preguntas</span><span class="chip chip--ready">Listo para subir</span></div>
+    </header>
+    <div class="frames"><video src="out/17-reel.mp4" poster="out/17-reel-cover.png" controls muted loop playsinline preload="none" width="1080" height="1920"></video></div>
+    <div class="copy">
+      <div class="caption-head"><span class="label">Caption</span><button type="button" class="copy-btn" data-copy="c17">Copiar caption</button></div>
+      <pre class="caption" id="c17">Answer for your best friend. Then let them answer for you. ⚠️
+
+Comment yours 👇
+
+Play it free (no sign up) → link in bio
+
+#bestfriendquiz #howwelldoyouknowme #bestfriends #friendshipgoals</pre>
+      
+      <dl class="meta"><div><dt>Audio</dt><dd>Audio cómico en tendencia</dd></div></dl>
+    </div>
+  </div>
+</article></section><section class="week"><h2>Semana 4 <small>9 nov – 15 nov</small></h2><article class="post" data-format="reel" id="p18">
+  <div class="when"><span class="n">18</span><span class="day">lun</span><span class="date">9 nov</span></div>
+  <div class="body">
+    <header class="head">
+      <h3>What's a trait you find attractive that you have absolutely no business finding attractive?</h3>
+      <div class="chips"><span class="chip chip--reel">Reel</span><span class="chip">Preguntas</span><span class="chip chip--ready">Listo para subir</span></div>
+    </header>
+    <div class="frames"><video src="out/18-reel.mp4" poster="out/18-reel-cover.png" controls muted loop playsinline preload="none" width="1080" height="1920"></video></div>
+    <div class="copy">
+      <div class="caption-head"><span class="label">Caption</span><button type="button" class="copy-btn" data-copy="c18">Copiar caption</button></div>
+      <pre class="caption" id="c18">We need to know. 😭
+
+Answer at the same time and comment both 👇
+
+Play it free (no sign up) → link in bio
+
+#couplesquestions #questionsforcouples #relationshipquestions #datenightideas</pre>
+      
+      <dl class="meta"><div><dt>Audio</dt><dd>Audio tendencia coqueto</dd></div></dl>
+    </div>
+  </div>
+</article><article class="post" data-format="carousel" id="p19">
+  <div class="when"><span class="n">19</span><span class="day">mar</span><span class="date">10 nov</span></div>
+  <div class="body">
+    <header class="head">
+      <h3>Better than “how was your day?”</h3>
+      <div class="chips"><span class="chip chip--carousel">Carrusel</span><span class="chip">Preguntas</span><span class="chip chip--ready">Listo para subir</span></div>
+    </header>
+    <div class="frames strip" tabindex="0" aria-label="Slides del carrusel"><img src="out/19-carousel/01.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/19-carousel/02.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/19-carousel/03.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/19-carousel/04.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/19-carousel/05.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/19-carousel/06.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/19-carousel/07.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/19-carousel/08.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/19-carousel/09.png" alt="" loading="lazy" width="1080" height="1350"></div>
+    <div class="copy">
+      <div class="caption-head"><span class="label">Caption</span><button type="button" class="copy-btn" data-copy="c19">Copiar caption</button></div>
+      <pre class="caption" id="c19">You've done &quot;how was your day&quot; 2,000 times. Try one of these tonight. 💜
+
+Save it for the next quiet dinner.
+
+Play it free (no sign up) → link in bio
+
+#deepquestions #relationshipquestions #couplesquestions #conversationstarters</pre>
+      
+      
+    </div>
+  </div>
+</article><article class="post" data-format="post" id="p20">
+  <div class="when"><span class="n">20</span><span class="day">mié</span><span class="date">11 nov</span></div>
+  <div class="body">
+    <header class="head">
+      <h3>Where you're the  same:  easy. Where you're  -ish:  that's the conversation.</h3>
+      <div class="chips"><span class="chip chip--post">Post</span><span class="chip">Producto</span><span class="chip chip--ready">Listo para subir</span></div>
+    </header>
+    <div class="frames"><img src="out/20-post.png" alt="" loading="lazy" width="1080" height="1350"></div>
+    <div class="copy">
+      <div class="caption-head"><span class="label">Caption</span><button type="button" class="copy-btn" data-copy="c20">Copiar caption</button></div>
+      <pre class="caption" id="c20">Matching answers feel great. The ones that don't are where you actually learn something. 💜
+
+That's the whole idea behind Sameeeish.
+
+Play it free (no sign up) → link in bio
+
+#questionsforcouples #bestfriendquiz #conversationstarters #twoplayergame</pre>
+      
+      <dl class="meta"><div><dt>Nota</dt><dd>Post de marca: el concepto “-ish” como idea propia.</dd></div></dl>
+    </div>
+  </div>
+</article><article class="post" data-format="reel" id="p21">
+  <div class="when"><span class="n">21</span><span class="day">jue</span><span class="date">12 nov</span></div>
+  <div class="body">
+    <header class="head">
+      <h3>POV: you were SURE</h3>
+      <div class="chips"><span class="chip chip--reel">Reel</span><span class="chip">We played it</span><span class="chip chip--todo">Hay que grabar</span></div>
+    </header>
+    <div class="frames"><img src="out/21-reel-cover.png" alt="" loading="lazy" width="1080" height="1920"></div>
+    <div class="copy">
+      <div class="caption-head"><span class="label">Caption</span><button type="button" class="copy-btn" data-copy="c21">Copiar caption</button></div>
+      <pre class="caption" id="c21">Confidence: 100%. Accuracy: -ish. 😐
+
+Tag the person who'd get yours wrong.
+
+Play it free (no sign up) → link in bio
+
+#questionsforcouples #bestfriendquiz #conversationstarters #twoplayergame</pre>
+      <details open><summary>Guion</summary><ol class="script"><li>Formato trend POV, una sola persona a cámara (puede ser quien maneja la cuenta).</li><li>0–2 s · Texto: “POV: you were SO sure you knew their answer”. Cara confiada.</li><li>2–4 s · Inserto de la pregunta en pantalla (“What's my most irrational opinion?”).</li><li>4–7 s · Mira el celular (resultados). Cara de shock lenta.</li><li>7–9 s · Texto: “…-ish.” + mirar a cámara.</li></ol></details>
+      <dl class="meta"><div><dt>Audio</dt><dd>Audio trend de “shock/reacción” del momento</dd></div><div><dt>Nota</dt><dd>Rápido de grabar (1 persona, 10 min). Buscar el audio de reacción que esté en tendencia esa semana.</dd></div></dl>
+    </div>
+  </div>
+</article><article class="post" data-format="carousel" id="p22">
+  <div class="when"><span class="n">22</span><span class="day">vie</span><span class="date">13 nov</span></div>
+  <div class="body">
+    <header class="head">
+      <h3>Hypotheticals that start real conversations</h3>
+      <div class="chips"><span class="chip chip--carousel">Carrusel</span><span class="chip">Preguntas</span><span class="chip chip--ready">Listo para subir</span></div>
+    </header>
+    <div class="frames strip" tabindex="0" aria-label="Slides del carrusel"><img src="out/22-carousel/01.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/22-carousel/02.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/22-carousel/03.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/22-carousel/04.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/22-carousel/05.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/22-carousel/06.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/22-carousel/07.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/22-carousel/08.png" alt="" loading="lazy" width="1080" height="1350"></div>
+    <div class="copy">
+      <div class="caption-head"><span class="label">Caption</span><button type="button" class="copy-btn" data-copy="c22">Copiar caption</button></div>
+      <pre class="caption" id="c22">They sound silly. The answers aren't. ✨
+
+Save for your next long drive.
+
+Play it free (no sign up) → link in bio
+
+#couplesquestions #questionsforcouples #relationshipquestions #datenightideas</pre>
+      
+      
+    </div>
+  </div>
+</article><article class="post" data-format="reel" id="p23">
+  <div class="when"><span class="n">23</span><span class="day">sáb</span><span class="date">14 nov</span></div>
+  <div class="body">
+    <header class="head">
+      <h3>If we could disappear for 24 hours and go anywhere, where would we go?</h3>
+      <div class="chips"><span class="chip chip--reel">Reel</span><span class="chip">Preguntas</span><span class="chip chip--ready">Listo para subir</span></div>
+    </header>
+    <div class="frames"><video src="out/23-reel.mp4" poster="out/23-reel-cover.png" controls muted loop playsinline preload="none" width="1080" height="1920"></video></div>
+    <div class="copy">
+      <div class="caption-head"><span class="label">Caption</span><button type="button" class="copy-btn" data-copy="c23">Copiar caption</button></div>
+      <pre class="caption" id="c23">Send this to them and see if you pick the same place. ✈️
+
+Play it free (no sign up) → link in bio
+
+#couplesquestions #questionsforcouples #relationshipquestions #datenightideas</pre>
+      
+      <dl class="meta"><div><dt>Audio</dt><dd>Audio romántico/viajes en tendencia</dd></div></dl>
+    </div>
+  </div>
+</article></section><section class="week"><h2>Semana 5 <small>16 nov – 22 nov</small></h2><article class="post" data-format="reel" id="p24">
+  <div class="when"><span class="n">24</span><span class="day">lun</span><span class="date">16 nov</span></div>
+  <div class="body">
+    <header class="head">
+      <h3>What's the dumbest thing we've ever laughed about together?</h3>
+      <div class="chips"><span class="chip chip--reel">Reel</span><span class="chip">Preguntas</span><span class="chip chip--ready">Listo para subir</span></div>
+    </header>
+    <div class="frames"><video src="out/24-reel.mp4" poster="out/24-reel-cover.png" controls muted loop playsinline preload="none" width="1080" height="1920"></video></div>
+    <div class="copy">
+      <div class="caption-head"><span class="label">Caption</span><button type="button" class="copy-btn" data-copy="c24">Copiar caption</button></div>
+      <pre class="caption" id="c24">If you both say the same thing, that's a real friendship. 😂
+
+Tag them 👇
+
+Play it free (no sign up) → link in bio
+
+#bestfriendquiz #howwelldoyouknowme #bestfriends #friendshipgoals</pre>
+      
+      <dl class="meta"><div><dt>Audio</dt><dd>Audio de amistad en tendencia</dd></div></dl>
+    </div>
+  </div>
+</article><article class="post" data-format="carousel" id="p25">
+  <div class="when"><span class="n">25</span><span class="day">mar</span><span class="date">17 nov</span></div>
+  <div class="body">
+    <header class="head">
+      <h3>How to play Sameeeish</h3>
+      <div class="chips"><span class="chip chip--carousel">Carrusel</span><span class="chip">Producto</span><span class="chip chip--ready">Listo para subir</span></div>
+    </header>
+    <div class="frames strip" tabindex="0" aria-label="Slides del carrusel"><img src="out/25-carousel/01.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/25-carousel/02.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/25-carousel/03.png" alt="" loading="lazy" width="1080" height="1350"></div>
+    <div class="copy">
+      <div class="caption-head"><span class="label">Caption</span><button type="button" class="copy-btn" data-copy="c25">Copiar caption</button></div>
+      <pre class="caption" id="c25">New here? Here's how it works. 💜
+
+Free, two players, no app to download and no account.
+
+Play it free (no sign up) → link in bio
+
+#questionsforcouples #bestfriendquiz #conversationstarters #twoplayergame</pre>
+      
+      <dl class="meta"><div><dt>Nota</dt><dd>Para los nuevos seguidores que llegaron con los Reels.</dd></div></dl>
+    </div>
+  </div>
+</article><article class="post" data-format="post" id="p26">
+  <div class="when"><span class="n">26</span><span class="day">mié</span><span class="date">18 nov</span></div>
+  <div class="body">
+    <header class="head">
+      <h3>What's a completely normal thing that people do that irrationally annoys you?</h3>
+      <div class="chips"><span class="chip chip--post">Post</span><span class="chip">Preguntas</span><span class="chip chip--ready">Listo para subir</span></div>
+    </header>
+    <div class="frames"><img src="out/26-post.png" alt="" loading="lazy" width="1080" height="1350"></div>
+    <div class="copy">
+      <div class="caption-head"><span class="label">Caption</span><button type="button" class="copy-btn" data-copy="c26">Copiar caption</button></div>
+      <pre class="caption" id="c26">Go. Comments are open. 😤
+
+(Then ask your partner — you might find out something about yourself.)
+
+Play it free (no sign up) → link in bio
+
+#questionsforcouples #bestfriendquiz #conversationstarters #twoplayergame</pre>
+      
+      <dl class="meta"><div><dt>Nota</dt><dd>Post para generar comentarios. Responde con humor.</dd></div></dl>
+    </div>
+  </div>
+</article><article class="post" data-format="reel" id="p27">
+  <div class="when"><span class="n">27</span><span class="day">jue</span><span class="date">19 nov</span></div>
+  <div class="body">
+    <header class="head">
+      <h3>Friendsgiving game</h3>
+      <div class="chips"><span class="chip chip--reel">Reel</span><span class="chip">Date night</span><span class="chip chip--todo">Hay que grabar</span></div>
+    </header>
+    <div class="frames"><img src="out/27-reel-cover.png" alt="" loading="lazy" width="1080" height="1920"></div>
+    <div class="copy">
+      <div class="caption-head"><span class="label">Caption</span><button type="button" class="copy-btn" data-copy="c27">Copiar caption</button></div>
+      <pre class="caption" id="c27">Our new Friendsgiving tradition. 🍂
+
+Pair up, answer separately, then reveal at the table. Save this for yours.
+
+Play it free (no sign up) → link in bio
+
+#friendsgiving #friendsgivingideas #bestfriends #gamenight</pre>
+      <details open><summary>Guion</summary><ol class="script"><li>0–2 s · Hook: “The Friendsgiving game we're doing every year now”. Plano de la mesa.</li><li>2–6 s · Alguien lee una pregunta en voz alta (“What's one story about us we'll still be telling years from now?”).</li><li>6–11 s · Montaje rápido de 3 reacciones/respuestas.</li><li>11–14 s · Primer plano del celular con Sameeeish abierto.</li><li>14–16 s · Texto: “Save this for your Friendsgiving 🍂”</li></ol></details>
+      <dl class="meta"><div><dt>Audio</dt><dd>Audio cálido/otoñal</dd></div><div><dt>Nota</dt><dd>Grabar en una cena real con amigos (puede ser el fin de semana anterior).</dd></div></dl>
+    </div>
+  </div>
+</article><article class="post" data-format="carousel" id="p28">
+  <div class="when"><span class="n">28</span><span class="day">vie</span><span class="date">20 nov</span></div>
+  <div class="body">
+    <header class="head">
+      <h3>Questions to ask around the table</h3>
+      <div class="chips"><span class="chip chip--carousel">Carrusel</span><span class="chip">Fechas</span><span class="chip chip--ready">Listo para subir</span></div>
+    </header>
+    <div class="frames strip" tabindex="0" aria-label="Slides del carrusel"><img src="out/28-carousel/01.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/28-carousel/02.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/28-carousel/03.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/28-carousel/04.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/28-carousel/05.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/28-carousel/06.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/28-carousel/07.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/28-carousel/08.png" alt="" loading="lazy" width="1080" height="1350"></div>
+    <div class="copy">
+      <div class="caption-head"><span class="label">Caption</span><button type="button" class="copy-btn" data-copy="c28">Copiar caption</button></div>
+      <pre class="caption" id="c28">Skip the small talk this Friendsgiving. 🍂
+
+Go around the table, or pair up and play in Sameeeish before dessert.
+
+Play it free (no sign up) → link in bio
+
+#friendsgiving #friendsgivingideas #bestfriends #conversationstarters</pre>
+      
+      <dl class="meta"><div><dt>Nota</dt><dd>La última pregunta es propia de temporada; el resto viene de “Friendship Check”.</dd></div></dl>
+    </div>
+  </div>
+</article><article class="post" data-format="reel" id="p29">
+  <div class="when"><span class="n">29</span><span class="day">sáb</span><span class="date">21 nov</span></div>
+  <div class="body">
+    <header class="head">
+      <h3>What's something you're proud of that nobody ever asks you about?</h3>
+      <div class="chips"><span class="chip chip--reel">Reel</span><span class="chip">Preguntas</span><span class="chip chip--ready">Listo para subir</span></div>
+    </header>
+    <div class="frames"><video src="out/29-reel.mp4" poster="out/29-reel-cover.png" controls muted loop playsinline preload="none" width="1080" height="1920"></video></div>
+    <div class="copy">
+      <div class="caption-head"><span class="label">Caption</span><button type="button" class="copy-btn" data-copy="c29">Copiar caption</button></div>
+      <pre class="caption" id="c29">Ask someone this tonight. Then actually listen. 💜
+
+Play it free (no sign up) → link in bio
+
+#deepquestions #relationshipquestions #couplesquestions #conversationstarters</pre>
+      
+      <dl class="meta"><div><dt>Audio</dt><dd>Audio suave/emocional</dd></div></dl>
+    </div>
+  </div>
+</article></section><section class="week"><h2>Semana 6 <small>23 nov – 29 nov</small></h2><article class="post" data-format="carousel" id="p30">
+  <div class="when"><span class="n">30</span><span class="day">lun</span><span class="date">23 nov</span></div>
+  <div class="body">
+    <header class="head">
+      <h3>Dinner questions that won't start a fight</h3>
+      <div class="chips"><span class="chip chip--carousel">Carrusel</span><span class="chip">Fechas</span><span class="chip chip--ready">Listo para subir</span></div>
+    </header>
+    <div class="frames strip" tabindex="0" aria-label="Slides del carrusel"><img src="out/30-carousel/01.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/30-carousel/02.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/30-carousel/03.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/30-carousel/04.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/30-carousel/05.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/30-carousel/06.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/30-carousel/07.png" alt="" loading="lazy" width="1080" height="1350"><img src="out/30-carousel/08.png" alt="" loading="lazy" width="1080" height="1350"></div>
+    <div class="copy">
+      <div class="caption-head"><span class="label">Caption</span><button type="button" class="copy-btn" data-copy="c30">Copiar caption</button></div>
+      <pre class="caption" id="c30">Thanksgiving dinner, minus the politics. 🦃
+
+6 questions that get everyone talking (and nobody yelling). Save for Thursday.
+
+Play it free (no sign up) → link in bio
+
+#thanksgiving #thanksgivingdinner #conversationstarters #familytime</pre>
+      
+      <dl class="meta"><div><dt>Nota</dt><dd>Publicar el lunes para que lo guarden antes del jueves 26.</dd></div></dl>
+    </div>
+  </div>
+</article></section>
+</div>
+<script>
+const KIND = {"1":"animated","2":"","3":"filmed","4":"","5":"","6":"filmed","7":"","8":"","9":"filmed","10":"","11":"animated","12":"animated","13":"","14":"","15":"filmed","16":"","17":"animated","18":"animated","19":"","20":"","21":"filmed","22":"","23":"animated","24":"animated","25":"","26":"","27":"filmed","28":"","29":"animated","30":""};
+document.querySelectorAll(".filter").forEach((b) => b.addEventListener("click", () => {
+  document.querySelectorAll(".filter").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+  const f = b.dataset.f;
+  document.querySelectorAll(".post").forEach((el) => {
+    const n = el.id.slice(1);
+    el.hidden = !(f === "all" || (f === "film" ? KIND[n] === "filmed" : el.dataset.format === f));
+  });
+  document.querySelectorAll(".week").forEach((w) => { w.hidden = !w.querySelector(".post:not([hidden])"); });
+}));
+document.querySelectorAll(".copy-btn").forEach((b) => b.addEventListener("click", async () => {
+  const pre = document.getElementById(b.dataset.copy);
+  try { await navigator.clipboard.writeText(pre.textContent); b.textContent = "Copiado"; }
+  catch { const r = document.createRange(); r.selectNodeContents(pre); const s = getSelection(); s.removeAllRanges(); s.addRange(r); b.textContent = "Seleccionado, copia con Ctrl+C"; }
+  setTimeout(() => { b.textContent = "Copiar caption"; }, 2200);
+}));
+</script>
