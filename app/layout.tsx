@@ -1,10 +1,13 @@
 import type { Metadata, Viewport } from "next";
 
 import { GoogleAnalytics } from "@/components/analytics/google-analytics";
+import { gaPrivacyGuardScript } from "@/lib/analytics/ga-privacy-guard";
 
 import { SessionBootstrap } from "./session-bootstrap";
 
 import "./globals.css";
+
+const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
 const SITE_DESCRIPTION = "A game for two — find out how aligned you really are.";
 
@@ -77,6 +80,16 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
+      {GA_MEASUREMENT_ID ? (
+        <head>
+          {/* Must run before hydration and before gtag.js loads — see
+              lib/analytics/ga-privacy-guard.ts. */}
+          <script
+            id="ga-privacy-guard"
+            dangerouslySetInnerHTML={{ __html: gaPrivacyGuardScript(GA_MEASUREMENT_ID) }}
+          />
+        </head>
+      ) : null}
       <body>
         <SessionBootstrap />
         {children}

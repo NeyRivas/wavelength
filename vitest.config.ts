@@ -1,6 +1,13 @@
+import { fileURLToPath } from "node:url";
+
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
+  // Same "@/*" -> "./*" mapping as tsconfig.json, so tests can import app
+  // modules (e.g. app/layout.tsx) that use it.
+  resolve: {
+    alias: { "@": fileURLToPath(new URL("./", import.meta.url)) },
+  },
   test: {
     // RLS integration tests share one Postgres instance/database; running
     // every project's files serially avoids cross-test interference from
@@ -8,6 +15,7 @@ export default defineConfig({
     fileParallelism: false,
     projects: [
       {
+        extends: true,
         test: {
           name: "unit",
           include: ["tests/unit/**/*.test.ts"],
