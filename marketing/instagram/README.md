@@ -3,8 +3,8 @@
 Calendario y contenido de las primeras 30 publicaciones (20 oct – 23 nov 2026).
 
 - `calendar.mjs` — fuente única: fecha, formato, textos, caption, hashtags, guiones y notas de cada post.
-- `render.mjs` — genera las imágenes y Reels en `out/` (Playwright + ffmpeg).
-- `motion.mjs` — los Reels animados: intro, revelación en chat y rapid fire. `node render.mjs` para todo, `node render.mjs 4 11` para posts concretos.
+- `render.mjs` — genera las imágenes y Reels en `out/` (Playwright + ffmpeg). `node render.mjs` para todo, `node render.mjs 4 11` para posts concretos.
+- `motion.mjs` — los Reels animados: intro, revelación en chat y rapid fire.
 - `build-page.mjs` — genera `index.html`, la página del calendario con vistas previas y captions para copiar.
 - `fonts/` — Fraunces y Nunito, las tipografías del sitio.
 
