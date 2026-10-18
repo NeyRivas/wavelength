@@ -95,7 +95,7 @@ ${PLAY}`,
     script: [
       "0–2 s · Hook en pantalla: “We answered this separately. Then compared.” Los dos mirando su celular, serios.",
       "2–5 s · Texto: “If we had to compete on a reality show together, which one would we absolutely fail at?”",
-      "5–9 s · Él/ella lee su respuesta en voz alta. Corte. La otra persona lee la suya.",
+      "5–9 s · Una persona lee su respuesta en voz alta. Corte. La otra persona lee la suya.",
       "9–12 s · Reacción real (risa, “¿¡en serio!?”). Si coinciden: “SAME 💜”. Si no: “…-ish.”",
       "12–14 s · Cierre en pantalla: “What would you two say? 👇”",
     ],
