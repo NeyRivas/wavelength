@@ -33,3 +33,6 @@ tests/integration/.tmp-pg/
 
 # Local Supabase CLI metadata
 supabase/.temp/
+
+# Rendered Instagram content is a deliverable, keep it in git
+!/marketing/instagram/out/

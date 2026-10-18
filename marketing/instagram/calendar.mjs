@@ -1,17 +1,18 @@
 /**
  * Sameeeish — Instagram content calendar: posts 1–30 (Oct 20 – Nov 23, 2026).
  *
- * Single source of truth for render.cjs (which turns every entry into the
+ * Single source of truth for render.mjs (which turns every entry into the
  * PNGs / MP4s under out/) and for the calendar page. Post copy is in
  * English (the product is English-only); `notes` are production notes for
  * the team, in Spanish.
  *
  * Formats:
- *   reel     + kind "animated" → fully rendered here (MP4 + cover), just add audio in IG
+ *   reel     + kind "animated" → fully rendered here (MP4 + cover), just add audio in IG.
+ *              `motion` picks the style (motion.mjs): "intro", "chat" (two people's
+ *              answers revealed, then a SAME / -ISH stamp) or "rapid" (this-or-that).
  *   reel     + kind "filmed"   → needs to be filmed; `script` is the shot list, cover is rendered
  *   carousel → cover + one slide per item + closing CTA slide
  *   post     → single 4:5 image
-
  */
 
 const TAGS = {
@@ -33,6 +34,7 @@ export const POSTS = [
     kind: "animated",
     pillar: "Producto",
     pin: true,
+    motion: "intro",
     title: "What is Sameeeish?",
     frames: [
       { kicker: "Meet Sameeeish", text: "Two people.\nSame *questions.*" },
@@ -291,18 +293,25 @@ ${PLAY}`,
     date: "2026-10-31",
     format: "reel",
     kind: "animated",
+    motion: "chat",
     pillar: "Fechas",
     mood: "Halloween",
-    hook: "Say it at the same time. 🎃",
+    title: "Who dies first in a horror movie?",
+    hook: "We answered this *separately.* 🎃",
     question: "If we were in a horror movie, which one of us dies first?",
-    caption: `Say it at the same time. No hesitating. 🎃
+    a: { name: "Maya", text: "You. You'd go check the noise." },
+    b: { name: "Chris", text: "Me. I'd go check the noise." },
+    verdict: "Same!",
+    endLine: "Who dies first in yours? Comment 👇",
+    caption: `We agreed instantly. Concerning. 🎃
 
-Comment who you both said 👇
+Answer separately, then compare: who dies first in your horror movie? 👇
 
 ${PLAY}`,
     tags: "#halloween #couplesquestions #halloweennight #couplegoals",
     audio: "Audio de suspenso/terror en tendencia",
-    notes: "Listo para subir; solo añade un audio de Halloween en Instagram.",
+    notes:
+      "Formato revelación en chat. Este termina en SAME para variar. Solo añade audio de Halloween.",
   },
 
   // ── Semana 3 ─────────────────────────────────────────────────────────────
@@ -311,18 +320,23 @@ ${PLAY}`,
     date: "2026-11-02",
     format: "reel",
     kind: "animated",
+    motion: "chat",
     pillar: "Preguntas",
     mood: "Funny",
-    hook: "Ask your person this. Don't let them hear your answer first.",
+    title: "If I got arrested…",
+    hook: "We answered this *separately.*",
     question: "If I got arrested, what would you assume I had done?",
-    caption: `Be honest. 😂
+    a: { name: "Ana", text: "Tax fraud. 100%." },
+    b: { name: "Leo", text: "Something involving a raccoon 🦝" },
+    verdict: "-ish",
+    caption: `Tax fraud vs. raccoon. We are not the same. 😂
 
-Answer at the same time, then comment both answers 👇
+What would your person say? Answer separately, then comment both 👇
 
 ${PLAY}`,
     tags: TAGS.couples,
     audio: "Audio cómico en tendencia",
-    notes: "Funciona igual para parejas y amigos: la pregunta más compartible del banco.",
+    notes: "Formato revelación en chat (la muestra que aprobaste).",
   },
   {
     n: 13,
@@ -418,18 +432,31 @@ ${PLAY}`,
     date: "2026-11-07",
     format: "reel",
     kind: "animated",
+    motion: "rapid",
     pillar: "Preguntas",
-    mood: "Funny",
-    hook: "Best friends: answer this for each other.",
-    question: "If your personality came with a warning label, what would it say?",
-    caption: `Answer for your best friend. Then let them answer for you. ⚠️
+    mood: "Best friends",
+    title: "Best friends rapid fire",
+    cover: "Best friends *rapid fire*",
+    hookTitle: "Best friends *rapid fire.*",
+    items: [
+      ["At the party", "Dance floor", "Kitchen"],
+      ["Road trip", "Driver", "DJ"],
+      ["Group chat", "Voice notes", "Texts"],
+      ["Brunch", "Sweet", "Savory"],
+      ["Movie night", "Horror", "Rom-com"],
+      ["Vacation", "Plan it", "Just show up"],
+      ["Who's always late?", "Me", "You"],
+      ["Who survives the zombie apocalypse?", "Me", "You"],
+    ],
+    endLine: "Send this to your best friend and compare 👀",
+    caption: `Best friends rapid fire. Don't think, just pick. ⚡
 
-Comment yours 👇
+Send it to your best friend and count how many you matched 👇
 
 ${PLAY}`,
     tags: TAGS.friends,
-    audio: "Audio cómico en tendencia",
-    notes: "",
+    audio: "Audio rápido/upbeat en tendencia (que marque el ritmo)",
+    notes: "Formato rapid fire. Elige un audio con beat marcado; cada opción dura 1,25 s.",
   },
 
   // ── Semana 4 ─────────────────────────────────────────────────────────────
@@ -438,19 +465,24 @@ ${PLAY}`,
     date: "2026-11-09",
     format: "reel",
     kind: "animated",
+    motion: "chat",
     pillar: "Preguntas",
     mood: "Flirty",
-    hook: "Ask your person. Answer at the same time.",
+    title: "Attractive for no reason",
+    hook: "We answered this *separately.*",
     question:
       "What's a trait you find attractive that you have absolutely no business finding attractive?",
-    caption: `We need to know. 😭
+    a: { name: "Sam", text: "Confidently giving wrong directions." },
+    b: { name: "Jordan", text: "Being way too competitive at board games." },
+    verdict: "-ish",
+    caption: `We need to know yours. 😭
 
-Answer at the same time and comment both 👇
+Answer separately, then comment both 👇
 
 ${PLAY}`,
     tags: TAGS.couples,
     audio: "Audio tendencia coqueto",
-    notes: "",
+    notes: "Formato revelación en chat.",
   },
   {
     n: 19,
@@ -552,16 +584,30 @@ ${PLAY}`,
     date: "2026-11-14",
     format: "reel",
     kind: "animated",
+    motion: "rapid",
     pillar: "Preguntas",
-    mood: "Romantic",
-    hook: "Send this to your person.",
-    question: "If we could disappear for 24 hours and go anywhere, where would we go?",
-    caption: `Send this to them and see if you pick the same place. ✈️
+    mood: "Couples",
+    title: "Couples rapid fire",
+    cover: "Couples *rapid fire*",
+    hookTitle: "Couples *rapid fire.*",
+    items: [
+      ["Vacation", "Beach", "Mountains"],
+      ["Friday night", "Night in", "Night out"],
+      ["Long distance", "Texting", "Calling"],
+      ["Trip style", "Plan everything", "Wing it"],
+      ["The wedding", "Big party", "Elope"],
+      ["Golden hour", "Sunrise", "Sunset"],
+      ["After a fight, who apologizes first?", "Me", "You"],
+      ["Dinner", "Cook together", "Order in"],
+    ],
+    caption: `Couples rapid fire. Don't think, just pick. ⚡
+
+Send it to your person and count how many you matched 👇
 
 ${PLAY}`,
     tags: TAGS.couples,
-    audio: "Audio romántico/viajes en tendencia",
-    notes: "",
+    audio: "Audio rápido/upbeat en tendencia (que marque el ritmo)",
+    notes: "Formato rapid fire (la muestra que aprobaste).",
   },
 
   // ── Semana 5 ─────────────────────────────────────────────────────────────
@@ -570,18 +616,33 @@ ${PLAY}`,
     date: "2026-11-16",
     format: "reel",
     kind: "animated",
+    motion: "rapid",
     pillar: "Preguntas",
-    mood: "Friends",
-    hook: "Best friends: say it at the same time.",
-    question: "What's the dumbest thing we've ever laughed about together?",
-    caption: `If you both say the same thing, that's a real friendship. 😂
+    mood: "Best friends",
+    title: "Who's more likely to…",
+    cover: "Who's more likely to… *best friends edition*",
+    hookTitle: "Who's more *likely to…*",
+    hookSub: "Best friends edition. Point at them.",
+    items: [
+      ["…cry at a movie?", "Me", "You"],
+      ["…text the ex?", "Me", "You"],
+      ["…get us lost?", "Me", "You"],
+      ["…start drama in the group chat?", "Me", "You"],
+      ["…forget a birthday?", "Me", "You"],
+      ["…adopt a random pet?", "Me", "You"],
+      ["…say “one more drink”?", "Me", "You"],
+      ["…fall asleep first?", "Me", "You"],
+    ],
+    endTitle: "Did you *agree?*",
+    endLine: "Send this to your best friend 👀",
+    caption: `Who's more likely to… best friends edition. 👀
 
-Tag them 👇
+Tag the one who'd text the ex.
 
 ${PLAY}`,
     tags: TAGS.friends,
-    audio: "Audio de amistad en tendencia",
-    notes: "",
+    audio: "Audio rápido/upbeat en tendencia",
+    notes: "Variante del rapid fire: “Who's more likely to”, siempre Me o You.",
   },
   {
     n: 25,
@@ -680,16 +741,24 @@ ${PLAY}`,
     date: "2026-11-21",
     format: "reel",
     kind: "animated",
+    motion: "chat",
     pillar: "Preguntas",
     mood: "Deep",
-    hook: "One question. Ask your person tonight.",
+    title: "I guessed. They answered.",
+    hook: "I guessed. *They answered.*",
     question: "What's something you're proud of that nobody ever asks you about?",
-    caption: `Ask someone this tonight. Then actually listen. 💜
+    a: { name: "My guess", text: "Finishing your degree while working." },
+    b: { name: "Their answer", text: "Learning to swim at 25." },
+    verdict: "-ish",
+    endLine: "Ask your person tonight. Then listen. 💜",
+    caption: `I was close. Not that close. 💜
+
+Ask someone this tonight, and actually listen.
 
 ${PLAY}`,
     tags: TAGS.deep,
     audio: "Audio suave/emocional",
-    notes: "",
+    notes: "Variante del formato chat: adivinar la respuesta del otro.",
   },
   {
     n: 30,

@@ -3,7 +3,7 @@
  *   post      → out/NN-post.png                       (1080×1350)
  *   carousel  → out/NN-carousel/01.png … NN.png       (1080×1350)
  *   reel      → out/NN-reel-cover.png                 (1080×1920)
- *               + out/NN-reel.mp4 for kind "animated" (silent; add audio in IG)
+ *               + out/NN-reel.mp4 for kind "animated" (motion.mjs; silent, add audio in IG)
  *
  * Usage:  node render.mjs            (everything)
  *         node render.mjs 4 11 12    (only those post numbers)
@@ -17,10 +17,11 @@
 
 import { createRequire } from "node:module";
 import { execFileSync } from "node:child_process";
-import { mkdirSync, readFileSync, rmSync, existsSync } from "node:fs";
+import { mkdirSync, readFileSync, rmSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { POSTS } from "./calendar.mjs";
+import { renderMotion } from "./motion.mjs";
 
 const require = createRequire(import.meta.url);
 const { chromium } = (() => {
@@ -126,7 +127,6 @@ em{font-style:italic;font-weight:500;color:${t.accent}}
 footer{display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:28px;margin-top:40px;padding-top:30px;border-top:2px solid ${t.line}}
 footer:empty{border:0}
 .count{font-weight:700;opacity:.6}
-.big{font-family:Fraunces;font-weight:600;font-size:360px;line-height:1;text-align:center}
 </style></head><body>
 <header><div class="brand">${LOGO}Sameeeish</div>${counter}</header>
 <main>${body}</main>
@@ -240,71 +240,27 @@ function slidesFor(p) {
   return [];
 }
 
-/** Reel frames (1080×1920, IG safe zones respected) with their durations in seconds. */
-function reelFrames(p) {
-  if (p.frames) {
-    return p.frames.map((f, i) => ({
-      d: f.end ? 3.2 : 2.4,
-      html: f.end
-        ? page({
-            ...STORY,
-            tint: p.tint,
-            body: `<div class="kicker">${esc(f.kicker)}</div><div class="title" style="font-size:124px">${rich(f.text)}</div><div><span class="cta-btn">Link in bio → sameeeish.com</span></div>`,
-            footer: "",
-          })
-        : coverSlide(
-            STORY,
-            p.tint,
-            null,
-            f.kicker,
-            f.text,
-            i === 0 ? `<span>Two players · Free</span>` : "",
-          ),
-    }));
-  }
-  const big = (txt) =>
-    page({
-      ...STORY,
-      tint: p.tint,
-      counter: pill(p.mood),
-      body: `<div class="big">${txt}</div>`,
-      footer: "",
-    });
-  return [
-    { d: 2.3, html: coverSlide(STORY, p.tint, p.mood, "Play this with your person", p.hook, "") },
-    {
-      d: 4.6,
-      html: questionSlide(STORY, p.tint, p.mood, p.question, `<span>Think of your answer…</span>`),
-    },
-    { d: 0.7, html: big("3") },
-    { d: 0.7, html: big("2") },
-    { d: 0.7, html: big("1") },
-    {
-      d: 3.2,
-      html: page({
-        ...STORY,
-        tint: p.tint,
-        body: `<div class="kicker">Did you match?</div><div class="title" style="font-size:132px">Same…<br>or <em>-ish?</em></div>
-<div class="small" style="font-size:40px">Comment both answers 👇</div><div><span class="cta-btn">Play the full game → link in bio</span></div>`,
-        footer: "",
-      }),
-    },
-  ];
-}
-
-const reelCover = (p) =>
-  p.kind === "filmed"
-    ? coverSlide(
-        STORY,
-        p.tint,
-        p.pillar === "We played it" ? "We played it" : null,
-        "Watch till the end",
-        p.cover,
-        "",
-      )
-    : p.frames
-      ? reelFrames(p)[0].html
-      : questionSlide(STORY, p.tint, p.mood, p.question, `<span>Send this to your person →</span>`);
+const reelCover = (p) => {
+  if (p.kind === "filmed")
+    return coverSlide(
+      STORY,
+      p.tint,
+      p.pillar === "We played it" ? "We played it" : null,
+      "Watch till the end",
+      p.cover,
+      "",
+    );
+  if (p.motion === "rapid") return coverSlide(STORY, p.tint, p.mood, "Rapid fire", p.cover, "");
+  if (p.motion === "intro")
+    return coverSlide(STORY, p.tint, null, p.frames[0].kicker, p.frames[0].text, "");
+  return questionSlide(
+    STORY,
+    p.tint,
+    p.mood,
+    p.question,
+    `<span>Send this to your person →</span>`,
+  );
+};
 
 // ── Render ────────────────────────────────────────────────────────────────
 const only = process.argv.slice(2).map(Number);
@@ -350,57 +306,15 @@ for (const p of todo) {
       await shot(slides[i], FEED, join(dir, `${String(i + 1).padStart(2, "0")}.png`));
   } else {
     await shot(reelCover(p), STORY, join(OUT, `${nn}-reel-cover.png`));
-    if (p.kind === "animated") {
-      const tmp = join(OUT, `.tmp-${nn}`);
-      rmSync(tmp, { recursive: true, force: true });
-      mkdirSync(tmp);
-      const frames = reelFrames(p);
-      for (let i = 0; i < frames.length; i++)
-        await shot(frames[i].html, STORY, join(tmp, `${i}.png`));
-      buildReel(
-        frames.map((f) => f.d),
-        tmp,
+    if (p.kind === "animated")
+      await renderMotion(
+        pg,
+        p,
+        { fraunces: FRAUNCES, frauncesItalic: FRAUNCES_I, nunito: NUNITO },
         join(OUT, `${nn}-reel.mp4`),
+        join(OUT, `.tmp-${nn}`),
       );
-      rmSync(tmp, { recursive: true, force: true });
-    }
   }
   console.log(`✓ ${nn} ${p.format}${p.kind ? `/${p.kind}` : ""}`);
 }
 await browser.close();
-
-/** Stitches still frames into an MP4 with short crossfades (H.264, 30 fps, IG-friendly). */
-function buildReel(durations, dir, file) {
-  const X = 0.25; // crossfade
-  const args = ["-y"];
-  durations.forEach((d, i) =>
-    args.push("-loop", "1", "-t", String(d + X), "-i", join(dir, `${i}.png`)),
-  );
-  let filter = "";
-  let prev = "[0:v]";
-  let offset = 0;
-  for (let i = 1; i < durations.length; i++) {
-    offset += durations[i - 1];
-    const label = i === durations.length - 1 ? "[v]" : `[x${i}]`;
-    filter += `${prev}[${i}:v]xfade=transition=fade:duration=${X}:offset=${offset.toFixed(2)}${label};`;
-    prev = label;
-  }
-  args.push(
-    "-filter_complex",
-    filter.replace(/;$/, ""),
-    "-map",
-    "[v]",
-    "-r",
-    "30",
-    "-c:v",
-    "libx264",
-    "-pix_fmt",
-    "yuv420p",
-    "-movflags",
-    "+faststart",
-    file,
-  );
-  execFileSync(existsSync("/usr/bin/ffmpeg") ? "/usr/bin/ffmpeg" : "ffmpeg", args, {
-    stdio: "ignore",
-  });
-}
