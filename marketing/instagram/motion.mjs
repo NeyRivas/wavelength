@@ -81,41 +81,160 @@ ${body}
 }
 
 // ── intro ─────────────────────────────────────────────────────────────────
-function intro(p, fonts) {
-  const SEG = 2.3;
-  const last = p.frames.length - 1;
-  const duration = last * SEG + 3.6;
-  const segs = p.frames
-    .map((f, i) => {
-      const s = i * SEG;
-      const exit =
-        i < last ? `animation:leave .25s ease-in ${(s + SEG - 0.25).toFixed(2)}s forwards;` : "";
-      const n = f.text.replace(/\*/g, "").split(/\s+/).length;
-      const cta =
-        i === last
-          ? `<span class="cta" style="animation-delay:${(s + 0.25 + n * 0.12 + 0.3).toFixed(2)}s">Play free → link in bio</span>`
-          : "";
-      return `<section class="seg" style="${exit}">
-  <span class="kicker" style="animation-delay:${s.toFixed(2)}s">${esc(f.kicker)}</span>
-  <div class="display">${f.text
+const CHAR = 0.045; // typewriter speed, seconds per character
+
+/**
+ * Typewriter text: one span per character, revealed in order, with a caret
+ * riding on the newest character and blinking on the last one until `until`.
+ * `*accent*` segments become the italic accent; `\n` breaks the line.
+ * Returns the markup and when typing finishes.
+ */
+function typed(text, start, until) {
+  let t = start;
+  const chars = text.replace(/[*\n]/g, "").length;
+  let k = 0;
+  const html = text
     .split("\n")
-    .map((line, li, all) => {
-      const before = all
-        .slice(0, li)
-        .join(" ")
-        .replace(/\*/g, "")
-        .split(/\s+/)
-        .filter(Boolean).length;
-      return words(line, s + 0.18 + before * 0.12, 0.12);
-    })
-    .join("<br>")}</div>
-  ${cta}
+    .map((line) =>
+      line
+        .split(/(\*[^*]+\*)/)
+        .filter(Boolean)
+        .map((part) => {
+          const accent = part.startsWith("*");
+          const inner = part
+            .replace(/\*/g, "")
+            .split(/( )/)
+            .map((word) => {
+              if (word === " ") {
+                k++;
+                t += CHAR;
+                return " ";
+              }
+              const letters = [...word]
+                .map((ch) => {
+                  k++;
+                  const d = t.toFixed(3);
+                  t += CHAR;
+                  const lastChar = k === chars;
+                  const caret = lastChar
+                    ? `,blink .9s steps(1) ${d}s ${Math.max(1, Math.ceil((until - Number(d)) / 0.9))}`
+                    : `,caret ${CHAR}s linear ${d}s`;
+                  return `<span class="ch" style="animation:fadein .01s linear ${d}s forwards${caret}">${esc(ch)}</span>`;
+                })
+                .join("");
+              return `<span class="word">${letters}</span>`;
+            })
+            .join("");
+          return accent ? `<em>${inner}</em>` : inner;
+        })
+        .join(""),
+    )
+    .join("<br>");
+  return { html, end: t };
+}
+
+/** The chat-language illustration under each intro statement, keyed by scene index. */
+function introVisual(i, s, typedEnd) {
+  const at = (x) => `style="animation-delay:${(s + x).toFixed(2)}s"`;
+  const dots = (x) =>
+    `<span class="dots" style="animation:dotsout .01s linear ${(s + x).toFixed(2)}s forwards"><i></i><i></i><i></i></span>`;
+  if (i === 0)
+    return `<div class="vis">
+  <div class="qcard pop" ${at(0.5)}><span class="ql">Question 1 of 8</span><span class="qq">Beach or mountains?</span></div>
+  <div class="people"><span class="who pop" ${at(0.9)}>Ana</span><span class="link pop" ${at(1.05)}></span><span class="who b pop" ${at(1.2)}>Leo</span></div>
+</div>`;
+  if (i === 1) {
+    const reveal = (x) => `style="animation-delay:${(s + x).toFixed(2)}s"`;
+    return `<div class="vis">
+  <div class="row pop" ${at(0.4)}><span class="name">Ana</span><div class="bubble a"><span class="swap">${dots(1.3)}<span class="hid" ${reveal(1.3)}>Mountains</span></span></div></div>
+  <div class="row r pop" ${at(0.8)}><span class="name">Leo</span><div class="bubble b"><span class="swap">${dots(1.8)}<span class="hid" ${reveal(1.8)}>Beach</span></span></div></div>
+  <span class="lock pop" ${at(2.1)}>🔒 Hidden until you both answer</span>
+</div>`;
+  }
+  if (i === 2) {
+    const t0 = Math.max(1.0, typedEnd - s - 0.9);
+    return `<div class="vis">
+  <div class="cmp pop" ${at(t0)}><span class="cl">Night in or night out?</span><span class="pair"><b>Night in</b><b class="b">Night in</b></span><span class="tag same stamp" ${at(t0 + 0.35)}>Same</span></div>
+  <div class="cmp pop" ${at(t0 + 0.7)}><span class="cl">Beach or mountains?</span><span class="pair"><b>Mountains</b><b class="b">Beach</b></span><span class="tag ish stamp" ${at(t0 + 1.05)}>-ish</span></div>
+</div>`;
+  }
+  return `<div class="vis end-vis">
+  <span class="cta big pop" ${at(Math.max(0.6, typedEnd - s + 0.2))}>Play free → link in bio</span>
+  <span class="facts pop" ${at(Math.max(0.9, typedEnd - s + 0.5))}>Free · 2 players · No sign up · sameeeish.com</span>
+</div>`;
+}
+
+function intro(p, fonts) {
+  const HOLD = [1.6, 1.4, 1.5, 2.8]; // seconds after typing ends, per scene
+  const last = p.frames.length - 1;
+  let s = 0;
+  const scenes = p.frames.map((f, i) => {
+    const typeStart = s + 0.2;
+    const chars = f.text.replace(/[*\n]/g, "").length;
+    const len = 0.2 + chars * CHAR + (HOLD[i] ?? 1.5);
+    const scene = { f, i, s, len, typeStart };
+    s += len;
+    return scene;
+  });
+  const duration = s;
+  const body = scenes
+    .map(({ f, i, s, len, typeStart }) => {
+      const exit =
+        i < last ? `animation:leave .25s ease-in ${(s + len - 0.25).toFixed(2)}s forwards;` : "";
+      const { html, end } = typed(f.text, typeStart, s + len);
+      return `<section class="seg${i === last ? " last" : ""}" style="${exit}">
+  <span class="kicker" style="animation-delay:${s.toFixed(2)}s">${esc(f.kicker)}</span>
+  <div class="display">${html}</div>
+  ${introVisual(i, s, end)}
 </section>`;
     })
     .join("");
-  const css = `.seg{position:absolute;left:90px;right:90px;top:560px;display:flex;flex-direction:column;gap:40px}
-.seg .display{font-size:140px}`;
-  return { duration, html: shell(fonts, duration, css, segs) };
+  const css = `
+.seg{position:absolute;left:90px;right:90px;top:400px;bottom:340px;display:flex;flex-direction:column;gap:34px}
+.seg .display{font-size:128px;line-height:1.04}
+.word{white-space:nowrap}
+.ch{opacity:0}
+@keyframes caret{from,to{box-shadow:6px 0 0 ${LAV}}}
+@keyframes blink{0%{box-shadow:6px 0 0 ${LAV}}50%{box-shadow:none}}
+.vis{margin-block:auto;display:flex;flex-direction:column;gap:30px}
+.pop{opacity:0;animation:pop .35s cubic-bezier(.2,1.4,.4,1) forwards}
+.qcard{background:${PAPER};color:${INK};border-radius:52px;padding:64px 60px;display:flex;flex-direction:column;gap:12px}
+.ql{font-weight:800;font-size:24px;letter-spacing:.16em;text-transform:uppercase;opacity:.5}
+.qq{font-family:Fraunces;font-weight:600;font-size:104px;line-height:1.02}
+.people{display:flex;align-items:center;gap:18px}
+.who{font-weight:800;font-size:44px;padding:22px 44px;border-radius:999px;background:${SNOW};color:${INK}}
+.who.b{background:${LAV}}
+.link{flex:1;height:4px;border-radius:2px;background:rgba(244,242,253,.25)}
+.row{display:flex;flex-direction:column;gap:10px}
+.row.r{align-items:flex-end}
+.name{font-weight:800;font-size:26px;letter-spacing:.14em;text-transform:uppercase;opacity:.6}
+.bubble{font-size:72px;font-weight:700;line-height:1.2;padding:40px 56px;border-radius:52px;color:${INK};min-width:420px}
+.bubble.a{background:${SNOW};border-bottom-left-radius:12px}
+.bubble.b{background:${LAV};border-bottom-right-radius:12px}
+.swap{display:grid}.swap>*{grid-area:1/1}
+.dots{display:flex;gap:18px;align-items:center;padding:24px 0}
+.dots i{width:28px;height:28px;border-radius:50%;background:${INK};opacity:.35;animation:dotblink .9s infinite}
+.dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}
+@keyframes dotblink{0%,100%{opacity:.25;transform:none}40%{opacity:.8;transform:translateY(-8px)}}
+.hid{opacity:0;filter:blur(14px);animation:fadein .01s forwards}
+@keyframes dotsout{to{opacity:0}}
+.lock{align-self:center;font-weight:800;font-size:38px;margin-top:10px;opacity:0;color:${LAV}}
+.cmp{display:grid;grid-template-columns:1fr auto;grid-template-areas:"cl tag" "pair tag";gap:18px 24px;align-items:center;
+  background:rgba(244,242,253,.06);border-radius:48px;padding:44px 44px}
+.cl{grid-area:cl;font-weight:800;font-size:26px;letter-spacing:.12em;text-transform:uppercase;opacity:.6}
+.pair{grid-area:pair;display:flex;gap:14px;flex-wrap:wrap}
+.pair b{font-size:50px;font-weight:700;padding:20px 36px;border-radius:999px;background:${SNOW};color:${INK}}
+.pair b.b{background:${LAV}}
+.tag{grid-area:tag;font-family:Fraunces;font-style:italic;font-weight:600;font-size:116px;color:${LAV};line-height:1}
+.stamp{opacity:0;transform:scale(2.4) rotate(-12deg);animation:stampin .35s cubic-bezier(.3,1.6,.5,1) forwards}
+@keyframes stampin{to{opacity:1;transform:rotate(-6deg)}}
+.end-vis{gap:34px;align-items:flex-start}
+.seg.last{justify-content:center}
+.seg.last .vis{flex:none;margin:60px 0 0}
+.seg.last .display{font-size:140px}
+.cta.big{font-size:52px;padding:40px 64px}
+.facts{font-weight:800;font-size:36px;opacity:0;color:${LAV}}`;
+  return { duration, html: shell(fonts, duration, css, body) };
 }
 
 // ── chat reveal ───────────────────────────────────────────────────────────
@@ -140,7 +259,7 @@ function chat(p, fonts) {
 .b .bubble{background:${LAV};border-bottom-right-radius:12px}
 .cell{display:grid}.dots,.txt{grid-area:1/1}
 .dots{display:flex;gap:14px;padding:12px 4px;animation:hide .01s forwards}
-.dots i{width:22px;height:22px;border-radius:50%;background:${INK};opacity:.35;animation:blink .9s infinite}
+.dots i{width:28px;height:28px;border-radius:50%;background:${INK};opacity:.35;animation:blink .9s infinite}
 .dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}
 @keyframes blink{0%,100%{opacity:.25;transform:none}40%{opacity:.8;transform:translateY(-8px)}}
 @keyframes hide{to{opacity:0;visibility:hidden}}
