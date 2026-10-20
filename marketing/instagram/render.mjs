@@ -21,7 +21,7 @@ import { mkdirSync, readFileSync, rmSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { POSTS } from "./calendar.mjs";
-import { renderMotion } from "./motion.mjs";
+import { introCover, renderMotion } from "./motion.mjs";
 
 const require = createRequire(import.meta.url);
 const { chromium } = (() => {
@@ -252,7 +252,7 @@ const reelCover = (p) => {
     );
   if (p.motion === "rapid") return coverSlide(STORY, p.tint, p.mood, "Rapid fire", p.cover, "");
   if (p.motion === "intro")
-    return coverSlide(STORY, p.tint, null, p.frames[0].kicker, p.frames[0].text, "");
+    return introCover(p, { fraunces: FRAUNCES, frauncesItalic: FRAUNCES_I, nunito: NUNITO });
   return questionSlide(
     STORY,
     p.tint,

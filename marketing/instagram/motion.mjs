@@ -164,32 +164,7 @@ function introVisual(i, s, typedEnd) {
 </div>`;
 }
 
-function intro(p, fonts) {
-  const HOLD = [1.6, 1.4, 1.5, 2.8]; // seconds after typing ends, per scene
-  const last = p.frames.length - 1;
-  let s = 0;
-  const scenes = p.frames.map((f, i) => {
-    const typeStart = s + 0.2;
-    const chars = f.text.replace(/[*\n]/g, "").length;
-    const len = 0.2 + chars * CHAR + (HOLD[i] ?? 1.5);
-    const scene = { f, i, s, len, typeStart };
-    s += len;
-    return scene;
-  });
-  const duration = s;
-  const body = scenes
-    .map(({ f, i, s, len, typeStart }) => {
-      const exit =
-        i < last ? `animation:leave .25s ease-in ${(s + len - 0.25).toFixed(2)}s forwards;` : "";
-      const { html, end } = typed(f.text, typeStart, s + len);
-      return `<section class="seg${i === last ? " last" : ""}" style="${exit}">
-  <span class="kicker" style="animation-delay:${s.toFixed(2)}s">${esc(f.kicker)}</span>
-  <div class="display">${html}</div>
-  ${introVisual(i, s, end)}
-</section>`;
-    })
-    .join("");
-  const css = `
+const INTRO_CSS = `
 .seg{position:absolute;left:90px;right:90px;top:400px;bottom:340px;display:flex;flex-direction:column;gap:34px}
 .seg .display{font-size:128px;line-height:1.04}
 .word{white-space:nowrap}
@@ -234,7 +209,70 @@ function intro(p, fonts) {
 .seg.last .display{font-size:140px}
 .cta.big{font-size:52px;padding:40px 64px}
 .facts{font-weight:800;font-size:36px;opacity:0;color:${LAV}}`;
-  return { duration, html: shell(fonts, duration, css, body) };
+
+function intro(p, fonts) {
+  const HOLD = [1.6, 1.4, 1.5, 2.8]; // seconds after typing ends, per scene
+  const last = p.frames.length - 1;
+  let s = 0;
+  const scenes = p.frames.map((f, i) => {
+    const typeStart = s + 0.2;
+    const chars = f.text.replace(/[*\n]/g, "").length;
+    const len = 0.2 + chars * CHAR + (HOLD[i] ?? 1.5);
+    const scene = { f, i, s, len, typeStart };
+    s += len;
+    return scene;
+  });
+  const duration = s;
+  const body = scenes
+    .map(({ f, i, s, len, typeStart }) => {
+      const exit =
+        i < last ? `animation:leave .25s ease-in ${(s + len - 0.25).toFixed(2)}s forwards;` : "";
+      const { html, end } = typed(f.text, typeStart, s + len);
+      return `<section class="seg${i === last ? " last" : ""}" style="${exit}">
+  <span class="kicker" style="animation-delay:${s.toFixed(2)}s">${esc(f.kicker)}</span>
+  <div class="display">${html}</div>
+  ${introVisual(i, s, end)}
+</section>`;
+    })
+    .join("");
+  return { duration, html: shell(fonts, duration, INTRO_CSS, body) };
+}
+
+/**
+ * Still cover for the intro reel (profile grid + reel thumbnail): the
+ * opening statement plus the SAME / -ISH comparison, everything at rest.
+ * Kept inside the grid's 3:4 centre band.
+ */
+export function introCover(p, fonts) {
+  const f = p.frames[0];
+  const text = esc(f.text)
+    .replace(/\*([^*]+)\*/g, "<em>$1</em>")
+    .replace(/\n/g, "<br>");
+  const still = `
+.bar{display:none}
+.pop,.kicker,.stamp{opacity:1!important;animation:none!important}
+.pop{transform:none!important}
+.stamp{transform:rotate(-6deg)!important}
+.brand{top:270px;font-size:46px}.brand svg{width:54px;height:54px}
+.seg{top:360px;bottom:300px;justify-content:space-between;gap:36px}
+.kicker{font-size:34px}
+.seg .display{font-size:184px;line-height:.98;margin-top:-20px}
+.vis{margin:0;gap:34px}
+.vis{gap:28px}
+.cmp{grid-template-areas:"cl tag" "pair pair";padding:40px 46px 46px;gap:10px 24px;border-radius:56px}
+.cl{font-size:30px}
+.pair{flex-wrap:nowrap}
+.pair b{font-size:60px;padding:22px 42px}
+.tag{font-size:112px;margin:-24px 0 -10px}`;
+  const body = `<section class="seg">
+  <span class="kicker">${esc(f.kicker)}</span>
+  <div class="display">${text}</div>
+  <div class="vis">
+    <div class="cmp pop"><span class="cl">Night in or night out?</span><span class="pair"><b>Night in</b><b class="b">Night in</b></span><span class="tag stamp">Same</span></div>
+    <div class="cmp pop"><span class="cl">Beach or mountains?</span><span class="pair"><b>Mountains</b><b class="b">Beach</b></span><span class="tag stamp">-ish</span></div>
+  </div>
+</section>`;
+  return shell(fonts, 1, INTRO_CSS + still, body);
 }
 
 // ── chat reveal ───────────────────────────────────────────────────────────
