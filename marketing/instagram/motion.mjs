@@ -484,13 +484,21 @@ export function chatplusCover(p, fonts) {
   const still = `.bar{display:none}.brand{top:270px}
 .wrap{position:absolute;left:90px;right:90px;top:350px;bottom:330px;display:flex;flex-direction:column;justify-content:space-between;gap:36px}
 .big{font-family:Fraunces;font-weight:600;font-size:128px;line-height:1;letter-spacing:-.02em}
-.wrap .bubble{font-size:52px;padding:28px 40px}`;
+.wrap .bubble{font-size:52px;padding:28px 40px}
+.cover-stamp{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-7deg);white-space:nowrap;
+  font-family:Fraunces;font-style:italic;font-weight:700;font-size:184px;line-height:1;letter-spacing:-.02em;color:${SNOW};
+  -webkit-text-stroke:12px ${INK};paint-order:stroke fill;filter:drop-shadow(0 20px 34px rgba(0,0,0,.5))}
+.cover-stamp b{color:${LAV};font-weight:700}`;
   const bubble = (side, who) =>
     `<div class="row ${side}"><span class="name">${esc(who.name)}</span><div class="bubble">${esc(who.text)}</div></div>`;
   const body = `<div class="glow"></div><div class="wrap">
   <span class="pill" style="align-self:flex-start">${esc(p.mood)}</span>
   <div class="big">${qHtml}</div>
-  <div style="display:flex;flex-direction:column;gap:30px">${bubble("a", p.a)}${bubble("b", p.b)}</div>
+  <div style="position:relative;display:flex;flex-direction:column;gap:${p.coverStamp ? 150 : 30}px">${bubble("a", p.a)}${bubble("b", p.b)}${
+    p.coverStamp
+      ? `<span class="cover-stamp">${esc(p.coverStamp).replace(/(-ish)$/, "<b>$1</b>")}</span>`
+      : ""
+  }</div>
 </div>`;
   return shell(fonts, 1, CHATPLUS_CSS + still, body);
 }

@@ -122,6 +122,7 @@ Tell us what you two would say 👇 — then play the full game together. ${PLAY
     hook: "If we won it *tomorrow…*",
     question: "If we won $10 million tomorrow, what's the first thing you think we'd do?",
     coverTitle: "If we won *$10 million* tomorrow…",
+    coverStamp: "Sameeee-ish",
     a: { name: "Ana", text: "Pay off everything. Then a tiny house by the sea." },
     b: { name: "Leo", text: "Buy a boat. Name it Tax Free." },
     verdict: "-ish",
