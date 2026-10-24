@@ -80,7 +80,9 @@ function card(p) {
 }
 
 const weeks = [];
-for (const p of POSTS) {
+// Real publishing order: by date, then number (posts can move days).
+const BY_DATE = [...POSTS].sort((a, b) => a.date.localeCompare(b.date) || a.n - b.n);
+for (const p of BY_DATE) {
   const d = new Date(`${p.date}T12:00:00`);
   const monday = new Date(d);
   monday.setDate(d.getDate() - ((d.getDay() + 6) % 7));

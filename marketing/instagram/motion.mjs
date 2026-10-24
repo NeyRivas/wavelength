@@ -526,6 +526,8 @@ export async function renderMotion(page, p, fonts, file, tmpDir) {
   rmSync(tmpDir, { recursive: true, force: true });
   mkdirSync(tmpDir, { recursive: true });
   await page.setViewportSize({ width: 1080, height: 1920 });
+  // setContent keeps the window: drop a previous reel's frame hook first.
+  await page.evaluate(() => delete window.__tick);
   await page.setContent(html, { waitUntil: "load" });
   await page.evaluate(() => document.fonts.ready);
   const total = Math.round(duration * FPS);
