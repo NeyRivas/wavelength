@@ -477,7 +477,8 @@ window.__tick = (ms) => {
 }
 
 /** Still cover for a chatplus reel: big question with both answers, at rest, inside the grid crop. */
-export function chatplusCover(p, fonts) {
+export function chatplusCover(p, fonts, { minimal = false } = {}) {
+  if (minimal) return chatplusCoverMinimal(p, fonts);
   const qHtml = esc(p.coverTitle ?? p.question)
     .replace(/\*([^*]+)\*/g, "<em>$1</em>")
     .replace(/\n/g, "<br>");
@@ -485,22 +486,36 @@ export function chatplusCover(p, fonts) {
 .wrap{position:absolute;left:90px;right:90px;top:350px;bottom:330px;display:flex;flex-direction:column;justify-content:space-between;gap:36px}
 .big{font-family:Fraunces;font-weight:600;font-size:128px;line-height:1;letter-spacing:-.02em}
 .wrap .bubble{font-size:52px;padding:28px 40px}
-.cover-stamp{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-7deg);white-space:nowrap;
-  font-family:Fraunces;font-style:italic;font-weight:700;font-size:184px;line-height:1;letter-spacing:-.02em;color:${SNOW};
-  -webkit-text-stroke:12px ${INK};paint-order:stroke fill;filter:drop-shadow(0 20px 34px rgba(0,0,0,.5))}
-.cover-stamp b{color:${LAV};font-weight:700}`;
+.cover-stamp{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-8deg);white-space:nowrap;
+  font-family:Fraunces;font-style:italic;font-weight:600;font-size:176px;line-height:1;color:${LAV}}
+.wrap:has(.cover-stamp) .row{opacity:.14;filter:blur(4px)}`;
   const bubble = (side, who) =>
     `<div class="row ${side}"><span class="name">${esc(who.name)}</span><div class="bubble">${esc(who.text)}</div></div>`;
   const body = `<div class="glow"></div><div class="wrap">
   <span class="pill" style="align-self:flex-start">${esc(p.mood)}</span>
   <div class="big">${qHtml}</div>
-  <div style="position:relative;display:flex;flex-direction:column;gap:${p.coverStamp ? 150 : 30}px">${bubble("a", p.a)}${bubble("b", p.b)}${
-    p.coverStamp
-      ? `<span class="cover-stamp">${esc(p.coverStamp).replace(/(-ish)$/, "<b>$1</b>")}</span>`
-      : ""
+  <div style="position:relative;display:flex;flex-direction:column;gap:30px">${bubble("a", p.a)}${bubble("b", p.b)}${
+    p.coverStamp ? `<span class="cover-stamp">${esc(p.coverStamp)}</span>` : ""
   }</div>
 </div>`;
   return shell(fonts, 1, CHATPLUS_CSS + still, body);
+}
+
+/** Minimal cover: just the question and the stamp, nothing else. */
+function chatplusCoverMinimal(p, fonts) {
+  const qHtml = esc(p.coverTitle ?? p.question)
+    .replace(/\*([^*]+)\*/g, "<em>$1</em>")
+    .replace(/\n/g, "<br>");
+  const css = `.bar{display:none}.brand{top:270px}
+.wrap{position:absolute;left:90px;right:90px;top:340px;bottom:330px;display:flex;flex-direction:column;justify-content:center;gap:90px}
+.big{font-family:Fraunces;font-weight:600;font-size:168px;line-height:.98;letter-spacing:-.025em}
+.mstamp{align-self:flex-end;font-family:Fraunces;font-style:italic;font-weight:600;font-size:150px;line-height:1;color:${LAV};transform:rotate(-8deg);margin-right:10px}`;
+  return shell(
+    fonts,
+    1,
+    css,
+    `<div class="wrap"><div class="big">${qHtml}</div>${p.coverStamp ? `<span class="mstamp">${esc(p.coverStamp)}</span>` : ""}</div>`,
+  );
 }
 
 const STYLES = { intro, chat, rapid, chatplus };
