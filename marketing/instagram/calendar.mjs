@@ -112,17 +112,28 @@ Tell us what you two would say 👇 — then play the full game together. ${PLAY
   {
     n: 4,
     date: "2026-10-23",
-    format: "post",
+    format: "reel",
+    kind: "animated",
+    motion: "chatplus",
     pillar: "Preguntas",
     mood: "Hypothetical",
+    title: "If we won $10 million",
+    count: { to: 10000000, prefix: "$", kicker: "Hypothetically" },
+    hook: "If we won it *tomorrow…*",
     question: "If we won $10 million tomorrow, what's the first thing you think we'd do?",
-    caption: `Answer first. Then tag them and see if they say the same thing. 👀
+    coverTitle: "If we won *$10 million* tomorrow…",
+    a: { name: "Ana", text: "Pay off everything. Then a tiny house by the sea." },
+    b: { name: "Leo", text: "Buy a boat. Name it Tax Free." },
+    verdict: "-ish",
+    caption: `One of us is being responsible. One of us bought a boat. ⛵
 
-(If one of you said "pay off debt" and the other said "buy a boat"… that's a conversation.)
+If you won $10 million tomorrow, what's the first thing your person would do? Answer separately, then compare 👇
 
 ${PLAY}`,
     tags: TAGS.couples,
-    notes: "Post de comentarios: responde a todos en la primera hora.",
+    audio: "Audio upbeat/lujoso en tendencia (tipo “money”)",
+    notes:
+      "Era un post; pasó a Reel (chat con contador y texto letra por letra). Se publicó el 24 oct por retraso.",
   },
   {
     n: 5,

@@ -83,8 +83,8 @@ details summary { cursor: pointer; font-weight: 800; font-size: .75rem; letter-s
   <p class="lede">Del 20 de octubre al 23 de noviembre de 2026, 6 publicaciones por semana. Los posts, carruseles y Reels animados están listos para subir; los Reels grabados traen su guion y portada. Los textos de los posts van en inglés porque el producto está en inglés.</p>
   <div class="system" aria-label="Sistema visual">
     <div class="sys"><span class="sw" style="background:#f7f6f2"></span><div><b>Papel</b><span>Carruseles · 11</span></div></div>
-    <div class="sys"><span class="sw" style="background:#181820"></span><div><b>Tinta</b><span>Reels · 14</span></div></div>
-    <div class="sys"><span class="sw" style="background:#c9c3f4"></span><div><b>Lavanda</b><span>Posts · 5</span></div></div>
+    <div class="sys"><span class="sw" style="background:#181820"></span><div><b>Tinta</b><span>Reels · 15</span></div></div>
+    <div class="sys"><span class="sw" style="background:#c9c3f4"></span><div><b>Lavanda</b><span>Posts · 4</span></div></div>
   </div>
   <div class="toolbar" role="toolbar" aria-label="Filtrar por formato">
     <button type="button" class="filter" id="f-all" data-f="all" aria-pressed="true">Todos</button>
@@ -158,25 +158,25 @@ Tell us what you two would say 👇 — then play the full game together. Play i
       <dl class="meta"><div><dt>Audio</dt><dd>Audio original (las reacciones son el contenido)</dd></div><div><dt>Nota</dt><dd>Grabar con una pareja real (amigos sirven). Vertical, luz natural, sin guion para las reacciones.</dd></div></dl>
     </div>
   </div>
-</article><article class="post" data-format="post" id="p4">
+</article><article class="post" data-format="reel" id="p4">
   <div class="when"><span class="n">4</span><span class="day">vie</span><span class="date">23 oct</span></div>
   <div class="body">
     <header class="head">
-      <h3>If we won $10 million tomorrow, what's the first thing you think we'd do?</h3>
-      <div class="chips"><span class="chip chip--post">Post</span><span class="chip">Preguntas</span><span class="chip chip--ready">Listo para subir</span></div>
+      <h3>If we won $10 million</h3>
+      <div class="chips"><span class="chip chip--reel">Reel</span><span class="chip">Preguntas</span><span class="chip chip--ready">Listo para subir</span></div>
     </header>
-    <div class="frames"><img src="out/04-post.png" alt="" loading="lazy" width="1080" height="1350"></div>
+    <div class="frames"><video src="out/04-reel.mp4" poster="out/04-reel-cover.png" controls muted loop playsinline preload="none" width="1080" height="1920"></video></div>
     <div class="copy">
       <div class="caption-head"><span class="label">Caption</span><button type="button" class="copy-btn" data-copy="c4">Copiar caption</button></div>
-      <pre class="caption" id="c4">Answer first. Then tag them and see if they say the same thing. 👀
+      <pre class="caption" id="c4">One of us is being responsible. One of us bought a boat. ⛵
 
-(If one of you said &quot;pay off debt&quot; and the other said &quot;buy a boat&quot;… that's a conversation.)
+If you won $10 million tomorrow, what's the first thing your person would do? Answer separately, then compare 👇
 
 Play it free (no sign up) → link in bio
 
 #couplesquestions #questionsforcouples #relationshipquestions #datenightideas</pre>
       
-      <dl class="meta"><div><dt>Nota</dt><dd>Post de comentarios: responde a todos en la primera hora.</dd></div></dl>
+      <dl class="meta"><div><dt>Audio</dt><dd>Audio upbeat/lujoso en tendencia (tipo “money”)</dd></div><div><dt>Nota</dt><dd>Era un post; pasó a Reel (chat con contador y texto letra por letra). Se publicó el 24 oct por retraso.</dd></div></dl>
     </div>
   </div>
 </article><article class="post" data-format="carousel" id="p5">
@@ -730,7 +730,7 @@ Play it free (no sign up) → link in bio
 </article></section>
 </div>
 <script>
-const KIND = {"1":"animated","2":"","3":"filmed","4":"","5":"","6":"filmed","7":"","8":"","9":"filmed","10":"","11":"animated","12":"animated","13":"","14":"","15":"filmed","16":"","17":"animated","18":"animated","19":"","20":"","21":"filmed","22":"","23":"animated","24":"animated","25":"","26":"","27":"filmed","28":"","29":"animated","30":""};
+const KIND = {"1":"animated","2":"","3":"filmed","4":"animated","5":"","6":"filmed","7":"","8":"","9":"filmed","10":"","11":"animated","12":"animated","13":"","14":"","15":"filmed","16":"","17":"animated","18":"animated","19":"","20":"","21":"filmed","22":"","23":"animated","24":"animated","25":"","26":"","27":"filmed","28":"","29":"animated","30":""};
 document.querySelectorAll(".filter").forEach((b) => b.addEventListener("click", () => {
   document.querySelectorAll(".filter").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
   const f = b.dataset.f;

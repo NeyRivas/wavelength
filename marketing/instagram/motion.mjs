@@ -89,7 +89,7 @@ const CHAR = 0.045; // typewriter speed, seconds per character
  * `*accent*` segments become the italic accent; `\n` breaks the line.
  * Returns the markup and when typing finishes.
  */
-function typed(text, start, until) {
+function typed(text, start, until, step = CHAR) {
   let t = start;
   const chars = text.replace(/[*\n]/g, "").length;
   let k = 0;
@@ -107,18 +107,18 @@ function typed(text, start, until) {
             .map((word) => {
               if (word === " ") {
                 k++;
-                t += CHAR;
+                t += step;
                 return " ";
               }
               const letters = [...word]
                 .map((ch) => {
                   k++;
                   const d = t.toFixed(3);
-                  t += CHAR;
+                  t += step;
                   const lastChar = k === chars;
                   const caret = lastChar
                     ? `,blink .9s steps(1) ${d}s ${Math.max(1, Math.ceil((until - Number(d)) / 0.9))}`
-                    : `,caret ${CHAR}s linear ${d}s`;
+                    : `,caret ${step}s linear ${d}s`;
                   return `<span class="ch" style="animation:fadein .01s linear ${d}s forwards${caret}">${esc(ch)}</span>`;
                 })
                 .join("");
@@ -373,7 +373,129 @@ ${items}
   return { duration, html: shell(fonts, duration, css, body) };
 }
 
-const STYLES = { intro, chat, rapid };
+// ── chat plus ─────────────────────────────────────────────────────────────
+// The chat reveal, more dynamic: an optional count-up hook number, the
+// question and both answers typed letter by letter, a slow camera push and
+// a drifting glow behind everything.
+const CHATPLUS_CSS = `
+:root{--caret:${LAV}}
+.ch{opacity:0}
+.word{white-space:nowrap}
+@keyframes caret{from,to{box-shadow:5px 0 0 var(--caret)}}
+@keyframes blink{0%{box-shadow:5px 0 0 var(--caret)}50%{box-shadow:none}}
+.glow{position:absolute;width:900px;height:900px;border-radius:50%;background:${LAV};opacity:.13;filter:blur(140px);top:120px;right:-380px}
+.cam{position:absolute;inset:0;transform-origin:50% 45%}
+.kick{font-weight:800;font-size:30px;letter-spacing:.16em;text-transform:uppercase;color:${LAV}}
+.count{font-family:Fraunces;font-weight:600;font-size:170px;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums;color:${LAV}}
+.hookline{font-family:Fraunces;font-weight:600;font-size:120px;line-height:1.04}
+.pill{align-self:flex-start;display:inline-block;font-weight:800;font-size:26px;letter-spacing:.16em;text-transform:uppercase;background:rgba(201,195,244,.14);padding:12px 26px;border-radius:999px}
+.qt{font-family:Fraunces;font-weight:500;line-height:1.1}
+.row{display:flex;flex-direction:column;gap:12px}
+.row.b{align-items:flex-end}
+.name{font-weight:800;font-size:28px;letter-spacing:.14em;text-transform:uppercase;opacity:.6}
+.bubble{font-size:62px;font-weight:700;line-height:1.2;padding:36px 48px;border-radius:50px;max-width:880px;color:${INK};--caret:${INK}}
+.row.a .bubble{background:${SNOW};border-bottom-left-radius:12px}
+.row.b .bubble{background:${LAV};border-bottom-right-radius:12px}
+.cell{display:grid}.cell>*{grid-area:1/1}
+.dots{display:flex;gap:16px;align-items:center;padding:14px 0}
+.dots i{width:24px;height:24px;border-radius:50%;background:${INK};opacity:.35;animation:dotblink .9s infinite}
+.dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}
+@keyframes dotblink{0%,100%{opacity:.25;transform:none}40%{opacity:.8;transform:translateY(-8px)}}
+@keyframes out{to{opacity:0}}
+.popin{opacity:0;animation:pop .35s cubic-bezier(.2,1.4,.4,1) forwards}
+.stamp{position:absolute;left:50%;top:880px;font-family:Fraunces;font-style:italic;font-weight:600;color:${LAV};white-space:nowrap;
+  transform:translate(-50%,-50%) scale(3) rotate(-14deg);opacity:0;animation:stamp .38s cubic-bezier(.3,1.6,.5,1) forwards}
+@keyframes stamp{to{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(-8deg)}}
+.flash{position:absolute;inset:0;background:${LAV};opacity:0}
+@keyframes flash{0%{opacity:0}15%{opacity:.35}100%{opacity:0}}
+@keyframes dim{to{opacity:.07;filter:blur(5px)}}
+@keyframes shake{20%{transform:translate(-14px,8px)}40%{transform:translate(12px,-10px)}60%{transform:translate(-8px,6px)}80%{transform:translate(6px,-4px)}}
+.end{top:1170px}`;
+
+function chatplus(p, fonts) {
+  const QCH = 0.032; // question typing speed
+  const ACH = 0.038; // answer typing speed
+  const hasCount = Boolean(p.count);
+  const hookEnd = hasCount ? 2.6 : 2.1;
+  const q = typed(p.question, hookEnd + 0.35, hookEnd + 4, QCH);
+  const aRow = q.end + 0.2;
+  const aType = aRow + 0.75;
+  const a = typed(p.a.text, aType, aType + 3, ACH);
+  const bRow = a.end - 0.4;
+  const bType = Math.max(a.end + 0.25, bRow + 0.75);
+  const b = typed(p.b.text, bType, bType + 3, ACH);
+  const stampAt = b.end + 1.1; // time to read the second answer
+  const endAt = stampAt + 1.0;
+  const duration = endAt + 2.8;
+
+  const hook = hasCount
+    ? `<div style="position:absolute;left:90px;right:90px;top:680px;display:flex;flex-direction:column;gap:34px;animation:leave .3s ease-in ${hookEnd - 0.3}s forwards">
+  <span class="kick popin" style="animation-delay:0s">${esc(p.count.kicker ?? "Hypothetically")}</span>
+  <span class="count" id="count">${esc(p.count.prefix ?? "")}0</span>
+  <div class="hookline">${typed(p.hook, 1.15, hookEnd, 0.04).html}</div>
+</div>`
+    : `<div class="hookline" style="position:absolute;left:90px;right:90px;top:620px;font-size:140px;animation:leave .3s ease-in ${hookEnd - 0.3}s forwards">${typed(p.hook, 0.1, hookEnd, 0.045).html}</div>`;
+  const qSize = p.question.length > 80 ? 80 : 92;
+  const row = (side, who, rowAt, typeAt, txt) =>
+    `<div class="row ${side} popin" style="animation-delay:${rowAt.toFixed(2)}s"><span class="name">${esc(who.name)}</span>
+<div class="bubble"><div class="cell"><div class="dots" style="animation:out .01s linear ${typeAt.toFixed(2)}s forwards"><i></i><i></i><i></i></div><div>${txt.html}</div></div></div></div>`;
+  const body = `<div class="glow" style="animation:drift ${duration}s ease-in-out forwards"></div>
+<div class="cam" style="animation:push ${duration}s linear forwards">
+${hook}
+<div style="position:absolute;inset:0;animation:dim .4s ease ${(stampAt - 0.2).toFixed(2)}s forwards">
+  <div style="position:absolute;left:90px;right:90px;top:420px;display:flex;flex-direction:column;gap:30px">
+    <span class="pill popin" style="animation-delay:${(hookEnd + 0.1).toFixed(2)}s">${esc(p.mood)}</span>
+    <div class="qt" style="font-size:${qSize}px">${q.html}</div>
+  </div>
+  <div style="position:absolute;left:90px;right:90px;top:${p.question.length > 80 ? 1040 : 1000}px;display:flex;flex-direction:column;gap:36px">
+    ${row("a", p.a, aRow, aType, a)}
+    ${row("b", p.b, bRow, bType, b)}
+  </div>
+</div>
+</div>
+<div class="flash" style="animation:flash .45s ${stampAt.toFixed(2)}s forwards"></div>
+<div class="stamp" style="animation-delay:${stampAt.toFixed(2)}s;font-size:${p.verdict.length > 4 ? 280 : 340}px">${esc(p.verdict)}</div>
+<div class="end"><p style="animation-delay:${endAt.toFixed(2)}s">${esc(p.endLine ?? "Same… or -ish? Comment yours 👇")}</p><span class="cta" style="animation-delay:${(endAt + 0.35).toFixed(2)}s">Play free → link in bio</span></div>
+<style>
+@keyframes push{from{transform:scale(1)}to{transform:scale(1.045)}}
+@keyframes drift{0%{transform:translate(0,0)}50%{transform:translate(-260px,420px)}100%{transform:translate(-80px,820px)}}
+body{animation:shake .35s ${(stampAt + 0.25).toFixed(2)}s}
+</style>
+${
+  hasCount
+    ? `<script>
+window.__tick = (ms) => {
+  const t = ms / 1000, el = document.getElementById("count");
+  const k = Math.min(1, Math.max(0, (t - 0.15) / 1.0));
+  const e = 1 - Math.pow(1 - k, 3);
+  el.textContent = ${JSON.stringify(p.count.prefix ?? "")} + Math.round(${p.count.to} * e).toLocaleString("en-US");
+};
+</script>`
+    : ""
+}`;
+  return { duration, html: shell(fonts, duration, CHATPLUS_CSS, body) };
+}
+
+/** Still cover for a chatplus reel: big question with both answers, at rest, inside the grid crop. */
+export function chatplusCover(p, fonts) {
+  const qHtml = esc(p.coverTitle ?? p.question)
+    .replace(/\*([^*]+)\*/g, "<em>$1</em>")
+    .replace(/\n/g, "<br>");
+  const still = `.bar{display:none}.brand{top:270px}
+.wrap{position:absolute;left:90px;right:90px;top:350px;bottom:330px;display:flex;flex-direction:column;justify-content:space-between;gap:36px}
+.big{font-family:Fraunces;font-weight:600;font-size:128px;line-height:1;letter-spacing:-.02em}
+.wrap .bubble{font-size:52px;padding:28px 40px}`;
+  const bubble = (side, who) =>
+    `<div class="row ${side}"><span class="name">${esc(who.name)}</span><div class="bubble">${esc(who.text)}</div></div>`;
+  const body = `<div class="glow"></div><div class="wrap">
+  <span class="pill" style="align-self:flex-start">${esc(p.mood)}</span>
+  <div class="big">${qHtml}</div>
+  <div style="display:flex;flex-direction:column;gap:30px">${bubble("a", p.a)}${bubble("b", p.b)}</div>
+</div>`;
+  return shell(fonts, 1, CHATPLUS_CSS + still, body);
+}
+
+const STYLES = { intro, chat, rapid, chatplus };
 
 /** Renders the post's motion reel to `file` (H.264, 30 fps, silent). */
 export async function renderMotion(page, p, fonts, file, tmpDir) {
@@ -391,6 +513,7 @@ export async function renderMotion(page, p, fonts, file, tmpDir) {
           a.pause();
           a.currentTime = t;
         }
+        window.__tick?.(t);
       },
       (f / FPS) * 1000,
     );

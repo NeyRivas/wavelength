@@ -21,7 +21,7 @@ import { mkdirSync, readFileSync, rmSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { POSTS } from "./calendar.mjs";
-import { introCover, renderMotion } from "./motion.mjs";
+import { chatplusCover, introCover, renderMotion } from "./motion.mjs";
 
 const require = createRequire(import.meta.url);
 const { chromium } = (() => {
@@ -251,6 +251,8 @@ const reelCover = (p) => {
       "",
     );
   if (p.motion === "rapid") return coverSlide(STORY, p.tint, p.mood, "Rapid fire", p.cover, "");
+  if (p.motion === "chatplus")
+    return chatplusCover(p, { fraunces: FRAUNCES, frauncesItalic: FRAUNCES_I, nunito: NUNITO });
   if (p.motion === "intro")
     return introCover(p, { fraunces: FRAUNCES, frauncesItalic: FRAUNCES_I, nunito: NUNITO });
   return questionSlide(
