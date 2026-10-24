@@ -251,6 +251,8 @@ const reelCover = (p) => {
       "",
     );
   if (p.motion === "rapid") return coverSlide(STORY, p.tint, p.mood, "Rapid fire", p.cover, "");
+  // Reuses the lavender question-post look for a reel that replaced a post.
+  if (p.coverStyle === "post") return questionSlide(STORY, "solid", p.mood, p.question, send);
   if (p.motion === "chatplus")
     return chatplusCover(p, { fraunces: FRAUNCES, frauncesItalic: FRAUNCES_I, nunito: NUNITO });
   if (p.motion === "intro")
