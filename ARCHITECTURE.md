@@ -392,4 +392,19 @@ Minor engineering defaults chosen along the way (none change visible product beh
 
 ---
 
+## 14. Fixed conversation experiences (SEO-driven ready-made experiences)
+
+First instance: **36 Questions to Fall in Love** — public landing page `/play/dating-couples/36-questions-to-fall-in-love`, card in the Dating & Couples catalog. Not a parallel system: each play-through is one ordinary `wavelengths` row going through the same DRAFT → WAITING → IN_PROGRESS → COMPLETED machine, share token, `finalize_draft` / `claim_participant_b` / `submit_final_b` RPCs, and `answers_select` privacy rule as every other Wavelength.
+
+What was added (`supabase/migrations/20261025120000_*`, `20261025120100_*`):
+
+- **`open` question type** — no options; answered with written text stored as a JSON string in the existing `answers.value` (1–2000 chars, validated by `validate_answer_value`). Never scored. Only allowed in a fixed experience, so the scored result path can never receive one (and `lib/wavelength/question-rows.ts` asserts that at runtime on every standard screen).
+- **`wavelengths.fixed_question_count`** — null for every standard draft (unchanged behavior: ≤12 questions, editable while DRAFT, 5–12 to finalize). When set at insert time, the question set is locked: inserts capped at exactly that count, every UPDATE/DELETE (and so `reorder_questions`) rejected by `enforce_fixed_question_set`, finalize requires exactly that count, and the column itself can never change afterwards.
+
+Flow: the landing page CTA → `startReadyMadeGame` seeds the draft (one INSERT carrying `source_game_id` + `fixed_question_count`, then one multi-row INSERT of the questions) → `/create?game=…` renders `ConversationStepper` (one question at a time, three stages, saving through `saveAnswerA`) and then the unchanged `FinalizeForm` → share link → B joins with the unchanged `JoinForm` and answers in the same stepper via `saveAnswerB` → `SubmitFinalForm` → `/w/[token]/result` renders `ConversationResult` (both answers per question, by stage; no score) instead of the scored view. Question text and stages live in `lib/wavelength/conversation-experiences.ts`.
+
+To add another experience: an entry in `CONVERSATION_EXPERIENCES`, a matching `READY_MADE_GAMES` entry with `conversation: true` and `href`, an `EXPERIENCE_COPY` entry, a landing page under `app/play/`, and the sitemap + `PUBLIC_PATHS` entries.
+
+---
+
 **READY FOR IMPLEMENTATION**

@@ -32,10 +32,11 @@ const LAST_MODIFIED = {
   terms: new Date("2026-10-09"),
   contact: new Date("2026-10-09"),
   play: new Date("2026-10-03"),
-  playDatingCouples: new Date("2026-10-12"), // removed the redundant contextual link (this pass)
+  playDatingCouples: new Date("2026-10-25"), // added the "36 Questions to Fall in Love" card
   playFriends: new Date("2026-09-26"),
   dateNight: new Date("2026-10-11"), // server-rendered question preview added (this pass)
   gettingToKnowEachOther: new Date("2026-10-12"), // new dedicated landing page (this pass)
+  thirtySixQuestions: new Date("2026-10-25"), // new conversation experience landing page
 } as const;
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -104,6 +105,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
       // page — same priority tier as its sibling, Date Night.
       url: `${BASE_URL}/play/dating-couples/getting-to-know-each-other-questions`,
       lastModified: LAST_MODIFIED.gettingToKnowEachOther,
+      changeFrequency: "monthly",
+      priority: 0.6,
+    },
+    {
+      // "36 Questions to Fall in Love" — same tier as its sibling landing pages.
+      url: `${BASE_URL}/play/dating-couples/36-questions-to-fall-in-love`,
+      lastModified: LAST_MODIFIED.thirtySixQuestions,
       changeFrequency: "monthly",
       priority: 0.6,
     },

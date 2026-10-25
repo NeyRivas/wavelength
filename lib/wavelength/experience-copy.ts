@@ -88,6 +88,19 @@ const EXPERIENCE_COPY: Record<string, ExperienceCopy> = {
     finalText: "Ready to see what you discovered about each other?",
     finalizeButtonLabel: "Answer. Share. Discover each other.",
   },
+  "36-questions-to-fall-in-love": {
+    builderIntro:
+      "Answer each question in your own words, one at a time, across three stages. Then share the link so they can answer the same questions — you'll read each other's answers once you've both finished.",
+    inviteHeading: "Ready for a real conversation?",
+    inviteText: (aAlias) =>
+      `${aAlias} has answered 36 questions, from light to meaningful, in three stages. Answer the same ones in your own words — once you've both finished, you'll read each other's answers side by side.`,
+    answerHeading: "36 Questions to Fall in Love",
+    answerText: (aAlias) =>
+      `Take your time and answer in your own words. You won't see ${aAlias}'s answers until you've finished — then you'll both see the whole conversation.`,
+    finalText:
+      "Every question is answered. Finish to open your conversation and read each other's answers.",
+    finalizeButtonLabel: "Lock in my answers and get the link",
+  },
   "how-well-do-you-know-me": {
     builderIntro:
       "Each question is already written — you just write your own real answers, mark which one's true, then see how well they can guess.",

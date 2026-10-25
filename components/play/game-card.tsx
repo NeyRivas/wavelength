@@ -36,6 +36,7 @@ export function GameCard({
   id,
   title,
   subtitle,
+  description,
   blobClass,
   playable,
   href,
@@ -45,6 +46,7 @@ export function GameCard({
   id: string;
   title: string;
   subtitle?: string;
+  description?: string;
   blobClass: string;
   playable: boolean;
   href?: string;
@@ -60,6 +62,7 @@ export function GameCard({
         {title}
         {subtitle && <span className="game-card__subtitle">{subtitle}</span>}
       </h2>
+      {description && <p className="game-card__description">{description}</p>}
       <span className="game-card__cta">
         Play <span aria-hidden="true">→</span>
       </span>

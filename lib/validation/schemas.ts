@@ -56,6 +56,19 @@ export const questionInputSchema = z.discriminatedUnion("type", [
 
 export type QuestionInput = z.infer<typeof questionInputSchema>;
 
+/** Mirrors validate_answer_value's `open` branch
+ * (20261025120100_fixed_conversation_experiences.sql). */
+export const MAX_OPEN_ANSWER_LENGTH = 2000;
+
+export const openAnswerSchema = z
+  .string()
+  .trim()
+  .min(1, "write an answer first")
+  .max(MAX_OPEN_ANSWER_LENGTH, `keep your answer under ${MAX_OPEN_ANSWER_LENGTH} characters`)
+  .refine((s) => !/[\x01-\x08\x0b\x0c\x0e-\x1f\x7f]/.test(s), {
+    message: "your answer contains invalid characters",
+  });
+
 /** The value a participant can answer a given question with. */
 export function answerValueSchema(question: { type: "choice" | "scale"; optionCount?: number }) {
   if (question.type === "scale") {
@@ -169,11 +182,21 @@ export function parseQuestionEditInput(
 
 export function parseAnswerValue(
   formData: FormData,
-  question: { type: "choice" | "scale"; optionCount?: number },
-): ParseResult<number> {
+  question: { type: "choice" | "scale" | "open"; optionCount?: number },
+): ParseResult<number | string> {
   const raw = formData.get("value");
+  if (question.type === "open") {
+    const result = openAnswerSchema.safeParse(typeof raw === "string" ? raw : "");
+    if (!result.success) {
+      return { success: false, error: firstIssueMessage(result.error) };
+    }
+    return { success: true, data: result.data };
+  }
   const value = Number(raw);
-  const result = answerValueSchema(question).safeParse(value);
+  const result = answerValueSchema({
+    type: question.type,
+    optionCount: question.optionCount,
+  }).safeParse(value);
   if (!result.success) {
     return { success: false, error: firstIssueMessage(result.error) };
   }

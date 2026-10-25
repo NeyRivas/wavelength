@@ -7,7 +7,9 @@ import { LandingHeader } from "@/components/landing/landing-header";
 import { GameCategorySection } from "@/components/play/game-category-section";
 
 // /play/dating-couples — one of /play's two category screens (see
-// app/play/page.tsx). All three cards are wired up
+// app/play/page.tsx). "36 Questions to Fall in Love" (a fixed conversation
+// experience) links to its own public landing page, whose CTA starts it.
+// The other three cards are wired up
 // (lib/wavelength/ready-made-games.ts): "Are we on the same page?" and
 // "Getting to know each other" seed a questionnaire draft, while "Date
 // Night" is plain navigation to its own standalone experience
@@ -91,7 +93,7 @@ export default function DatingCouplesPlayPage() {
         <GameCategorySection
           group="dating-couples"
           heading="A Compatibility Quiz for Couples"
-          text="Answer the same questions on your own, then compare notes together. It's not a science — just a quick, honest way to see where you align, where you see things differently, and what's worth talking about. This page also has a getting-to-know-you conversation game and a set of date night questions, if you'd rather start there."
+          text="Answer the same questions on your own, then compare notes together. It's not a science — just a quick, honest way to see where you align, where you see things differently, and what's worth talking about. This page also has a getting-to-know-you conversation game, 36 questions to fall in love, and a set of date night questions, if you'd rather start there."
         />
       </main>
       <LandingFooter />

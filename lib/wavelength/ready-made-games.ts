@@ -33,6 +33,10 @@ export interface ReadyMadeGame {
    * (GameCard) — e.g. the experience name "Are we on the same page?" with
    * "Compatibility Quiz" as its subtitle. Omitted for every other game. */
   subtitle?: string;
+  /** Optional sentence-case line under `title`/`subtitle` on the game card
+   * — a short description of the experience itself. Only set for
+   * "36 Questions to Fall in Love". */
+  description?: string;
   /** Optional longer line shown under the heading on /create's builder
    * screen specifically (app/create/page.tsx's CreateShellIntro) —
    * distinct from `subtitle` above (the short GameCard label): this one
@@ -74,6 +78,12 @@ export interface ReadyMadeGame {
    * itself. Omitted for every game but "getting-to-know-you", which links
    * to its own dedicated SEO preview page. */
   secondary?: { label: string; href: string };
+  /** Opt-in: this game is a fixed conversation experience
+   * (lib/wavelength/conversation-experiences.ts, keyed by this same id) —
+   * seeded with that experience's `open` questions instead of `questions`,
+   * answered one question at a time, and finished with a shared
+   * conversation record instead of a scored result. */
+  conversation?: boolean;
 }
 
 /**
@@ -613,6 +623,18 @@ export const READY_MADE_GAMES: ReadyMadeGame[] = [
     group: "dating-couples",
     questions: null,
     href: "/play/dating-couples/date-night",
+  },
+  {
+    id: "36-questions-to-fall-in-love",
+    title: "36 Questions to Fall in Love",
+    description: "A guided conversation in three stages, designed to help you get closer.",
+    builderSubtitle: "A guided conversation in three stages, designed to help you get closer.",
+    group: "dating-couples",
+    // Seeded from lib/wavelength/conversation-experiences.ts instead.
+    questions: null,
+    conversation: true,
+    // The card leads to the public landing page, whose CTA starts it.
+    href: "/play/dating-couples/36-questions-to-fall-in-love",
   },
   {
     id: "how-well-do-you-know-me",

@@ -131,7 +131,9 @@ export async function updateQuestion(
     .select("type")
     .eq("id", questionId)
     .single();
-  if (!current) return { error: GENERIC_ERROR };
+  // `open` questions only exist in fixed conversation experiences, whose
+  // questions can't be edited at all (the database rejects it too).
+  if (!current || current.type === "open") return { error: GENERIC_ERROR };
 
   const parsed = parseQuestionEditInput(formData, current.type);
   if (!parsed.success) return { error: parsed.error };

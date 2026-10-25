@@ -1,13 +1,26 @@
 import type { Metadata } from "next";
 import { Fraunces, Nunito_Sans } from "next/font/google";
 
+import { startReadyMadeGame } from "@/app/actions/ready-made-games";
+import { ConversationStepper } from "@/components/conversation/conversation-stepper";
 import { CreateHeader } from "@/components/questionnaire/create-header";
 import { CreateProgress } from "@/components/questionnaire/create-progress";
 import { DraftSetupForm } from "@/components/questionnaire/draft-setup-form";
+import { FinalizeForm } from "@/components/questionnaire/finalize-form";
 import { QuestionnaireBuilder } from "@/components/questionnaire/questionnaire-builder";
 import { requireUserId } from "@/lib/supabase/identity";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { getExperienceCopy } from "@/lib/wavelength/experience-copy";
+import {
+  conversationQuestionCount,
+  getConversationExperience,
+  type ConversationExperience,
+} from "@/lib/wavelength/conversation-experiences";
+import { getExperienceCopy, type ExperienceCopy } from "@/lib/wavelength/experience-copy";
+import {
+  numericAnswerRows,
+  standardQuestionRows,
+  writtenAnswerMap,
+} from "@/lib/wavelength/question-rows";
 import { getReadyMadeGame, READY_MADE_GAMES } from "@/lib/wavelength/ready-made-games";
 
 // SEO pass: app/robots.ts already disallows crawling this whole path, but
@@ -91,6 +104,98 @@ function CreateShellIntro({
   );
 }
 
+/**
+ * A's side of a fixed conversation experience (resolvedGame.conversation —
+ * lib/wavelength/conversation-experiences.ts): the same per-game DRAFT
+ * lookup as below, but answered one question at a time in
+ * ConversationStepper instead of QuestionnaireBuilder, so there is no
+ * add/edit/delete/reorder UI at all (and the database rejects those
+ * writes for a fixed set anyway). Finishing hands off to the unchanged
+ * FinalizeForm -> finalize_draft -> share link.
+ */
+async function ConversationCreate({
+  userId,
+  experience,
+  subtitle,
+  copy,
+  backHref,
+}: {
+  userId: string;
+  experience: ConversationExperience;
+  subtitle: string;
+  copy: ExperienceCopy;
+  backHref: string;
+}) {
+  const supabase = await createSupabaseServerClient();
+  const { data: draft } = await supabase
+    .from("wavelengths")
+    .select("id, share_token")
+    .eq("participant_a_id", userId)
+    .eq("state", "DRAFT")
+    .eq("source_game_id", experience.id)
+    .not("fixed_question_count", "is", null)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const [{ data: questions }, { data: answers }] = draft
+    ? await Promise.all([
+        supabase
+          .from("questions")
+          .select("id, text, order_index")
+          .eq("wavelength_id", draft.id)
+          .order("order_index", { ascending: true }),
+        supabase
+          .from("answers")
+          .select("question_id, value")
+          .eq("wavelength_id", draft.id)
+          .eq("participant", "A"),
+      ])
+    : [{ data: null }, { data: null }];
+  const seeded = draft && questions?.length === conversationQuestionCount(experience);
+
+  return (
+    <div className={`${fraunces.variable} ${nunitoSans.variable} wl-create`}>
+      <CreateHeader backHref={backHref} />
+      <main className="create-shell conv-shell">
+        <div className="create-shell__intro">
+          <h1 className="create-shell__heading">{experience.title}</h1>
+          <p className="create-shell__text">{subtitle}</p>
+          <p className="create-shell__description">{copy.builderIntro}</p>
+        </div>
+
+        {seeded ? (
+          <ConversationStepper
+            experience={experience}
+            participant="A"
+            wavelengthId={draft.id}
+            questions={questions}
+            initialAnswers={Object.fromEntries(writtenAnswerMap(answers ?? []))}
+            completionText="Add your name to lock in your answers. You'll get a private link to send to the person you're doing this with — they'll answer the same questions, and you'll only read each other's answers once you've both finished."
+            completion={
+              <FinalizeForm
+                wavelengthId={draft.id}
+                shareToken={draft.share_token}
+                buttonLabel={copy.finalizeButtonLabel}
+              />
+            }
+          />
+        ) : (
+          // No draft yet (e.g. /create?game=… opened directly), or a seed
+          // that didn't complete: the same server action the landing page
+          // CTA submits, which creates or re-seeds this game's draft.
+          <form action={startReadyMadeGame} className="conv-start">
+            <input type="hidden" name="gameId" value={experience.id} />
+            <button type="submit" className="conv-button conv-button--primary">
+              Start the experience <span aria-hidden="true">→</span>
+            </button>
+          </form>
+        )}
+      </main>
+    </div>
+  );
+}
+
 export default async function CreatePage({
   searchParams,
 }: {
@@ -117,6 +222,21 @@ export default async function CreatePage({
       : resolvedGame?.group === "friends"
         ? "/play/friends"
         : "/play";
+
+  const conversation = resolvedGame?.conversation
+    ? getConversationExperience(resolvedGame.id)
+    : undefined;
+  if (conversation) {
+    return (
+      <ConversationCreate
+        userId={userId}
+        experience={conversation}
+        subtitle={subtitle}
+        copy={experienceCopy}
+        backHref={`/play/dating-couples/${conversation.id}`}
+      />
+    );
+  }
 
   // A given account can have more than one concurrent DRAFT (one per
   // ready-made game — see app/actions/ready-made-games.ts). With a `game`
@@ -147,6 +267,8 @@ export default async function CreatePage({
       .select("id, share_token")
       .eq("participant_a_id", userId)
       .eq("state", "DRAFT")
+      // A fixed conversation experience's draft is never "Make Your Own".
+      .is("fixed_question_count", null)
       .order("created_at", { ascending: false })
       .limit(10);
 
@@ -204,8 +326,8 @@ export default async function CreatePage({
         />
         <QuestionnaireBuilder
           wavelength={draft}
-          questions={questions ?? []}
-          answers={answers ?? []}
+          questions={standardQuestionRows(questions ?? [])}
+          answers={numericAnswerRows(answers ?? [])}
           finalizeButtonLabel={experienceCopy.finalizeButtonLabel}
         />
       </main>
