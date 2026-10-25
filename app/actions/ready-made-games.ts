@@ -4,7 +4,81 @@ import { redirect } from "next/navigation";
 
 import { requireUserId } from "@/lib/supabase/identity";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  conversationQuestionCount,
+  conversationQuestionTexts,
+  getConversationExperience,
+  type ConversationExperience,
+} from "@/lib/wavelength/conversation-experiences";
 import { getReadyMadeGame } from "@/lib/wavelength/ready-made-games";
+
+type ServerClient = Awaited<ReturnType<typeof createSupabaseServerClient>>;
+
+/**
+ * Seeds (or resumes) A's draft for a fixed conversation experience
+ * (lib/wavelength/conversation-experiences.ts). Same per-game draft
+ * scoping as below, with two differences:
+ *
+ * - The draft row is inserted with `source_game_id` and
+ *   `fixed_question_count` in the same INSERT (the wavelengths_insert
+ *   policy already allows A to set their own row's columns at creation),
+ *   so the database locks the question set from the very first question
+ *   — no window where the draft is an ordinary, editable one.
+ * - All questions go in as one multi-row INSERT, so seeding is
+ *   all-or-nothing. If that insert ever failed, the draft is left with no
+ *   questions, and the next start simply seeds it again rather than
+ *   resuming an empty draft.
+ */
+async function startConversationExperience(
+  supabase: ServerClient,
+  userId: string,
+  experience: ConversationExperience,
+): Promise<void> {
+  const { data: existing } = await supabase
+    .from("wavelengths")
+    .select("id")
+    .eq("participant_a_id", userId)
+    .eq("state", "DRAFT")
+    .eq("source_game_id", experience.id)
+    .not("fixed_question_count", "is", null)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  let draftId = existing?.id;
+  if (draftId) {
+    const { count } = await supabase
+      .from("questions")
+      .select("id", { count: "exact", head: true })
+      .eq("wavelength_id", draftId);
+    if (count) return;
+  } else {
+    const { data: created, error } = await supabase
+      .from("wavelengths")
+      .insert({
+        participant_a_id: userId,
+        source_game_id: experience.id,
+        fixed_question_count: conversationQuestionCount(experience),
+      })
+      .select("id")
+      .single();
+    if (error || !created) return;
+    draftId = created.id;
+  }
+
+  await supabase.from("questions").insert(
+    conversationQuestionTexts(experience).map((text, index) => ({
+      wavelength_id: draftId,
+      // Required by the schema, never shown for this experience — stages
+      // (by order) are its only grouping.
+      category: "relationship" as const,
+      type: "open" as const,
+      text,
+      options: null,
+      order_index: index,
+    })),
+  );
+}
 
 /**
  * Starts a ready-made game from the landing page's "Pick a game" section.
@@ -29,6 +103,14 @@ import { getReadyMadeGame } from "@/lib/wavelength/ready-made-games";
 export async function startReadyMadeGame(formData: FormData): Promise<void> {
   const gameId = String(formData.get("gameId") ?? "");
   const game = getReadyMadeGame(gameId);
+  const conversation = game?.conversation ? getConversationExperience(game.id) : undefined;
+
+  if (conversation) {
+    const userId = await requireUserId();
+    const supabase = await createSupabaseServerClient();
+    await startConversationExperience(supabase, userId, conversation);
+    redirect(`/create?game=${encodeURIComponent(conversation.id)}`);
+  }
 
   if (!game || !game.questions) {
     redirect("/create");

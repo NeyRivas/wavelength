@@ -2,13 +2,20 @@ import type { Metadata } from "next";
 import { Fraunces, Nunito_Sans } from "next/font/google";
 import { redirect } from "next/navigation";
 
+import { ConversationStepper } from "@/components/conversation/conversation-stepper";
 import { AnswerQuestionCard } from "@/components/questionnaire/answer-question-card";
 import { CreateHeader } from "@/components/questionnaire/create-header";
 import { SubmitFinalForm } from "@/components/wavelength/submit-final-form";
 import { WavelengthLockedNotice } from "@/components/wavelength/wavelength-locked-notice";
 import { requireUserId } from "@/lib/supabase/identity";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getConversationExperience } from "@/lib/wavelength/conversation-experiences";
 import { getExperienceCopy } from "@/lib/wavelength/experience-copy";
+import {
+  numericAnswerRows,
+  standardQuestionRows,
+  writtenAnswerMap,
+} from "@/lib/wavelength/question-rows";
 
 /**
  * Participant B's answering flow (ARCHITECTURE.md §12 Phase 5). Only
@@ -95,7 +102,9 @@ export default async function AnswerPage({ params }: { params: Promise<{ token: 
 
   const { data: wavelength } = await supabase
     .from("wavelengths")
-    .select("id, state, participant_b_id, source_game_id, participant_a_alias")
+    .select(
+      "id, state, participant_b_id, source_game_id, participant_a_alias, fixed_question_count",
+    )
     .eq("share_token", token)
     .maybeSingle();
 
@@ -140,12 +149,53 @@ export default async function AnswerPage({ params }: { params: Promise<{ token: 
       .eq("participant", "B"),
   ]);
 
-  const answerByQuestion = new Map((answers ?? []).map((a) => [a.question_id, a.value]));
-  const questionList = questions ?? [];
-  const answeredCount = questionList.filter((q) => answerByQuestion.has(q.id)).length;
-  const allAnswered = questionList.length > 0 && answeredCount === questionList.length;
   const experienceCopy = getExperienceCopy(wavelength.source_game_id ?? undefined);
   const aliasA = wavelength.participant_a_alias ?? "they";
+
+  // A fixed conversation experience: the same questions, in the same
+  // order, one at a time — saved through saveAnswerB like every other
+  // answer here, then the unchanged SubmitFinalForm.
+  const conversation =
+    wavelength.fixed_question_count !== null
+      ? getConversationExperience(wavelength.source_game_id)
+      : undefined;
+  if (conversation) {
+    return (
+      <div className={`${fraunces.variable} ${nunitoSans.variable} wl-create`}>
+        <CreateHeader />
+        <main className="create-shell answer-shell conv-shell">
+          <div className="create-shell__intro">
+            <h1 className="create-shell__heading">{experienceCopy.answerHeading}</h1>
+            <p className="create-shell__text">{experienceCopy.answerText(aliasA)}</p>
+          </div>
+          <ConversationStepper
+            experience={conversation}
+            participant="B"
+            wavelengthId={wavelength.id}
+            questions={questions ?? []}
+            initialAnswers={Object.fromEntries(writtenAnswerMap(answers ?? []))}
+            completionText={experienceCopy.finalText}
+            completion={
+              <SubmitFinalForm
+                wavelengthId={wavelength.id}
+                shareToken={token}
+                heading="Ready when you are"
+                finalText={`Once you finish, your answers are locked and you'll both be able to read the whole conversation — yours and ${aliasA}'s, side by side.`}
+                buttonLabel="Open our conversation"
+              />
+            }
+          />
+        </main>
+      </div>
+    );
+  }
+
+  const answerByQuestion = new Map(
+    numericAnswerRows(answers ?? []).map((a) => [a.question_id, a.value]),
+  );
+  const questionList = standardQuestionRows(questions ?? []);
+  const answeredCount = questionList.filter((q) => answerByQuestion.has(q.id)).length;
+  const allAnswered = questionList.length > 0 && answeredCount === questionList.length;
 
   return (
     <div className={`${fraunces.variable} ${nunitoSans.variable} wl-create`}>

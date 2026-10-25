@@ -1,0 +1,13 @@
+-- Wavelength — a third question type, `open`, for fixed conversation
+-- experiences ("36 Questions to Fall in Love" — see
+-- lib/wavelength/conversation-experiences.ts). An `open` question has no
+-- options and is answered with the participant's own written text instead
+-- of an option index or a scale value; it is never scored.
+--
+-- Kept in its own migration on purpose: Postgres does not allow a new enum
+-- value to be *used* in the same transaction that adds it, and the next
+-- migration (20261025120100_fixed_conversation_experiences.sql) uses it in
+-- constraints and trigger bodies. `choice` and `scale` are unchanged, and
+-- the standard question builder still only offers those two
+-- (lib/wavelength/categories.ts QUESTION_TYPES).
+alter type question_type add value if not exists 'open';

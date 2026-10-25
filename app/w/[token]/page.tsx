@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Fraunces, Nunito_Sans } from "next/font/google";
 import { redirect } from "next/navigation";
 
+import { ConversationRecord } from "@/components/conversation/conversation-record";
 import { CreateHeader } from "@/components/questionnaire/create-header";
 import { ReadOnlyAnswers } from "@/components/questionnaire/read-only-answers";
 import { InviteIntro } from "@/components/wavelength/invite-intro";
@@ -12,7 +13,16 @@ import { WavelengthInProgressNotice } from "@/components/wavelength/wavelength-i
 import { requireUserId } from "@/lib/supabase/identity";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { absoluteUrl } from "@/lib/wavelength/absolute-url";
+import {
+  getConversationExperience,
+  stagePositionForIndex,
+} from "@/lib/wavelength/conversation-experiences";
 import { getExperienceCopy } from "@/lib/wavelength/experience-copy";
+import {
+  numericAnswerRows,
+  standardQuestionRows,
+  writtenAnswerMap,
+} from "@/lib/wavelength/question-rows";
 
 /**
  * The entry router for a Wavelength link (ARCHITECTURE.md §12 Phase 5).
@@ -84,7 +94,7 @@ export default async function WavelengthPage({
   const { data: wavelength } = await supabase
     .from("wavelengths")
     .select(
-      "id, state, participant_a_id, participant_b_id, participant_a_alias, participant_b_alias, source_game_id",
+      "id, state, participant_a_id, participant_b_id, participant_a_alias, participant_b_alias, source_game_id, fixed_question_count",
     )
     .eq("share_token", token)
     .maybeSingle();
@@ -121,13 +131,61 @@ export default async function WavelengthPage({
         .eq("wavelength_id", wavelength.id)
         .eq("participant", "A"),
     ]);
+    // A fixed conversation experience: A's own written answers, by stage —
+    // still only A's rows (the query above filters to participant A, and
+    // RLS would return nothing of B's before COMPLETED anyway).
+    const conversation =
+      wavelength.fixed_question_count !== null
+        ? getConversationExperience(wavelength.source_game_id)
+        : undefined;
+    if (conversation) {
+      const ownAnswers = writtenAnswerMap(answers ?? []);
+      const stages = conversation.stages.map((stage) => ({
+        stage,
+        entries: (questions ?? [])
+          .map((question, index) => ({ question, index }))
+          .filter(({ index }) => stagePositionForIndex(conversation, index).stage === stage)
+          .map(({ question, index }) => ({
+            id: question.id,
+            number: index + 1,
+            text: question.text,
+            answers: [{ label: "You", text: ownAnswers.get(question.id) ?? null }],
+          })),
+      }));
+      return (
+        <div className={`${fraunces.variable} ${nunitoSans.variable} wl-create`}>
+          <CreateHeader />
+          <main className="create-shell share-shell conv-shell">
+            <ReviewIntro />
+            <ShareView
+              link={link}
+              state={wavelength.state}
+              bAlias={wavelength.participant_b_alias}
+            />
+            <section className="share-answers" aria-labelledby="your-answers-heading">
+              <h2 id="your-answers-heading" className="share-answers__heading">
+                Your answers
+              </h2>
+              <p className="share-answers__text">
+                Only you can see these for now. Once they&apos;ve finished too, you&apos;ll both see
+                every answer side by side.
+              </p>
+              <ConversationRecord stages={stages} />
+            </section>
+          </main>
+        </div>
+      );
+    }
     return (
       <div className={`${fraunces.variable} ${nunitoSans.variable} wl-create`}>
         <CreateHeader />
         <main className="create-shell share-shell">
           <ReviewIntro />
           <ShareView link={link} state={wavelength.state} bAlias={wavelength.participant_b_alias} />
-          <ReadOnlyAnswers questions={questions ?? []} answers={answers ?? []} />
+          <ReadOnlyAnswers
+            questions={standardQuestionRows(questions ?? [])}
+            answers={numericAnswerRows(answers ?? [])}
+          />
         </main>
       </div>
     );

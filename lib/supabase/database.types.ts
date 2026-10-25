@@ -26,7 +26,12 @@ export type WavelengthCategory =
   | "future"
   | "values_priorities";
 
-export type QuestionType = "choice" | "scale";
+/** `open` (written answer, never scored) only ever exists in a fixed
+ * conversation experience — see
+ * supabase/migrations/20261025120100_fixed_conversation_experiences.sql.
+ * The standard builder's own types are lib/wavelength/categories.ts's
+ * QUESTION_TYPES ("choice" | "scale"). */
+export type QuestionType = "choice" | "scale" | "open";
 
 export type ParticipantRole = "A" | "B";
 
@@ -47,6 +52,7 @@ export interface Database {
           in_progress_at: string | null;
           completed_at: string | null;
           source_game_id: string | null;
+          fixed_question_count: number | null;
         };
         // A only ever creates its own DRAFT row directly (an INSERT, not a
         // state transition). Every later mutation goes through the three
@@ -69,6 +75,9 @@ export interface Database {
           in_progress_at?: null;
           completed_at?: null;
           source_game_id?: string | null;
+          // Set only when a fixed conversation experience seeds a brand-new
+          // draft (app/actions/ready-made-games.ts) — locks its question set.
+          fixed_question_count?: number | null;
         };
         // No client-facing Update at all — every post-creation mutation,
         // source_game_id included, goes through one of the RPCs in
@@ -114,7 +123,9 @@ export interface Database {
           wavelength_id: string;
           question_id: string;
           participant: ParticipantRole;
-          value: number;
+          /** Option index (choice), 0/25/50/75/100 (scale), or written
+           * text (open). */
+          value: number | string;
           answered_at: string;
           updated_at: string;
         };
@@ -123,12 +134,12 @@ export interface Database {
           wavelength_id: string;
           question_id: string;
           participant: ParticipantRole;
-          value: number;
+          value: number | string;
           answered_at?: string;
           updated_at?: string;
         };
         Update: Partial<{
-          value: number;
+          value: number | string;
         }>;
         Relationships: [];
       };

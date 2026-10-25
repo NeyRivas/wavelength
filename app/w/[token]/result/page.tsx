@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Fraunces, Nunito_Sans } from "next/font/google";
 import { redirect } from "next/navigation";
 
+import { ConversationResult } from "@/components/conversation/conversation-result";
 import { CreateHeader } from "@/components/questionnaire/create-header";
 import { CreateNewWavelengthCta } from "@/components/result/create-new-wavelength-cta";
 import { FriendshipMemorySummary } from "@/components/result/friendship-memory-summary";
@@ -11,6 +12,12 @@ import { ResultView } from "@/components/result/result-view";
 import { ResultNotAvailableNotice } from "@/components/wavelength/result-not-available-notice";
 import { requireUserId } from "@/lib/supabase/identity";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  buildConversationRecord,
+  ConversationRecordError,
+  getConversationExperience,
+} from "@/lib/wavelength/conversation-experiences";
+import { numericAnswerRows, standardQuestionRows } from "@/lib/wavelength/question-rows";
 import { buildWavelengthResultView, ResultDataError } from "@/lib/wavelength/result";
 import { getReadyMadeGame } from "@/lib/wavelength/ready-made-games";
 
@@ -85,7 +92,7 @@ export default async function ResultPage({ params }: { params: Promise<{ token: 
   const { data: wavelength } = await supabase
     .from("wavelengths")
     .select(
-      "id, state, participant_a_id, participant_b_id, participant_a_alias, participant_b_alias, source_game_id",
+      "id, state, participant_a_id, participant_b_id, participant_a_alias, participant_b_alias, source_game_id, fixed_question_count",
     )
     .eq("share_token", token)
     .maybeSingle();
@@ -122,9 +129,53 @@ export default async function ResultPage({ params }: { params: Promise<{ token: 
       .eq("wavelength_id", wavelength.id),
   ]);
 
+  // Fixed conversation experience: no scoring at all — the shared record
+  // of both participants' written answers, by stage. Branches off before
+  // buildWavelengthResultView, so the scored path below never sees an
+  // `open` question.
+  const conversation =
+    wavelength.fixed_question_count !== null
+      ? getConversationExperience(wavelength.source_game_id)
+      : undefined;
+  if (conversation) {
+    let record;
+    try {
+      record = buildConversationRecord(conversation, questions ?? [], answers ?? []);
+    } catch (err) {
+      if (!(err instanceof ConversationRecordError)) throw err;
+      return (
+        <main>
+          <h1>Something went wrong</h1>
+          <p>
+            We couldn&apos;t put your conversation together right now. Please try again in a moment.
+          </p>
+        </main>
+      );
+    }
+    return (
+      <div className={`${fraunces.variable} ${nunitoSans.variable} wl-create`}>
+        <CreateHeader backHref="/play/dating-couples" />
+        <main className="create-shell result-shell conv-shell">
+          <ResultReveal>
+            <ConversationResult
+              experience={conversation}
+              record={record}
+              aliasA={wavelength.participant_a_alias ?? "Participant A"}
+              aliasB={wavelength.participant_b_alias ?? "Participant B"}
+              viewer={wavelength.participant_a_id === userId ? "A" : "B"}
+            />
+          </ResultReveal>
+        </main>
+      </div>
+    );
+  }
+
   let view;
   try {
-    view = buildWavelengthResultView(questions ?? [], answers ?? []);
+    view = buildWavelengthResultView(
+      standardQuestionRows(questions ?? []),
+      numericAnswerRows(answers ?? []),
+    );
   } catch (err) {
     // Should be unreachable for a genuinely COMPLETED wavelength (the state
     // trigger guarantees every question has both participants' valid

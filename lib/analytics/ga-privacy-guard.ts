@@ -93,6 +93,7 @@ export const PUBLIC_PATHS = [
   "/how-it-works",
   "/play",
   "/play/dating-couples",
+  "/play/dating-couples/36-questions-to-fall-in-love",
   "/play/dating-couples/date-night",
   "/play/dating-couples/getting-to-know-each-other-questions",
   "/play/friends",

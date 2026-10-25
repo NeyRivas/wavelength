@@ -24,16 +24,22 @@ export function SubmitFinalForm({
   wavelengthId,
   shareToken,
   finalText = DEFAULT_FINAL_TEXT,
+  heading = "All set!",
+  buttonLabel = "See our results",
 }: {
   wavelengthId: string;
   shareToken: string;
   finalText?: string;
+  /** Overridden only by the conversation experience, whose ending is a
+   * shared conversation rather than a result. */
+  heading?: string;
+  buttonLabel?: string;
 }) {
   const [state, formAction, pending] = useActionState(submitFinalB, initialActionState);
 
   return (
     <form action={formAction} className="create-finalize">
-      <h2 className="create-finalize__heading">All set!</h2>
+      <h2 className="create-finalize__heading">{heading}</h2>
       <p className="create-finalize__text">{finalText}</p>
 
       <input type="hidden" name="wavelengthId" value={wavelengthId} />
@@ -46,7 +52,7 @@ export function SubmitFinalForm({
       )}
 
       <button type="submit" className="answer-submit-button" disabled={pending}>
-        {pending ? "Submitting…" : "See our results"}
+        {pending ? "Submitting…" : buttonLabel}
       </button>
     </form>
   );
