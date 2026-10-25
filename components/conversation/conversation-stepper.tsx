@@ -118,6 +118,10 @@ export function ConversationStepper({
     formData.set("value", draft);
     try {
       const result = await SAVE_ACTIONS[participant](initialActionState, formData);
+      // No result when the action redirected instead (B saving after the
+      // questionnaire was already completed elsewhere): the router is
+      // already navigating to the result, so there's nothing to show here.
+      if (!result) return false;
       if (result.error) {
         setError(result.error);
         return false;
