@@ -1,45 +1,29 @@
 import type { Metadata } from "next";
 import { Fraunces, Nunito_Sans } from "next/font/google";
-import Link from "next/link";
 
-import { startReadyMadeGame } from "@/app/actions/ready-made-games";
 import { BackLink } from "@/components/landing/back-link";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { LandingHeader } from "@/components/landing/landing-header";
-import { GettingToKnowPreview } from "@/components/play/getting-to-know-preview";
-import { getReadyMadeGame } from "@/lib/wavelength/ready-made-games";
+import { GettingToKnowContent } from "@/components/play/getting-to-know-content";
 
 /**
- * /play/dating-couples/getting-to-know-each-other-questions — a dedicated,
- * public landing page for the "getting-to-know-you" ready-made game
- * (lib/wavelength/ready-made-games.ts), targeting the search intent
- * "getting to know each other questions". Before this page existed, that
- * game had no indexable URL of its own: it only ever appeared as one card
- * on /play/dating-couples (a page scoped to "compatibility quiz for
- * couples"), reachable only by submitting startReadyMadeGame directly —
- * never a page a search result could link to.
+ * /play/dating-couples/getting-to-know-each-other-questions — the single,
+ * integrated experience page for the "getting-to-know-you" ready-made game
+ * (lib/wavelength/ready-made-games.ts): editorial content and direct access
+ * to the existing questionnaire on one URL. The game's catalog card on
+ * /play/dating-couples links here (its only button), the same pattern as
+ * 36 Questions and Date Night; this page's Start buttons submit the
+ * unchanged startReadyMadeGame action with the same gameId the card used to
+ * submit directly, so drafts start and resume exactly as before.
  *
  * Same shell every other /play/dating-couples/* route uses (own font
  * instantiation, shared LandingHeader/LandingFooter/BackLink, .landing
- * landing--internal wrapper, BackLink pointing at the parent listing —
- * see app/play/dating-couples/date-night/page.tsx for the identical
- * pattern one level up).
+ * landing--internal wrapper). The page body lives in GettingToKnowContent.
  *
- * The CTA below submits the exact same server action
- * (app/actions/ready-made-games.ts's startReadyMadeGame) with the same
- * gameId="getting-to-know-you" that the "Getting to know each other" card
- * on /play/dating-couples already submits via GameCard — not a new or
- * parallel flow, the identical one, so a draft started from either place
- * is the same resumable draft (see startReadyMadeGame's own doc comment
- * on per-game draft scoping).
- *
- * Internal-linking pass: one subtle text link back to /play/dating-couples
- * sits below the CTA (not above/beside it, so it never competes with or
- * delays the primary action) — reuses .landing-back-link verbatim (same
- * small, muted, no-background treatment as the BackLink above), not a
- * second button, so a visitor who starts the game never sees it, and one
- * who wants the other couples experiences instead has a clear,
- * low-emphasis way there.
+ * Keyword map (Oct 2026 research): title targets "getting to know you
+ * questions for couples"; the H1 and URL keep "getting to know each other
+ * questions", the phrasing that already earns impressions. The URL and its
+ * canonical are unchanged.
  */
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -56,78 +40,38 @@ const nunitoSans = Nunito_Sans({
   display: "swap",
 });
 
+const PAGE_PATH = "/play/dating-couples/getting-to-know-each-other-questions";
+const PAGE_TITLE = "Getting to Know You Questions for Couples — Sameeeish";
 const PAGE_DESCRIPTION =
-  "Thoughtful getting to know each other questions for new couples, early dates, or anyone who wants to go beyond small talk. Answer together on Sameeeish and see where you align.";
+  "12 getting to know you questions for couples and early dates. Answer on your own, send the link, then see where you match. Free, no sign-up.";
 
 export const metadata: Metadata = {
-  title: "Getting to Know Each Other Questions — Sameeeish",
+  title: PAGE_TITLE,
   description: PAGE_DESCRIPTION,
   alternates: {
-    canonical: "/play/dating-couples/getting-to-know-each-other-questions",
+    canonical: PAGE_PATH,
   },
   openGraph: {
-    title: "Getting to Know Each Other Questions — Sameeeish",
+    title: PAGE_TITLE,
     description: PAGE_DESCRIPTION,
-    url: "/play/dating-couples/getting-to-know-each-other-questions",
+    url: PAGE_PATH,
     siteName: "Sameeeish",
     type: "website",
   },
   twitter: {
     card: "summary",
-    title: "Getting to Know Each Other Questions — Sameeeish",
+    title: PAGE_TITLE,
     description: PAGE_DESCRIPTION,
   },
 };
 
 export default function GettingToKnowEachOtherQuestionsPage() {
-  // Subtitle sourced live from the real game data rather than hardcoded
-  // here a second time — if that ever changes, this page can't drift out
-  // of sync with the actual product (and the card it mirrors on
-  // /play/dating-couples).
-  const game = getReadyMadeGame("getting-to-know-you");
-
   return (
     <div className={`${fraunces.variable} ${nunitoSans.variable} landing landing--internal`}>
       <LandingHeader />
       <main>
         <BackLink href="/play/dating-couples" />
-        <section className="landing-section landing-how gtk-page">
-          <div className="gtk-hero">
-            <h1 className="gtk-hero__title">Getting to Know Each Other Questions</h1>
-            {game?.subtitle && <p className="gtk-hero__subtitle">{game.subtitle}</p>}
-            <div className="gtk-hero__body">
-              <p className="gtk-hero__text">
-                A set of getting to know each other questions made for two — for new couples, early
-                dates, or anyone who wants to go beyond small talk. Each question is a small door
-                into what someone cares about, remembers, and enjoys.
-              </p>
-              <p className="gtk-hero__text">
-                Here&apos;s how it works: you each answer the same questions on your own, then
-                compare your answers together. There&apos;s no score — just an easy way to discover
-                shared interests and values, and spot the differences worth talking about.
-              </p>
-            </div>
-          </div>
-
-          <GettingToKnowPreview />
-
-          <div className="gtk-cta">
-            <form action={startReadyMadeGame}>
-              <input type="hidden" name="gameId" value="getting-to-know-you" />
-              <button
-                type="submit"
-                className="landing-button landing-button--primary landing-button--play"
-              >
-                Start getting to know each other <span aria-hidden="true">→</span>
-              </button>
-            </form>
-            <p className="gtk-cta__more">
-              <Link href="/play/dating-couples" className="landing-back-link">
-                Explore more Dating & Couples experiences
-              </Link>
-            </p>
-          </div>
-        </section>
+        <GettingToKnowContent />
       </main>
       <LandingFooter />
     </div>

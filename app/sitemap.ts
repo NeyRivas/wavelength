@@ -35,7 +35,7 @@ const LAST_MODIFIED = {
   playDatingCouples: new Date("2026-10-25"), // added the "36 Questions to Fall in Love" card
   playFriends: new Date("2026-09-26"),
   dateNight: new Date("2026-10-11"), // server-rendered question preview added (this pass)
-  gettingToKnowEachOther: new Date("2026-10-12"), // new dedicated landing page (this pass)
+  gettingToKnowEachOther: new Date("2026-10-26"), // rebuilt as the integrated experience page
   thirtySixQuestions: new Date("2026-10-25"), // new conversation experience landing page
 } as const;
 

@@ -48,11 +48,13 @@ export interface ReadyMadeGame {
   /** `null` = card is shown on the landing page but not wired up yet
    * (unless `href` is set — see below). */
   questions: ReadyMadeQuestion[] | null;
-  /** Optional: when set, this card is plain navigation to a standalone
+  /** Optional: when set, this card is plain navigation to the
+   * experience's own page instead of seeding a questionnaire draft via
+   * startReadyMadeGame from the card itself — either a standalone
    * experience (e.g. Date Night's conversation-starter library,
-   * app/play/dating-couples/date-night) instead of seeding a
-   * questionnaire draft via startReadyMadeGame. Takes priority over
-   * `questions`/`playable` in GameCard. */
+   * app/play/dating-couples/date-night) or an experience page whose own
+   * Start button submits startReadyMadeGame (36 Questions, Getting to know
+   * each other). Takes priority over `questions`/`playable` in GameCard. */
   href?: string;
   /** Opt-in: how app/w/[token]/result/page.tsx should interpret this
    * game's finished answers. Omitted (the default) = the existing
@@ -75,8 +77,9 @@ export interface ReadyMadeGame {
    * the same card — same `{ label, href }` shape as WayToPlay's own
    * `secondary` (components/landing/ways-to-play-modes.tsx), same reason:
    * a genuine second destination that isn't the primary CTA's game
-   * itself. Omitted for every game but "getting-to-know-you", which links
-   * to its own dedicated SEO preview page. */
+   * itself. Not set on any game at the moment ("getting-to-know-you" used
+   * it for a "More" link until its card started linking to its experience
+   * page via `href`); GameCard still supports it. */
   secondary?: { label: string; href: string };
   /** Opt-in: this game is a fixed conversation experience
    * (lib/wavelength/conversation-experiences.ts, keyed by this same id) —
@@ -243,12 +246,11 @@ const COMPATIBILITY_QUIZ_QUESTIONS: ReadyMadeQuestion[] = [
  * (everyday moments), `relationship` (shared/social experiences), and
  * `adventures_travel` (things to try or revisit).
  *
- * Exported (SEO pass) so the public preview on
- * app/play/dating-couples/getting-to-know-each-other-questions reads a
- * real sample of this same array directly — same reasoning as
- * lib/date-night/questions.ts's DATE_NIGHT_QUESTIONS export: one source
- * of truth for both the actual game and its public preview, never a
- * second, separately-maintained copy.
+ * Exported so the public experience page
+ * (components/play/getting-to-know-content.tsx) renders every question of
+ * this same array directly — same reasoning as lib/date-night/questions.ts's
+ * DATE_NIGHT_QUESTIONS export: one source of truth for both the actual game
+ * and its public page, never a second, separately-maintained copy.
  */
 export const GETTING_TO_KNOW_EACH_OTHER_QUESTIONS: ReadyMadeQuestion[] = [
   {
@@ -611,10 +613,9 @@ export const READY_MADE_GAMES: ReadyMadeGame[] = [
     builderSubtitle: "A conversation quiz to discover more about each other.",
     group: "dating-couples",
     questions: GETTING_TO_KNOW_EACH_OTHER_QUESTIONS,
-    secondary: {
-      label: "More",
-      href: "/play/dating-couples/getting-to-know-each-other-questions",
-    },
+    // The card leads to the experience page, whose Start buttons start it
+    // (startReadyMadeGame, unchanged — it still seeds from `questions`).
+    href: "/play/dating-couples/getting-to-know-each-other-questions",
   },
   {
     id: "date-night",

@@ -42,12 +42,17 @@ describe("Dating & Couples catalog cards", () => {
     expect(startsGame(html, "how-well-do-you-know-each-other")).toBe(1);
   });
 
-  it("“Getting to know each other” starts the game directly and links to its page via “More”", async () => {
+  it("“Getting to know each other” opens its experience page through a single card link", async () => {
     const html = await renderCatalog("dating-couples");
-    expect(startsGame(html, "getting-to-know-you")).toBe(1);
-    expect(html).toContain(
-      '<a class="game-card__more" href="/play/dating-couples/getting-to-know-each-other-questions">More</a>',
+    expect(startsGame(html, "getting-to-know-you")).toBe(0);
+    expect(html).toMatch(
+      /<a class="landing-card game-card[^"]*" href="\/play\/dating-couples\/getting-to-know-each-other-questions">/,
     );
+    expect(
+      html.match(/href="\/play\/dating-couples\/getting-to-know-each-other-questions"/g),
+    ).toHaveLength(1);
+    expect(html).not.toContain("game-card__more");
+    expect(html).not.toMatch(/>More</);
   });
 
   it("“Date Night” opens its own page", async () => {

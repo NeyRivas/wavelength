@@ -6954,121 +6954,169 @@ dialog::backdrop {
 /* ═══════════════════════════════════════════════════════════════════════
    /play/dating-couples/getting-to-know-each-other-questions
    ═══════════════════════════════════════════════════════════════════════
-   New, page-scoped classes rather than reusing .dn-hero/.dn-browse
-   directly — those names are Date Night's own (per their doc comments,
-   deliberately scoped to that one page), so this mirrors their exact
-   property values instead of cross-referencing them, keeping each
-   page's styling independently named per this file's existing
-   convention (.fc-*, .wtp-*, .dn-*). */
+   The integrated experience page (components/play/getting-to-know-content.tsx).
+   Same structure as the approved 36 Questions page, so these page-scoped
+   .gtk-* classes mirror .tsq-*'s values rather than reusing its names —
+   each page's styling stays independently named per this file's
+   convention (.fc-*, .wtp-*, .dn-*, .tsq-*), and a change to one page can
+   never restyle the other. */
 
 .gtk-page {
   display: flex;
   flex-direction: column;
-  gap: 2.5rem;
+  gap: clamp(2.5rem, 6vw, 3.5rem);
+  max-width: 48rem;
 }
 
 .gtk-hero {
+  position: relative;
   text-align: center;
 }
 
-.gtk-hero__title {
-  margin: 0 0 0.375rem;
-  font-family: var(--font-fraunces), serif;
-  font-style: italic;
-  font-weight: 500;
-  font-size: clamp(2.25rem, 4.5vw, 3.25rem);
-  line-height: 1.1;
-  color: var(--wl-ink);
+.gtk-hero__shapes {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
 }
 
-.gtk-hero__subtitle {
-  margin: 0 0 1.25rem;
-  font-family: var(--font-nunito), system-ui, sans-serif;
-  font-weight: 700;
+.gtk-hero__shape {
+  position: absolute;
+  border-radius: 50%;
+}
+
+.gtk-hero__shape--blue {
+  width: 12rem;
+  height: 12rem;
+  top: -3rem;
+  left: -2rem;
+  background: var(--wl-blue);
+  opacity: 0.35;
+}
+
+.gtk-hero__shape--mint {
+  width: 10rem;
+  height: 10rem;
+  top: 2rem;
+  right: -2rem;
+  background: var(--wl-mint);
+  opacity: 0.35;
+}
+
+.gtk-hero__content {
+  position: relative;
+  z-index: 1;
+}
+
+.gtk-hero__eyebrow {
+  margin: 0 0 0.75rem;
   font-size: 0.8125rem;
+  font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--wl-muted);
 }
 
-.gtk-hero__body {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin: 0 auto;
-  max-width: 34rem;
-}
-
-.gtk-hero__text {
-  margin: 0;
-  font-size: 1.0625rem;
-  line-height: 1.6;
-  color: var(--wl-muted);
-}
-
-.gtk-browse {
-  max-width: 36rem;
-  margin: 0 auto;
-  width: 100%;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--color-border);
-}
-
-.gtk-browse__heading {
-  margin: 0 0 0.25rem;
-  font-family: var(--font-nunito), system-ui, sans-serif;
-  font-weight: 700;
-  font-size: 0.9375rem;
+.gtk-hero__title {
+  margin: 0 0 1.25rem;
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(2.25rem, 5vw, 3.5rem);
+  line-height: 1.1;
   color: var(--wl-ink);
 }
 
-.gtk-browse__subtitle {
-  margin: 0 0 1.25rem;
+.gtk-hero__text {
+  margin: 0 auto;
+  max-width: 34rem;
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  color: var(--wl-muted);
+}
+
+.gtk-hero__cta {
+  margin-top: 2rem;
+}
+
+.gtk-hero__note {
+  margin: 0.75rem 0 0;
   font-size: 0.8125rem;
   color: var(--wl-muted);
 }
 
-.gtk-browse-group {
-  margin-bottom: 1.5rem;
-}
-
-.gtk-browse-group:last-child {
-  margin-bottom: 0;
-}
-
-.gtk-browse-group__heading {
-  margin: 0 0 0.5rem;
-}
-
-.gtk-browse-group__pill {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.25rem 0.75rem;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+.gtk-section__heading {
+  margin: 0 0 1rem;
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(1.625rem, 3.5vw, 2.125rem);
   color: var(--wl-ink);
 }
 
-.gtk-browse-group__pill--lavender {
-  background: color-mix(in srgb, var(--wl-lavender) 55%, white);
+.gtk-section__text {
+  margin: 0 0 1rem;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--wl-muted);
 }
 
-.gtk-browse-group__pill--blue {
-  background: color-mix(in srgb, var(--wl-blue) 55%, white);
+.gtk-inline-link {
+  font-weight: 700;
+  color: var(--wl-ink);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
 }
 
-.gtk-browse-group__pill--pink {
-  background: color-mix(in srgb, var(--wl-pink) 55%, white);
+.gtk-inline-link:focus-visible {
+  outline: 2px solid var(--wl-ink);
+  outline-offset: 2px;
 }
 
-.gtk-browse-group__pill--mint {
-  background: color-mix(in srgb, var(--wl-mint) 55%, white);
+.gtk-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.gtk-browse-group__list {
+.gtk-step {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.gtk-step__number,
+.gtk-question__number {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--wl-blue) 60%, white);
+  font-weight: 800;
+}
+
+.gtk-step__title {
+  margin: 0.25rem 0 0.25rem;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--wl-ink);
+}
+
+.gtk-step__text {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--wl-muted);
+}
+
+/* All 12 questions, in game order, each with its category and its own
+   answer choices tucked into a <details> (still server-rendered). */
+.gtk-questions {
   display: flex;
   flex-direction: column;
   margin: 0;
@@ -7076,26 +7124,265 @@ dialog::backdrop {
   list-style: none;
 }
 
-.gtk-browse-item {
-  padding: 0.625rem 0.125rem;
+.gtk-question {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  padding: 1rem 0;
   border-bottom: 1px solid var(--color-border);
-  font-family: var(--font-nunito), system-ui, sans-serif;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--wl-ink);
-  text-align: left;
 }
 
-.gtk-browse-group__list li.gtk-browse-item:last-child {
+.gtk-question:last-child {
   border-bottom: none;
 }
 
+.gtk-question__body {
+  min-width: 0;
+}
+
+.gtk-question__pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--wl-ink);
+}
+
+.gtk-question__pill--lavender {
+  background: color-mix(in srgb, var(--wl-lavender) 55%, white);
+}
+
+.gtk-question__pill--blue {
+  background: color-mix(in srgb, var(--wl-blue) 55%, white);
+}
+
+.gtk-question__pill--pink {
+  background: color-mix(in srgb, var(--wl-pink) 55%, white);
+}
+
+.gtk-question__pill--mint {
+  background: color-mix(in srgb, var(--wl-mint) 55%, white);
+}
+
+.gtk-question__text {
+  margin: 0.5rem 0 0;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--wl-ink);
+}
+
+.gtk-question__summary {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--wl-muted);
+  cursor: pointer;
+}
+
+.gtk-question__summary:focus-visible {
+  outline: 2px solid var(--wl-ink);
+  outline-offset: 2px;
+}
+
+.gtk-question__options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  margin: 0.25rem 0 0;
+  padding-left: 1.25rem;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--wl-muted);
+}
+
+.gtk-points {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+  gap: 1rem;
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style: none;
+}
+
+.gtk-points--pairs {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 40rem) {
+  .gtk-points--pairs {
+    grid-template-columns: 1fr;
+  }
+}
+
+.gtk-point {
+  padding: 1.25rem;
+  border-radius: 1.25rem;
+  background: color-mix(in srgb, var(--wl-blue) 22%, white);
+}
+
+.gtk-point__title {
+  margin: 0 0 0.375rem;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--wl-ink);
+}
+
+.gtk-point__text {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--wl-muted);
+}
+
 .gtk-cta {
+  padding: clamp(2rem, 6vw, 3rem) 1.5rem;
+  border-radius: 1.5rem;
+  background: var(--wl-ink);
+  color: #ffffff;
   text-align: center;
 }
 
-.gtk-cta__more {
-  margin: 0.75rem 0 0;
+.gtk-cta__heading {
+  margin: 0 0 0.75rem;
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(1.75rem, 4vw, 2.25rem);
+}
+
+.gtk-cta__text {
+  margin: 0 auto 1.5rem;
+  max-width: 28rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+/* "More for the two of you" — same card language as .tsq-related__*,
+   without the illustrations. */
+.gtk-related__list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.gtk-related__card--lavender {
+  --tone: var(--wl-lavender);
+  --accent: var(--wl-blue);
+}
+
+.gtk-related__card--peach {
+  --tone: var(--wl-peach);
+  --accent: var(--wl-pink);
+}
+
+.gtk-related__card--mint {
+  --tone: var(--wl-mint);
+  --accent: var(--wl-blue);
+}
+
+.gtk-related__card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 1.5rem;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--tone) 70%, white);
+  border-radius: 1.5rem;
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--tone) 55%, white) 0%,
+    color-mix(in srgb, var(--tone) 18%, white) 70%,
+    #ffffff 100%
+  );
+  color: var(--wl-ink);
+  text-decoration: none;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.gtk-related__card:focus-visible {
+  outline: 2px solid var(--wl-ink);
+  outline-offset: 3px;
+}
+
+.gtk-related__eyebrow {
+  margin-bottom: 0.375rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--wl-ink) 70%, white);
+}
+
+.gtk-related__title {
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 1.375rem;
+  line-height: 1.25;
+}
+
+.gtk-related__text {
+  margin: 0.5rem 0 1.25rem;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: color-mix(in srgb, var(--wl-ink) 78%, white);
+}
+
+.gtk-related__go {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 0.375rem;
+  margin-top: auto;
+  padding: 0.4375rem 0.875rem;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 80%, white);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.gtk-related__go [aria-hidden="true"] {
+  transition: transform 0.25s ease;
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .gtk-related__card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 18px 36px -24px rgba(24, 24, 32, 0.35);
+  }
+
+  .gtk-related__card:hover .gtk-related__go [aria-hidden="true"] {
+    transform: translateX(3px);
+  }
+}
+
+@media (max-width: 56rem) {
+  .gtk-related__list {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .gtk-related__card {
+    padding: 1.25rem;
+  }
+
+  .gtk-related__title {
+    font-size: 1.1875rem;
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
