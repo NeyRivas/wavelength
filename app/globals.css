@@ -8029,51 +8029,205 @@ dialog::backdrop {
   color: rgba(255, 255, 255, 0.78);
 }
 
+/* "More for the two of you" — three art-directed cards. Each card sets
+   its own --tone (soft wash, border, corner glow) and --accent (the
+   Explore pill), all from the approved palette; layout, type, and motion
+   are shared so the three read as one collection. */
 .tsq-related__list {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem;
+  gap: 1.25rem;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.tsq-related__link {
+.tsq-related__card--lavender {
+  --tone: var(--wl-lavender);
+  --accent: var(--wl-blue);
+}
+
+.tsq-related__card--peach {
+  --tone: var(--wl-peach);
+  --accent: var(--wl-pink);
+}
+
+.tsq-related__card--mint {
+  --tone: var(--wl-mint);
+  --accent: var(--wl-blue);
+}
+
+.tsq-related__card {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 0.375rem;
+  gap: 1.25rem;
   height: 100%;
-  padding: 1.25rem;
-  border: 1px solid var(--color-border);
-  border-radius: 1rem;
-  background: #ffffff;
+  padding: 1.5rem;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--tone) 70%, white);
+  border-radius: 1.5rem;
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--tone) 55%, white) 0%,
+    color-mix(in srgb, var(--tone) 18%, white) 70%,
+    #ffffff 100%
+  );
   color: var(--wl-ink);
   text-decoration: none;
-  transition: border-color 0.2s ease;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
 }
 
-.tsq-related__link:hover {
-  border-color: var(--wl-lavender);
+/* One soft, blurred glow tucked into the top-right corner. */
+.tsq-related__card::after {
+  content: "";
+  position: absolute;
+  top: -2.5rem;
+  right: -2.5rem;
+  width: 8rem;
+  height: 8rem;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0.35;
+  filter: blur(18px);
+  pointer-events: none;
+  transition: transform 0.4s ease;
 }
 
-.tsq-related__link:focus-visible {
+.tsq-related__card:focus-visible {
   outline: 2px solid var(--wl-ink);
-  outline-offset: 2px;
+  outline-offset: 3px;
+}
+
+.tsq-related__art {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 5.5rem;
+  height: 4rem;
+  border-radius: 1.125rem;
+  background: rgba(255, 255, 255, 0.6);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.8);
+}
+
+.tsq-related__art svg {
+  width: 4.5rem;
+  height: auto;
+}
+
+.tsq-related__body {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.tsq-related__eyebrow {
+  margin-bottom: 0.375rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--wl-ink) 70%, white);
 }
 
 .tsq-related__title {
-  font-weight: 800;
-  font-size: 0.9375rem;
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 1.375rem;
+  line-height: 1.25;
 }
 
+/* The bottom margin keeps the Explore pill clear of the text; the pill's
+   own margin-top: auto then pins it to the bottom so all three line up. */
 .tsq-related__text {
-  font-size: 0.875rem;
-  line-height: 1.5;
-  color: var(--wl-muted);
+  margin: 0.5rem 0 1.25rem;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: color-mix(in srgb, var(--wl-ink) 78%, white);
 }
 
+.tsq-related__go {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 0.375rem;
+  margin-top: auto;
+  padding: 0.4375rem 0.875rem;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 80%, white);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.tsq-related__go [aria-hidden="true"] {
+  transition: transform 0.25s ease;
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .tsq-related__card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 18px 36px -24px rgba(24, 24, 32, 0.35);
+  }
+
+  .tsq-related__card:hover::after {
+    transform: translate(-0.5rem, 0.5rem) scale(1.1);
+  }
+
+  .tsq-related__card:hover .tsq-related__go [aria-hidden="true"] {
+    transform: translateX(3px);
+  }
+}
+
+/* Phones and tablets: one column, and each card turns sideways — the
+   illustration on the left, text on the right — so all three fit
+   comfortably without three tall stacked panels. */
 @media (max-width: 56rem) {
   .tsq-related__list {
     grid-template-columns: 1fr;
+    gap: 1rem;
   }
+
+  .tsq-related__card {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.25rem;
+  }
+
+  .tsq-related__art {
+    flex-shrink: 0;
+    width: 4.25rem;
+    height: 3.5rem;
+    border-radius: 1rem;
+  }
+
+  .tsq-related__art svg {
+    width: 3.5rem;
+  }
+
+  .tsq-related__title {
+    font-size: 1.1875rem;
+  }
+
+  .tsq-related__text {
+    margin-bottom: 1rem;
+  }
+}
+
+/* ── B's invitation (app/w/[token]) — the same experience page below it.
+   ThirtySixQuestionsContent renders with its own landing classes; this
+   only separates it from the invitation above with a soft divider. */
+.tsq-embed {
+  position: relative;
+  z-index: 1;
+  border-top: 1px solid var(--color-border);
+  background: #ffffff;
 }
