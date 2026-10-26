@@ -3,6 +3,7 @@ import { Fraunces, Nunito_Sans } from "next/font/google";
 import { redirect } from "next/navigation";
 
 import { ConversationRecord } from "@/components/conversation/conversation-record";
+import { ThirtySixQuestionsContent } from "@/components/conversation/thirty-six-questions-content";
 import { CreateHeader } from "@/components/questionnaire/create-header";
 import { ReadOnlyAnswers } from "@/components/questionnaire/read-only-answers";
 import { InviteIntro } from "@/components/wavelength/invite-intro";
@@ -16,6 +17,7 @@ import { absoluteUrl } from "@/lib/wavelength/absolute-url";
 import {
   getConversationExperience,
   stagePositionForIndex,
+  THIRTY_SIX_QUESTIONS,
 } from "@/lib/wavelength/conversation-experiences";
 import { getExperienceCopy } from "@/lib/wavelength/experience-copy";
 import {
@@ -235,6 +237,17 @@ export default async function WavelengthPage({
         <InviteIntro aAlias={preview.participant_a_alias} copy={inviteCopy} />
         <JoinForm token={token} />
       </main>
+      {/* "36 Questions to Fall in Love": the same experience page A saw
+          before starting, below the unchanged invitation. Static public
+          content only (no questionnaire data); its CTAs only lead back up
+          to the invitation. Keyed off the same decorative `?game=` hint
+          as the invite copy above, so a link without it simply shows the
+          invitation alone, as before. */}
+      {gameId === THIRTY_SIX_QUESTIONS.id && (
+        <div className="tsq-embed">
+          <ThirtySixQuestionsContent context="invite" />
+        </div>
+      )}
     </div>
   );
 }
