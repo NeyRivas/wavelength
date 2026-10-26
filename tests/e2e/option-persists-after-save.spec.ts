@@ -34,8 +34,11 @@ import { expect, test } from "@playwright/test";
 test("a typed answer option survives its own auto-save, without a reload, and 'Your answer' keeps working", async ({
   page,
 }) => {
-  await page.goto("/play/friends");
-  await page.getByRole("button", { name: /How Well Do You Know Me\?/ }).click();
+  await page.goto("/play/friends/how-well-do-you-know-me");
+  await page
+    .getByRole("button", { name: /Make your quiz/ })
+    .first()
+    .click();
 
   const firstQuestionText = "What's a song that will instantly make me think of a specific memory?";
   const card = page.getByRole("article", { name: `Question: ${firstQuestionText}` });

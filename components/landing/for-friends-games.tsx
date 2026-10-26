@@ -18,8 +18,7 @@ const BLOB_CLASS_BY_GAME_ID: Record<string, string> = {
  * invented for this page. Reuses the exact .landing-card-grid/
  * .landing-card primitives every other 2-or-3-item grid in the app
  * already uses (WaysToPlayModes, ForCouplesSummary), with the same
- * lavender/peach blob tints GameCategorySection's own BLOBS_BY_GROUP
- * already assigns to these two games on /play/friends.
+ * lavender/peach blob tints these two games have always used.
  *
  * Each card links to its game's experience page (the game's `href`), so
  * this informational page leads straight to both games.

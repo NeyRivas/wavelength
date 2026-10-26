@@ -31,7 +31,7 @@ const LAST_MODIFIED = {
   privacy: new Date("2026-10-09"),
   terms: new Date("2026-10-09"),
   contact: new Date("2026-10-09"),
-  play: new Date("2026-10-03"),
+  play: new Date("2026-10-26"), // unified game catalog: every experience on one page
   playDatingCouples: new Date("2026-10-26"), // retitled "Couples Games & Questions"; cards link to experience pages
   playFriends: new Date("2026-10-26"), // retitled "Friendship Quizzes & Games"; cards link to experience pages
   dateNight: new Date("2026-10-26"), // H1/title, editorial guide below the deck

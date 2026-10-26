@@ -5,7 +5,7 @@ import { questionCard } from "./utils/wavelength";
 
 /**
  * The "Getting to know each other" journey after its catalog card became a
- * single link to the integrated experience page: Couples catalog card →
+ * single link to the integrated experience page: /play catalog card →
  * experience page → Start → A's own draft on /create, seeded with the
  * game's exact 12 questions, in order. Starting again from the page
  * resumes the same draft rather than creating a second one.
@@ -18,8 +18,8 @@ const PAGE_PATH = "/play/dating-couples/getting-to-know-each-other-questions";
 test("the catalog card opens the experience page, and Start seeds the 12 questions", async ({
   page,
 }) => {
-  await page.goto("/play/dating-couples");
-  await page.getByRole("link", { name: /Getting to know each other/ }).click();
+  await page.goto("/play");
+  await page.getByRole("link", { name: /Getting to Know Each Other/ }).click();
   await expect(page).toHaveURL(PAGE_PATH);
   await expect(
     page.getByRole("heading", { level: 1, name: "Getting to Know Each Other Questions" }),

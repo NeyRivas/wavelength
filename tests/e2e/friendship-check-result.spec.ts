@@ -48,8 +48,11 @@ test("Friendship Check's result shows the memory count exactly once, with no ani
   page,
   browser,
 }) => {
-  await page.goto("/play/friends");
-  await page.getByRole("button", { name: /Friendship Check/ }).click();
+  await page.goto("/play/friends/friendship-test");
+  await page
+    .getByRole("button", { name: /Make your friendship test/ })
+    .first()
+    .click();
   await expect(page.getByRole("heading", { name: "Build your questionnaire" })).toBeVisible();
 
   for (const text of FRIENDSHIP_CHECK_QUESTIONS) {

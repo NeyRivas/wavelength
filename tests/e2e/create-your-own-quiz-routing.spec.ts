@@ -27,7 +27,7 @@ import {
  * - CreateNewWavelengthAction (B's "Nice try!" locked page)
  *
  * The one CTA that genuinely means "build my own questionnaire" —
- * /play's own "Make Your Own" card — still goes straight to `/create`,
+ * /play's own Make Your Own card ("Create your game") — still goes straight to `/create`,
  * checked here too so the two don't get conflated.
  */
 
@@ -57,7 +57,7 @@ async function buildAndClaimAWavelength(
   return { shareLink, bContext, bPage };
 }
 
-test("a third party on an already-claimed link gets 'Create your own quiz' pointing at /play, which shows all three experiences", async ({
+test("a third party on an already-claimed link gets 'Create your own quiz' pointing at /play, which shows all three catalog sections", async ({
   page,
   browser,
 }) => {
@@ -78,9 +78,13 @@ test("a third party on an already-claimed link gets 'Create your own quiz' point
   await strangerPage.getByRole("link", { name: "Create your own quiz" }).click();
   await expect(strangerPage).toHaveURL(/\/play$/);
   await expect(strangerPage.getByRole("heading", { name: "What are you playing?" })).toBeVisible();
-  await expect(strangerPage.getByRole("link", { name: "Dating & Couples" })).toBeVisible();
-  await expect(strangerPage.getByRole("link", { name: "Friends" })).toBeVisible();
-  await expect(strangerPage.getByRole("link", { name: "Make Your Own" })).toBeVisible();
+  await expect(
+    strangerPage.getByRole("heading", { level: 2, name: "Couples Games & Questions" }),
+  ).toBeVisible();
+  await expect(
+    strangerPage.getByRole("heading", { level: 2, name: "Friendship Quizzes & Games" }),
+  ).toBeVisible();
+  await expect(strangerPage.getByRole("link", { name: /Create your game/ })).toBeVisible();
 
   await strangerContext.close();
   await bContext.close();
@@ -113,9 +117,9 @@ test("B's 'Nice try!' locked page sends 'Create your own quiz' to /play, not str
   await bContext.close();
 });
 
-test("/play's own 'Make Your Own' card still goes straight to /create", async ({ page }) => {
+test("/play's own Make Your Own card still goes straight to /create", async ({ page }) => {
   await page.goto("/play");
-  await page.getByRole("link", { name: "Make Your Own" }).click();
+  await page.getByRole("link", { name: /Create your game/ }).click();
   await expect(page).toHaveURL(/\/create$/);
   await expect(page.getByRole("heading", { name: "Make Your Own" })).toBeVisible();
 });
