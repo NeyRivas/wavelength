@@ -7,35 +7,19 @@ import { LandingHeader } from "@/components/landing/landing-header";
 import { GameCategorySection } from "@/components/play/game-category-section";
 
 // /play/dating-couples — one of /play's two category screens (see
-// app/play/page.tsx). "36 Questions to Fall in Love" (a fixed conversation
-// experience) links to its own public landing page, whose CTA starts it.
-// The other three cards are wired up
-// (lib/wavelength/ready-made-games.ts): "Are we on the same page?" and
-// "Getting to know each other" seed a questionnaire draft, while "Date
-// Night" is plain navigation to its own standalone experience
-// (app/play/dating-couples/date-night) rather than a questionnaire.
+// app/play/page.tsx). Every card links to its experience's own page (one
+// clear action per card, lib/wavelength/ready-made-games.ts's `href`):
+// "Are we on the same page?" → the couples compatibility test page,
+// "Getting to know each other" and "36 Questions to Fall in Love" → their
+// experience pages, whose Start buttons start the game, and "Date Night" →
+// its standalone conversation-starter deck.
 //
-// SEO pass: heading/intro reworked around this page's primary search
-// intent, "compatibility quiz for couples" — "Compatibility Quiz" is
-// already this page's own established vocabulary (the "Are we on the
-// same page?" card's `subtitle` in ready-made-games.ts), not an invented
-// term. The intro below stays accurate to what the page actually offers
-// (three cards, not one): it leads with the compatibility quiz, states
-// plainly that it's a conversation starter rather than a scientific
-// assessment (matching the existing FAQ answer to "Is this a
-// compatibility test?"), and still names the other two games so the copy
-// doesn't overclaim the page's scope. GameCategorySection itself
-// (shared with /play/friends) is untouched — only this page's own
-// `heading`/`text` props changed.
-//
-// UX pass: a contextual link to the new dedicated
-// /play/dating-couples/getting-to-know-each-other-questions landing page
-// was briefly added below the three cards, then removed — it duplicated
-// the "Getting to know each other" card immediately above it and added
-// an extra step to an already-working gameplay path for no real benefit.
-// That SEO page stays public, indexed, and linked from the sitemap; it
-// just isn't inserted into this page's own flow. The "Getting to know
-// each other" card still submits startReadyMadeGame directly, unchanged.
+// SEO (Oct 2026 keyword map): positioned as the catalog, around "couples
+// games & questions". It used to carry "compatibility quiz for couples",
+// which now belongs to /play/dating-couples/couples-compatibility-test, so
+// the two pages don't compete. "Questions for couples" stays with
+// /for-couples. GameCategorySection itself (shared with /play/friends) is
+// untouched — only this page's own metadata and heading/text props.
 const fraunces = Fraunces({
   subsets: ["latin"],
   style: ["italic"],
@@ -51,27 +35,18 @@ const nunitoSans = Nunito_Sans({
   display: "swap",
 });
 
-// SEO pass: title/description reworked around this page's primary search
-// intent, "compatibility quiz for couples" (see the doc comment above).
-// Description still names all three real games this page hosts
-// (lib/wavelength/ready-made-games.ts: "Are we on the same page?"
-// subtitled "Compatibility Quiz", "Getting to know each other", and
-// "Date Night") — leading with the quiz, not replacing the other two,
-// since the page genuinely offers all three. Distinct from /ways-to-play
-// (title "Ways to Play — Sameeeish", H1 "Ways to play"): that page is a
-// parent picker between couples/friends, this one is the couples
-// experience itself.
+const PAGE_TITLE = "Couples Games & Questions — Sameeeish";
 const PAGE_DESCRIPTION =
-  "A compatibility quiz for couples, plus a getting-to-know-you conversation game and date night questions — all for the two of you.";
+  "Games and questions for couples: a compatibility test, getting to know you questions, 36 questions to fall in love, and date night questions. Free, no sign-up.";
 
 export const metadata: Metadata = {
-  title: "Compatibility Quiz for Couples — Sameeeish",
+  title: PAGE_TITLE,
   description: PAGE_DESCRIPTION,
   alternates: {
     canonical: "/play/dating-couples",
   },
   openGraph: {
-    title: "Compatibility Quiz for Couples — Sameeeish",
+    title: PAGE_TITLE,
     description: PAGE_DESCRIPTION,
     url: "/play/dating-couples",
     siteName: "Sameeeish",
@@ -79,7 +54,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary",
-    title: "Compatibility Quiz for Couples — Sameeeish",
+    title: PAGE_TITLE,
     description: PAGE_DESCRIPTION,
   },
 };
@@ -92,8 +67,8 @@ export default function DatingCouplesPlayPage() {
         <BackLink href="/play" />
         <GameCategorySection
           group="dating-couples"
-          heading="A Compatibility Quiz for Couples"
-          text="Answer the same questions on your own, then compare notes together. It's not a science — just a quick, honest way to see where you align, where you see things differently, and what's worth talking about. This page also has a getting-to-know-you conversation game, 36 questions to fall in love, and a set of date night questions, if you'd rather start there."
+          heading="Couples Games & Questions"
+          text="Four ways to learn something new about each other. See where you're aligned on the big topics, get to know each other a little better, go deeper with 36 questions, or pick a date night question and see where it goes."
         />
       </main>
       <LandingFooter />

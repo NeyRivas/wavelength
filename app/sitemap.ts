@@ -5,11 +5,11 @@ const BASE_URL = "https://sameeeish.com";
 /**
  * Only the approved, canonical marketing pages — no questionnaire
  * tokens, results, or other dynamic app routes (see app/robots.ts for the
- * matching disallow + noindex on those). Includes /play and its four
- * subroutes — real, indexable content (the actual "Let's play"/"Start
- * playing" destination, plus Dating & Couples, Friends, Date Night, and
- * the dedicated "getting to know each other questions" landing page) —
- * and both category informational pages, /for-couples and /for-friends.
+ * matching disallow + noindex on those). Includes /play, its two
+ * category screens, and every experience page under them (Date Night, 36
+ * Questions, and the integrated pages for each ready-made game) — real,
+ * indexable content — and both category informational pages,
+ * /for-couples and /for-friends.
  *
  * `lastModified` dates are static, not `new Date()` recomputed on every
  * build/request — a sitemap that claims every page changed "right now"
@@ -25,18 +25,21 @@ const LAST_MODIFIED = {
   howItWorks: new Date("2026-09-26"),
   waysToPlay: new Date("2026-10-12"), // Friends card's secondary button, removed redundant paragraph (this pass)
   forCouples: new Date("2026-10-11"), // title/description reworked (this pass)
-  forFriends: new Date("2026-10-12"), // new informational page (this pass)
+  forFriends: new Date("2026-10-26"), // game cards now link to each game's page
   faq: new Date("2026-09-26"),
   about: new Date("2026-10-09"),
   privacy: new Date("2026-10-09"),
   terms: new Date("2026-10-09"),
   contact: new Date("2026-10-09"),
   play: new Date("2026-10-03"),
-  playDatingCouples: new Date("2026-10-25"), // added the "36 Questions to Fall in Love" card
-  playFriends: new Date("2026-09-26"),
-  dateNight: new Date("2026-10-11"), // server-rendered question preview added (this pass)
-  gettingToKnowEachOther: new Date("2026-10-12"), // new dedicated landing page (this pass)
+  playDatingCouples: new Date("2026-10-26"), // retitled "Couples Games & Questions"; cards link to experience pages
+  playFriends: new Date("2026-10-26"), // retitled "Friendship Quizzes & Games"; cards link to experience pages
+  dateNight: new Date("2026-10-26"), // H1/title, editorial guide below the deck
+  gettingToKnowEachOther: new Date("2026-10-26"), // rebuilt as the integrated experience page
   thirtySixQuestions: new Date("2026-10-25"), // new conversation experience landing page
+  couplesCompatibilityTest: new Date("2026-10-26"), // new experience page
+  howWellDoYouKnowMe: new Date("2026-10-26"), // new experience page
+  friendshipTest: new Date("2026-10-26"), // new experience page
 } as const;
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -112,6 +115,26 @@ export default function sitemap(): MetadataRoute.Sitemap {
       // "36 Questions to Fall in Love" — same tier as its sibling landing pages.
       url: `${BASE_URL}/play/dating-couples/36-questions-to-fall-in-love`,
       lastModified: LAST_MODIFIED.thirtySixQuestions,
+      changeFrequency: "monthly",
+      priority: 0.6,
+    },
+    {
+      // The integrated experience pages for the remaining ready-made
+      // games — same tier as their sibling experience pages.
+      url: `${BASE_URL}/play/dating-couples/couples-compatibility-test`,
+      lastModified: LAST_MODIFIED.couplesCompatibilityTest,
+      changeFrequency: "monthly",
+      priority: 0.6,
+    },
+    {
+      url: `${BASE_URL}/play/friends/how-well-do-you-know-me`,
+      lastModified: LAST_MODIFIED.howWellDoYouKnowMe,
+      changeFrequency: "monthly",
+      priority: 0.6,
+    },
+    {
+      url: `${BASE_URL}/play/friends/friendship-test`,
+      lastModified: LAST_MODIFIED.friendshipTest,
       changeFrequency: "monthly",
       priority: 0.6,
     },

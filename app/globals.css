@@ -6374,6 +6374,15 @@ dialog::backdrop {
   gap: 2rem;
 }
 
+/* Reserved space for the client-only deck while its chunk loads
+   (DateNightExperienceLoader's `loading` slot). One full screen is enough:
+   everything below it is off-screen when the deck appears, so nothing the
+   visitor can see moves (the deck is far taller than one screen). */
+.dn-experience-slot {
+  min-height: 100vh;
+  min-height: 100svh;
+}
+
 .dn-controls {
   display: flex;
   flex-direction: column;
@@ -6952,123 +6961,227 @@ dialog::backdrop {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   /play/dating-couples/getting-to-know-each-other-questions
+   Integrated experience pages under /play
    ═══════════════════════════════════════════════════════════════════════
-   New, page-scoped classes rather than reusing .dn-hero/.dn-browse
-   directly — those names are Date Night's own (per their doc comments,
-   deliberately scoped to that one page), so this mirrors their exact
-   property values instead of cross-referencing them, keeping each
-   page's styling independently named per this file's existing
-   convention (.fc-*, .wtp-*, .dn-*). */
+   components/play/experience-page.tsx — Getting to know each other, How
+   Well Do You Know Me?, Friendship Check, the Couples Compatibility Test,
+   and Date Night's editorial section. Same structure as the approved 36
+   Questions page, so these .xp-* classes mirror .tsq-*'s values rather
+   than reusing its names: per this file's convention (.fc-*, .wtp-*,
+   .dn-*, .tsq-*), a change to one page's styling can never restyle 36
+   Questions. Each page picks one tone (.xp-page--<tone>), which sets
+   --xp-tone for its step numbers and highlight cards. */
 
-.gtk-page {
+.xp-page {
+  --xp-tone: var(--wl-blue);
   display: flex;
   flex-direction: column;
-  gap: 2.5rem;
+  gap: clamp(2.5rem, 6vw, 3.5rem);
+  max-width: 48rem;
 }
 
-.gtk-hero {
+.xp-page--blue {
+  --xp-tone: var(--wl-blue);
+}
+
+.xp-page--mint {
+  --xp-tone: var(--wl-mint);
+}
+
+.xp-page--lavender {
+  --xp-tone: var(--wl-lavender);
+}
+
+.xp-page--peach {
+  --xp-tone: var(--wl-peach);
+}
+
+.xp-page--pink {
+  --xp-tone: var(--wl-pink);
+}
+
+/* An editorial section below an interactive tool (Date Night), rather
+   than a whole page: no max-width of its own, just a separator. */
+.xp-page--embedded {
+  max-width: none;
+  padding-top: clamp(2rem, 5vw, 3rem);
+  border-top: 1px solid var(--color-border);
+}
+
+.xp-hero {
+  position: relative;
   text-align: center;
 }
 
-.gtk-hero__title {
-  margin: 0 0 0.375rem;
-  font-family: var(--font-fraunces), serif;
-  font-style: italic;
-  font-weight: 500;
-  font-size: clamp(2.25rem, 4.5vw, 3.25rem);
-  line-height: 1.1;
-  color: var(--wl-ink);
+.xp-hero__shapes {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
 }
 
-.gtk-hero__subtitle {
-  margin: 0 0 1.25rem;
-  font-family: var(--font-nunito), system-ui, sans-serif;
-  font-weight: 700;
+.xp-hero__shape {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.35;
+}
+
+.xp-hero__shape--first {
+  width: 12rem;
+  height: 12rem;
+  top: -3rem;
+  left: -2rem;
+}
+
+.xp-hero__shape--second {
+  width: 10rem;
+  height: 10rem;
+  top: 2rem;
+  right: -2rem;
+}
+
+.xp-shape--blue {
+  background: var(--wl-blue);
+}
+
+.xp-shape--mint {
+  background: var(--wl-mint);
+}
+
+.xp-shape--lavender {
+  background: var(--wl-lavender);
+}
+
+.xp-shape--peach {
+  background: var(--wl-peach);
+}
+
+.xp-shape--pink {
+  background: var(--wl-pink);
+}
+
+.xp-hero__content {
+  position: relative;
+  z-index: 1;
+}
+
+.xp-hero__eyebrow {
+  margin: 0 0 0.75rem;
   font-size: 0.8125rem;
+  font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--wl-muted);
 }
 
-.gtk-hero__body {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin: 0 auto;
-  max-width: 34rem;
-}
-
-.gtk-hero__text {
-  margin: 0;
-  font-size: 1.0625rem;
-  line-height: 1.6;
-  color: var(--wl-muted);
-}
-
-.gtk-browse {
-  max-width: 36rem;
-  margin: 0 auto;
-  width: 100%;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--color-border);
-}
-
-.gtk-browse__heading {
-  margin: 0 0 0.25rem;
-  font-family: var(--font-nunito), system-ui, sans-serif;
-  font-weight: 700;
-  font-size: 0.9375rem;
+.xp-hero__title {
+  margin: 0 0 1.25rem;
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(2.25rem, 5vw, 3.5rem);
+  line-height: 1.1;
   color: var(--wl-ink);
 }
 
-.gtk-browse__subtitle {
-  margin: 0 0 1.25rem;
+.xp-hero__text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 0 auto;
+  max-width: 34rem;
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  color: var(--wl-muted);
+}
+
+.xp-hero__text p {
+  margin: 0;
+}
+
+.xp-hero__cta {
+  margin-top: 2rem;
+}
+
+.xp-hero__note {
+  margin: 0.75rem 0 0;
   font-size: 0.8125rem;
   color: var(--wl-muted);
 }
 
-.gtk-browse-group {
-  margin-bottom: 1.5rem;
-}
-
-.gtk-browse-group:last-child {
-  margin-bottom: 0;
-}
-
-.gtk-browse-group__heading {
-  margin: 0 0 0.5rem;
-}
-
-.gtk-browse-group__pill {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.25rem 0.75rem;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+.xp-section__heading {
+  margin: 0 0 1rem;
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(1.625rem, 3.5vw, 2.125rem);
   color: var(--wl-ink);
 }
 
-.gtk-browse-group__pill--lavender {
-  background: color-mix(in srgb, var(--wl-lavender) 55%, white);
+.xp-section__text {
+  margin: 0 0 1rem;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--wl-muted);
 }
 
-.gtk-browse-group__pill--blue {
-  background: color-mix(in srgb, var(--wl-blue) 55%, white);
+.xp-inline-link {
+  font-weight: 700;
+  color: var(--wl-ink);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
 }
 
-.gtk-browse-group__pill--pink {
-  background: color-mix(in srgb, var(--wl-pink) 55%, white);
+.xp-inline-link:focus-visible {
+  outline: 2px solid var(--wl-ink);
+  outline-offset: 2px;
 }
 
-.gtk-browse-group__pill--mint {
-  background: color-mix(in srgb, var(--wl-mint) 55%, white);
+.xp-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-.gtk-browse-group__list {
+.xp-step {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.xp-step__number,
+.xp-question__number {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--xp-tone) 60%, white);
+  font-weight: 800;
+}
+
+.xp-step__title {
+  margin: 0.25rem 0 0.25rem;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--wl-ink);
+}
+
+.xp-step__text {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--wl-muted);
+}
+
+/* Every question of a game, in game order, each with its category and
+   (where the game has them) its answer choices in a <details> — still
+   server-rendered, so crawlable. */
+.xp-questions {
   display: flex;
   flex-direction: column;
   margin: 0;
@@ -7076,26 +7189,346 @@ dialog::backdrop {
   list-style: none;
 }
 
-.gtk-browse-item {
-  padding: 0.625rem 0.125rem;
+.xp-question {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  padding: 1rem 0;
   border-bottom: 1px solid var(--color-border);
-  font-family: var(--font-nunito), system-ui, sans-serif;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--wl-ink);
-  text-align: left;
 }
 
-.gtk-browse-group__list li.gtk-browse-item:last-child {
+.xp-question:last-child {
   border-bottom: none;
 }
 
-.gtk-cta {
+.xp-question__body {
+  min-width: 0;
+}
+
+.xp-question__pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--wl-ink);
+}
+
+.xp-pill--lavender {
+  background: color-mix(in srgb, var(--wl-lavender) 55%, white);
+}
+
+.xp-pill--blue {
+  background: color-mix(in srgb, var(--wl-blue) 55%, white);
+}
+
+.xp-pill--pink {
+  background: color-mix(in srgb, var(--wl-pink) 55%, white);
+}
+
+.xp-pill--mint {
+  background: color-mix(in srgb, var(--wl-mint) 55%, white);
+}
+
+.xp-pill--peach {
+  background: color-mix(in srgb, var(--wl-peach) 55%, white);
+}
+
+.xp-question__text {
+  margin: 0.5rem 0 0;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--wl-ink);
+}
+
+.xp-question__summary {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--wl-muted);
+  cursor: pointer;
+}
+
+.xp-question__summary:focus-visible {
+  outline: 2px solid var(--wl-ink);
+  outline-offset: 2px;
+}
+
+.xp-question__options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  margin: 0.25rem 0 0;
+  padding-left: 1.25rem;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--wl-muted);
+}
+
+.xp-points {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+  gap: 1rem;
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style: none;
+}
+
+.xp-points--pairs {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 40rem) {
+  .xp-points--pairs {
+    grid-template-columns: 1fr;
+  }
+}
+
+.xp-point {
+  padding: 1.25rem;
+  border-radius: 1.25rem;
+  background: color-mix(in srgb, var(--xp-tone) 22%, white);
+}
+
+.xp-point__title {
+  margin: 0 0 0.375rem;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--wl-ink);
+}
+
+.xp-point__text {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--wl-muted);
+}
+
+/* A game's result tiers, best to worst, as the result screen words them. */
+.xp-tiers {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style: none;
+}
+
+.xp-tier {
+  padding: 0.75rem 1rem;
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--xp-tone) 22%, white);
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-size: 1.0625rem;
+  color: var(--wl-ink);
+}
+
+/* Alignment levels on the compatibility page: name + range, then the
+   result screen's own interpretation line. */
+.xp-levels {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style: none;
+}
+
+.xp-level {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1rem 1.25rem;
+  border-radius: 1.25rem;
+  background: color-mix(in srgb, var(--xp-tone) 22%, white);
+}
+
+.xp-level__name {
+  font-weight: 800;
+  color: var(--wl-ink);
+}
+
+.xp-level__range {
+  margin-left: 0.375rem;
+  font-weight: 600;
+  color: var(--wl-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.xp-level__text {
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--wl-muted);
+}
+
+.xp-cta {
+  padding: clamp(2rem, 6vw, 3rem) 1.5rem;
+  border-radius: 1.5rem;
+  background: var(--wl-ink);
+  color: #ffffff;
   text-align: center;
 }
 
-.gtk-cta__more {
-  margin: 0.75rem 0 0;
+.xp-cta__heading {
+  margin: 0 0 0.75rem;
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(1.75rem, 4vw, 2.25rem);
+}
+
+.xp-cta__text {
+  margin: 0 auto 1.5rem;
+  max-width: 28rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.xp-cta__text:last-child {
+  margin-bottom: 0;
+}
+
+/* Related experiences — same card language as .tsq-related__*, without
+   the illustrations. */
+.xp-related__list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.xp-related__list--2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.xp-related__card--blue {
+  --tone: var(--wl-blue);
+  --accent: var(--wl-lavender);
+}
+
+.xp-related__card--lavender {
+  --tone: var(--wl-lavender);
+  --accent: var(--wl-blue);
+}
+
+.xp-related__card--peach {
+  --tone: var(--wl-peach);
+  --accent: var(--wl-pink);
+}
+
+.xp-related__card--mint {
+  --tone: var(--wl-mint);
+  --accent: var(--wl-blue);
+}
+
+.xp-related__card--pink {
+  --tone: var(--wl-pink);
+  --accent: var(--wl-peach);
+}
+
+.xp-related__card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 1.5rem;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--tone) 70%, white);
+  border-radius: 1.5rem;
+  background: linear-gradient(
+    165deg,
+    color-mix(in srgb, var(--tone) 55%, white) 0%,
+    color-mix(in srgb, var(--tone) 18%, white) 70%,
+    #ffffff 100%
+  );
+  color: var(--wl-ink);
+  text-decoration: none;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.xp-related__card:focus-visible {
+  outline: 2px solid var(--wl-ink);
+  outline-offset: 3px;
+}
+
+.xp-related__eyebrow {
+  margin-bottom: 0.375rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--wl-ink) 70%, white);
+}
+
+.xp-related__title {
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 1.375rem;
+  line-height: 1.25;
+}
+
+.xp-related__text {
+  margin: 0.5rem 0 1.25rem;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: color-mix(in srgb, var(--wl-ink) 78%, white);
+}
+
+.xp-related__go {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 0.375rem;
+  margin-top: auto;
+  padding: 0.4375rem 0.875rem;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 80%, white);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.xp-related__go [aria-hidden="true"] {
+  transition: transform 0.25s ease;
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .xp-related__card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 18px 36px -24px rgba(24, 24, 32, 0.35);
+  }
+
+  .xp-related__card:hover .xp-related__go [aria-hidden="true"] {
+    transform: translateX(3px);
+  }
+}
+
+@media (max-width: 56rem) {
+  .xp-related__list,
+  .xp-related__list--2 {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .xp-related__card {
+    padding: 1.25rem;
+  }
+
+  .xp-related__title {
+    font-size: 1.1875rem;
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
@@ -7201,6 +7634,37 @@ dialog::backdrop {
    only the 2-column override is new, same pattern as .wtp-modes__grid. */
 .ff-games__grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* Each game card links to that game's experience page. */
+.ff-games__card {
+  display: flex;
+  flex-direction: column;
+  color: inherit;
+  text-decoration: none;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.ff-games__card:focus-visible {
+  outline: 2px solid var(--wl-ink);
+  outline-offset: 3px;
+}
+
+.ff-games__go {
+  margin-top: auto;
+  padding-top: 1rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--wl-ink);
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .ff-games__card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 18px 36px -24px rgba(24, 24, 32, 0.35);
+  }
 }
 
 /* ── reassurance band — mirrors .fc-reassure*'s exact values. */
