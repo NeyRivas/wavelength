@@ -33,21 +33,15 @@ const STEPS: {
  * each with a single decorative shape bleeding off its top-right corner.
  * `id="how-it-works"` is the header's real in-page anchor target.
  *
- * Card visual-reuse pass: these cards now carry the exact same
- * `.game-card`/`.game-card--vivid*` classes the Dating & Couples ready-made
- * game cards use (components/play/game-card.tsx) — same gradient fills,
- * translucent blob/corner-glow treatment, lift+shadow hover, and glass-less
- * ink typography, reusing that CSS wholesale rather than approximating it.
- * `blobClass`/`vividClass` pair up index-for-index exactly like
- * GameCategorySection's own "dating-couples" group (pink↔a, blue↔b,
- * mint↔c — see BLOBS_BY_GROUP/VIVID_GRADIENT_BY_GAME_ID in
- * components/play/game-category-section.tsx) for the same reason: it's the
- * established pairing, not a new one. `game-card--inert` (the same
- * modifier GameCard already applies to its own non-playable cards) keeps
- * the cursor a plain default, since these three are presentational steps,
- * not links or buttons — no `aria-disabled`, since unlike an inert
- * GameCard these were never actionable to begin with. Number/title/
- * description text, order, and content are entirely unchanged. */
+ * Card visual-reuse pass: these cards carry the `.game-card`/
+ * `.game-card--vivid*` classes (app/globals.css) — gradient fills,
+ * translucent blob/corner-glow treatment, lift+shadow hover, and ink
+ * typography. `blobClass`/`vividClass` pair up index-for-index (pink↔a,
+ * blue↔b, mint↔c), the established pairing. `game-card--inert` keeps the
+ * cursor a plain default, since these three are presentational steps, not
+ * links or buttons — no `aria-disabled`, since they were never actionable
+ * to begin with. Number/title/description text, order, and content are
+ * entirely unchanged. */
 export function LandingHowItWorks() {
   return (
     <section id="how-it-works" className="landing-section landing-how">

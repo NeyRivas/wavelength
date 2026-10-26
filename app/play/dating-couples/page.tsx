@@ -4,11 +4,14 @@ import { Fraunces, Nunito_Sans } from "next/font/google";
 import { BackLink } from "@/components/landing/back-link";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { LandingHeader } from "@/components/landing/landing-header";
-import { GameCategorySection } from "@/components/play/game-category-section";
+import { CatalogSectionBlock } from "@/components/play/catalog";
+import { catalogSection } from "@/lib/wavelength/catalog";
 
-// /play/dating-couples — one of /play's two category screens (see
-// app/play/page.tsx). Every card links to its experience's own page (one
-// clear action per card, lib/wavelength/ready-made-games.ts's `href`):
+// /play/dating-couples — the Couples section of the unified catalog
+// (app/play/page.tsx) as its own indexable page, rendered by the same
+// CatalogSectionBlock so the two can't drift. Every card links to its
+// experience's own page (one clear action per card,
+// lib/wavelength/ready-made-games.ts's `href`):
 // "Are we on the same page?" → the couples compatibility test page,
 // "Getting to know each other" and "36 Questions to Fall in Love" → their
 // experience pages, whose Start buttons start the game, and "Date Night" →
@@ -18,8 +21,7 @@ import { GameCategorySection } from "@/components/play/game-category-section";
 // games & questions". It used to carry "compatibility quiz for couples",
 // which now belongs to /play/dating-couples/couples-compatibility-test, so
 // the two pages don't compete. "Questions for couples" stays with
-// /for-couples. GameCategorySection itself (shared with /play/friends) is
-// untouched — only this page's own metadata and heading/text props.
+// /for-couples.
 const fraunces = Fraunces({
   subsets: ["latin"],
   style: ["italic"],
@@ -65,11 +67,9 @@ export default function DatingCouplesPlayPage() {
       <LandingHeader />
       <main>
         <BackLink href="/play" />
-        <GameCategorySection
-          group="dating-couples"
-          heading="Couples Games & Questions"
-          text="Four ways to learn something new about each other. See where you're aligned on the big topics, get to know each other a little better, go deeper with 36 questions, or pick a date night question and see where it goes."
-        />
+        <div className="landing-section catalog catalog--single">
+          <CatalogSectionBlock section={catalogSection("dating-couples")} headingLevel="h1" />
+        </div>
       </main>
       <LandingFooter />
     </div>

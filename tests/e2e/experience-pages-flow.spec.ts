@@ -14,7 +14,7 @@ import { questionCard } from "./utils/wavelength";
 
 const GAME_FLOWS = [
   {
-    catalog: "/play/friends",
+    catalog: "/play",
     card: /How Well Do You Know Me\?/,
     path: "/play/friends/how-well-do-you-know-me",
     h1: "How Well Do You Know Me?",
@@ -22,15 +22,15 @@ const GAME_FLOWS = [
     gameId: "how-well-do-you-know-me",
   },
   {
-    catalog: "/play/friends",
-    card: /Friendship Check/,
+    catalog: "/play",
+    card: /Friendship Test/,
     path: "/play/friends/friendship-test",
     h1: "Friendship Test",
     start: /Make your friendship test/,
     gameId: "friendship-check",
   },
   {
-    catalog: "/play/dating-couples",
+    catalog: "/play",
     card: /Are we on the same page\?/,
     path: "/play/dating-couples/couples-compatibility-test",
     h1: "Couples Compatibility Test",

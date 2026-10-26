@@ -29,9 +29,10 @@ export type ReadyMadeGameGroup = "dating-couples" | "friends";
 export interface ReadyMadeGame {
   id: string;
   title: string;
-  /** Optional descriptive/SEO line shown under `title` on the game card
-   * (GameCard) — e.g. the experience name "Are we on the same page?" with
-   * "Compatibility Quiz" as its subtitle. Omitted for every other game. */
+  /** Optional short descriptive line for the game — e.g. "Compatibility
+   * Quiz" for "Are we on the same page?". Used by the experience pages'
+   * related cards; the /play catalog has its own card copy
+   * (lib/wavelength/catalog.ts). */
   subtitle?: string;
   /** Optional sentence-case line under `title`/`subtitle` on the game card
    * — a short description of the experience itself. Only set for
@@ -39,7 +40,7 @@ export interface ReadyMadeGame {
   description?: string;
   /** Optional longer line shown under the heading on /create's builder
    * screen specifically (app/create/page.tsx's CreateShellIntro) —
-   * distinct from `subtitle` above (the short GameCard label): this one
+   * distinct from `subtitle` above (the short label): this one
    * describes the experience itself once A is actually answering it.
    * Omitted for games with no builder (e.g. Date Night, which never
    * reaches /create) or no ready-made questions yet. */
@@ -54,8 +55,8 @@ export interface ReadyMadeGame {
    * experience (e.g. Date Night's conversation-starter library,
    * app/play/dating-couples/date-night) or an experience page whose own
    * Start button submits startReadyMadeGame (every game with `questions`
-   * or `conversation`). Takes priority over `questions`/`playable` in
-   * GameCard. */
+   * or `conversation`). It's where the game's /play catalog card links
+   * (lib/wavelength/catalog.ts). */
   href?: string;
   /** Opt-in: how app/w/[token]/result/page.tsx should interpret this
    * game's finished answers. Omitted (the default) = the existing
@@ -73,15 +74,6 @@ export interface ReadyMadeGame {
    * components/result/friendship-memory-summary.tsx), not shared with
    * `"guess-accuracy"`'s. */
   resultMode?: "guess-accuracy" | "friendship-memory";
-  /** Optional: a second, quieter action on this game's GameCard
-   * (components/play/game-card.tsx), stacked below the primary CTA inside
-   * the same card — same `{ label, href }` shape as WayToPlay's own
-   * `secondary` (components/landing/ways-to-play-modes.tsx), same reason:
-   * a genuine second destination that isn't the primary CTA's game
-   * itself. Not set on any game at the moment ("getting-to-know-you" used
-   * it for a "More" link until its card started linking to its experience
-   * page via `href`); GameCard still supports it. */
-  secondary?: { label: string; href: string };
   /** Opt-in: this game is a fixed conversation experience
    * (lib/wavelength/conversation-experiences.ts, keyed by this same id) —
    * seeded with that experience's `open` questions instead of `questions`,

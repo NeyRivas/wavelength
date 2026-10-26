@@ -174,7 +174,6 @@ for (const page of GAME_PAGES) {
 
     it("is the game's catalog card destination, with its questions unchanged", () => {
       expect(game.href).toBe(page.path);
-      expect(game.secondary).toBeUndefined();
     });
 
     it("links back to its catalog and to related experiences that exist", async () => {

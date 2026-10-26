@@ -7532,6 +7532,333 @@ dialog::backdrop {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
+   Unified game catalog — /play, /play/dating-couples, /play/friends
+   ═══════════════════════════════════════════════════════════════════════
+   components/play/catalog.tsx. One alignment system for every section:
+   headings, intros, and card text are all left-aligned on the same edge.
+   Every ready-made card has the same four-part hierarchy — title (Fraunces
+   italic), category subtitle (small Nunito caps), description, and a glass
+   "Play →" pill pinned to the bottom so cards in a row line up. Two
+   columns on wider screens (Couples is 2×2, Friends one row of two, Make
+   Your Own spans both), one column on phones. */
+
+.catalog {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(3rem, 7vw, 4.5rem);
+  max-width: 64rem;
+  text-align: left;
+}
+
+.catalog--single {
+  gap: 0;
+}
+
+.catalog__heading,
+.catalog-section__heading {
+  margin: 0;
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-weight: 500;
+  line-height: 1.15;
+  color: var(--wl-ink);
+  text-wrap: balance;
+}
+
+.catalog__heading {
+  font-size: clamp(2.25rem, 5vw, 3.25rem);
+}
+
+.catalog__lede {
+  margin: 0.75rem 0 0;
+  text-wrap: pretty;
+  max-width: 40rem;
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  color: var(--wl-muted);
+}
+
+.catalog-section__header {
+  margin-bottom: 1.5rem;
+}
+
+.catalog-section__heading {
+  font-size: clamp(1.75rem, 3.5vw, 2.25rem);
+}
+
+/* On a group's own page the section heading is the page's h1. */
+.catalog--single .catalog-section__heading {
+  font-size: clamp(2.25rem, 5vw, 3.25rem);
+}
+
+.catalog-section__intro {
+  margin: 0.625rem 0 0;
+  text-wrap: pretty;
+  max-width: 44rem;
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  color: var(--wl-muted);
+}
+
+.catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.catalog-grid__item {
+  display: flex;
+  min-width: 0;
+}
+
+@media (max-width: 44rem) {
+  .catalog-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+.catalog-card {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  padding: 1.75rem;
+  overflow: hidden;
+  border-radius: 1.25rem;
+  color: var(--wl-ink);
+  text-decoration: none;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.catalog-card--mint {
+  background: linear-gradient(135deg, var(--wl-mint) 0%, var(--wl-blue) 100%);
+}
+
+.catalog-card--blue {
+  background: linear-gradient(135deg, var(--wl-blue) 0%, var(--wl-lavender) 100%);
+}
+
+.catalog-card--lavender {
+  background: linear-gradient(135deg, var(--wl-lavender) 0%, var(--wl-pink) 100%);
+}
+
+.catalog-card--peach {
+  background: linear-gradient(135deg, var(--wl-peach) 0%, var(--wl-pink) 100%);
+}
+
+.catalog-card--pink {
+  background: linear-gradient(135deg, var(--wl-pink) 0%, var(--wl-lavender) 100%);
+}
+
+/* One soft highlight in the top-right corner, behind the text. */
+.catalog-card__glow {
+  position: absolute;
+  top: -2.5rem;
+  right: -2.5rem;
+  width: 8rem;
+  height: 8rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.45);
+  filter: blur(14px);
+  pointer-events: none;
+}
+
+.catalog-card__title,
+.catalog-card__subtitle,
+.catalog-card__description,
+.catalog-card__cta {
+  position: relative;
+  z-index: 1;
+}
+
+/* 1 — main title: the game's name, the most prominent text. */
+.catalog-card__title {
+  margin: 0;
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-weight: 600;
+  font-size: 1.5rem;
+  line-height: 1.25;
+  text-wrap: balance;
+}
+
+/* 2 — category subtitle: secondary, but easy to spot. */
+.catalog-card__subtitle {
+  margin: 0.5rem 0 0;
+  font-family: var(--font-nunito), system-ui, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--wl-ink) 72%, transparent);
+}
+
+/* 3 — description: what you'll actually do. */
+.catalog-card__description {
+  margin: 0.875rem 0 1.5rem;
+  text-wrap: pretty;
+  max-width: 32rem;
+  font-family: var(--font-nunito), system-ui, sans-serif;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: color-mix(in srgb, var(--wl-ink) 82%, transparent);
+}
+
+/* 4 — the one CTA, pinned to the bottom so a row's CTAs line up. */
+.catalog-card__cta {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 0.375rem;
+  margin-top: auto;
+  padding: 0.5rem 1.125rem;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.55);
+  box-shadow: 0 6px 16px -8px rgba(24, 24, 32, 0.22);
+  font-family: var(--font-nunito), system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 800;
+  color: var(--wl-ink);
+}
+
+.catalog-card:focus-visible,
+.catalog-create:focus-visible {
+  outline: 2px solid var(--wl-ink);
+  outline-offset: 3px;
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .catalog-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 22px 40px -22px rgba(24, 24, 32, 0.38);
+  }
+
+  .catalog-card:hover .catalog-card__cta {
+    background: rgba(255, 255, 255, 0.75);
+  }
+}
+
+/* Make Your Own — the one ink card on the page, so it reads as its own,
+   equally important option rather than a footnote: same four-part
+   hierarchy (it reuses .catalog-card__title/__subtitle/__description),
+   white type, pastel accents, and a white CTA. */
+.catalog-create {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1.5rem 2.5rem;
+  align-items: center;
+  padding: clamp(1.75rem, 4vw, 2.5rem);
+  overflow: hidden;
+  border-radius: 1.5rem;
+  background: var(--wl-ink);
+  color: #ffffff;
+  text-decoration: none;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.catalog-create__shapes {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.catalog-create__shape {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.32;
+  filter: blur(6px);
+}
+
+.catalog-create__shape--lavender {
+  width: 9rem;
+  height: 9rem;
+  top: -4.5rem;
+  right: -2.5rem;
+  background: var(--wl-lavender);
+}
+
+.catalog-create__shape--mint {
+  width: 5rem;
+  height: 5rem;
+  bottom: -2.5rem;
+  right: 28%;
+  background: var(--wl-mint);
+}
+
+.catalog-create__shape--pink {
+  width: 3rem;
+  height: 3rem;
+  top: 45%;
+  left: -1.5rem;
+  background: var(--wl-pink);
+}
+
+.catalog-create__body {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+}
+
+.catalog-create .catalog-create__title {
+  font-size: clamp(1.625rem, 3.5vw, 2rem);
+  color: #ffffff;
+}
+
+.catalog-create .catalog-create__subtitle {
+  color: var(--wl-lavender);
+}
+
+.catalog-create .catalog-create__description {
+  margin-bottom: 0;
+  max-width: 36rem;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.catalog-create__cta {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.75rem 1.375rem;
+  border-radius: 999px;
+  background: #ffffff;
+  font-family: var(--font-nunito), system-ui, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 800;
+  color: var(--wl-ink);
+  white-space: nowrap;
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .catalog-create:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 22px 40px -22px rgba(24, 24, 32, 0.5);
+  }
+}
+
+@media (max-width: 44rem) {
+  .catalog-create {
+    grid-template-columns: 1fr;
+  }
+
+  .catalog-create__cta {
+    justify-self: start;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
    /for-friends
    ═══════════════════════════════════════════════════════════════════════
    New, page-scoped classes mirroring other pages' already-approved

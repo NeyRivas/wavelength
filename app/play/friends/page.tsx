@@ -4,12 +4,14 @@ import { Fraunces, Nunito_Sans } from "next/font/google";
 import { BackLink } from "@/components/landing/back-link";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { LandingHeader } from "@/components/landing/landing-header";
-import { GameCategorySection } from "@/components/play/game-category-section";
+import { CatalogSectionBlock } from "@/components/play/catalog";
+import { catalogSection } from "@/lib/wavelength/catalog";
 
-// /play/friends — /play's other category screen (see
-// app/play/page.tsx and app/play/dating-couples/page.tsx). Each card links
-// to its game's own experience page (lib/wavelength/ready-made-games.ts's
-// `href`), whose Start buttons start the game.
+// /play/friends — the Friends section of the unified catalog
+// (app/play/page.tsx) as its own indexable page, rendered by the same
+// CatalogSectionBlock. Each card links to its game's own experience page
+// (lib/wavelength/ready-made-games.ts's `href`), whose Start buttons start
+// the game.
 //
 // SEO (Oct 2026 keyword map): positioned as the catalog, around
 // "friendship quizzes & games". The two games' own terms ("how well do you
@@ -59,11 +61,9 @@ export default function FriendsPlayPage() {
       <LandingHeader />
       <main>
         <BackLink href="/play" />
-        <GameCategorySection
-          group="friends"
-          heading="Friendship Quizzes & Games"
-          text="Two guessing games for you and a friend. Find out how well they know you, or how well they remember the moments you've shared."
-        />
+        <div className="landing-section catalog catalog--single">
+          <CatalogSectionBlock section={catalogSection("friends")} headingLevel="h1" />
+        </div>
       </main>
       <LandingFooter />
     </div>

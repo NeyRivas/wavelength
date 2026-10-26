@@ -145,7 +145,6 @@ describe("Getting to know each other page: links", () => {
   it("is what the Couples catalog card links to", () => {
     const game = getReadyMadeGame("getting-to-know-you");
     expect(game?.href).toBe(PATH);
-    expect(game?.secondary).toBeUndefined();
     expect(game?.questions).toBe(GETTING_TO_KNOW_EACH_OTHER_QUESTIONS);
   });
 
