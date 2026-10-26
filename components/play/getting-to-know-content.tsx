@@ -1,196 +1,115 @@
-import Link from "next/link";
-
-import { startReadyMadeGame } from "@/app/actions/ready-made-games";
-import { FaqAccordion } from "@/components/landing/faq-accordion";
 import type { FaqItem } from "@/components/landing/faq-data";
-import { CATEGORY_LABELS, type Category } from "@/lib/wavelength/categories";
 import {
   getReadyMadeGame,
   GETTING_TO_KNOW_EACH_OTHER_QUESTIONS,
 } from "@/lib/wavelength/ready-made-games";
 
+import {
+  ExperienceArticle,
+  ExperienceCta,
+  ExperienceFaq,
+  ExperienceHero,
+  ExperienceLink,
+  ExperiencePoints,
+  ExperienceQuestionList,
+  ExperienceRelated,
+  ExperienceSection,
+  ExperienceSteps,
+  ExperienceText,
+  StartGameForm,
+  type RelatedExperience,
+} from "./experience-page";
+
 /**
  * The "Getting to know each other" experience page body
  * (app/play/dating-couples/getting-to-know-each-other-questions): intro and
  * Start, how it works, every real question, when and how to use them, FAQ,
- * and related experiences. Same structure as the approved 36 Questions page
- * (components/conversation/thirty-six-questions-content.tsx), with its own
- * page-scoped .gtk-* classes and copy.
+ * and related experiences, built from the shared experience-page blocks.
  *
  * The question list renders GETTING_TO_KNOW_EACH_OTHER_QUESTIONS directly —
  * the exact array startReadyMadeGame seeds the game with — so the page can
  * never show a question, option, or order the game doesn't actually use.
- * Both Start buttons submit startReadyMadeGame with this game's id, the
- * same path the catalog card used to take, so a draft started here is the
- * same resumable draft as before.
- *
- * Purely static: it reads no questionnaire, participant, or answer.
+ * Both Start buttons submit startReadyMadeGame with this game's id.
  */
 const GAME_ID = "getting-to-know-you";
 const QUESTIONS = GETTING_TO_KNOW_EACH_OTHER_QUESTIONS;
 const QUESTION_COUNT = QUESTIONS.length;
-
-/** Same tint per category as the page used before (the existing --wl-*
- * palette); only categories this game actually uses. */
-const CATEGORY_TINTS: Partial<Record<Category, string>> = {
-  relationship: "pink",
-  lifestyle: "mint",
-  adventures_travel: "blue",
-  values_priorities: "lavender",
-};
+const START_LABEL = "Start getting to know each other";
 
 export function GettingToKnowContent() {
   return (
-    <article className="landing-section landing-how gtk-page">
-      <header className="gtk-hero">
-        <div className="gtk-hero__shapes" aria-hidden="true">
-          <span className="gtk-hero__shape gtk-hero__shape--blue" />
-          <span className="gtk-hero__shape gtk-hero__shape--mint" />
-        </div>
-        <div className="gtk-hero__content">
-          <p className="gtk-hero__eyebrow">Questions for two</p>
-          <h1 className="gtk-hero__title">Getting to Know Each Other Questions</h1>
-          <p className="gtk-hero__text">
-            {QUESTION_COUNT} getting to know you questions for couples, early dates, and anyone who
-            wants to get past small talk. You each answer on your own, then see which answers you
-            share and which ones surprised you.
-          </p>
-          <div className="gtk-hero__cta">
-            <StartForm />
-            <p className="gtk-hero__note">Free · No sign-up · Answers stay private</p>
-          </div>
-        </div>
-      </header>
+    <ExperienceArticle tone="blue">
+      <ExperienceHero
+        eyebrow="Questions for two"
+        title="Getting to Know Each Other Questions"
+        shapes={["blue", "mint"]}
+        action={<StartGameForm gameId={GAME_ID} label={START_LABEL} />}
+        note="Free · No sign-up · Answers stay private"
+      >
+        <p>
+          {QUESTION_COUNT} getting to know you questions for couples, early dates, and anyone who
+          wants to get past small talk. You each answer on your own, then see which answers you
+          share and which ones surprised you.
+        </p>
+      </ExperienceHero>
 
-      <section className="gtk-section" aria-labelledby="gtk-how">
-        <h2 id="gtk-how" className="gtk-section__heading">
-          How it works
-        </h2>
-        <ol className="gtk-steps">
-          {HOW_IT_WORKS.map((step, index) => (
-            <li key={step.title} className="gtk-step">
-              <span className="gtk-step__number" aria-hidden="true">
-                {index + 1}
-              </span>
-              <div>
-                <h3 className="gtk-step__title">{step.title}</h3>
-                <p className="gtk-step__text">{step.text}</p>
-              </div>
-            </li>
-          ))}
-        </ol>
-      </section>
+      <ExperienceSection id="gtk-how" heading="How it works">
+        <ExperienceSteps steps={HOW_IT_WORKS} />
+      </ExperienceSection>
 
-      <section className="gtk-section" aria-labelledby="gtk-questions">
-        <h2 id="gtk-questions" className="gtk-section__heading">
-          All {QUESTION_COUNT} questions
-        </h2>
-        <p className="gtk-section__text">
+      <ExperienceSection id="gtk-questions" heading={`All ${QUESTION_COUNT} questions`}>
+        <ExperienceText>
           These are the exact questions you&apos;ll both answer, in this order. Each one comes with
           a few answers to choose from.
-        </p>
-        <ol className="gtk-questions">
-          {QUESTIONS.map((question, index) => (
-            <li key={question.text} className="gtk-question">
-              <span className="gtk-question__number" aria-hidden="true">
-                {index + 1}
-              </span>
-              <div className="gtk-question__body">
-                <span
-                  className={`gtk-question__pill gtk-question__pill--${CATEGORY_TINTS[question.category] ?? "lavender"}`}
-                >
-                  {CATEGORY_LABELS[question.category]}
-                </span>
-                <p className="gtk-question__text">{question.text}</p>
-                {question.options && question.options.length > 0 && (
-                  <details className="gtk-question__details">
-                    <summary className="gtk-question__summary">
-                      See the {question.options.length} answer choices
-                    </summary>
-                    <ul className="gtk-question__options">
-                      {question.options.map((option) => (
-                        <li key={option}>{option}</li>
-                      ))}
-                    </ul>
-                  </details>
-                )}
-              </div>
-            </li>
-          ))}
-        </ol>
-      </section>
+        </ExperienceText>
+        <ExperienceQuestionList
+          questions={QUESTIONS.map((question) => ({
+            text: question.text,
+            category: question.category,
+            detail: question.options && {
+              summary: `See the ${question.options.length} answer choices`,
+              items: question.options,
+            },
+          }))}
+        />
+      </ExperienceSection>
 
-      <section className="gtk-section" aria-labelledby="gtk-when">
-        <h2 id="gtk-when" className="gtk-section__heading">
-          When to use them
-        </h2>
-        <ul className="gtk-points">
-          {WHEN_TO_USE.map((point) => (
-            <li key={point.title} className="gtk-point">
-              <h3 className="gtk-point__title">{point.title}</h3>
-              <p className="gtk-point__text">{point.text}</p>
-            </li>
-          ))}
-        </ul>
-        <p className="gtk-section__text">
+      <ExperienceSection id="gtk-when" heading="When to use them">
+        <ExperiencePoints points={WHEN_TO_USE} />
+        <ExperienceText>
           The questions work for any two people, close friends included. For games made for friends,
-          see our{" "}
-          <Link href="/play/friends" className="gtk-inline-link">
-            Friends games
-          </Link>
-          .
-        </p>
-      </section>
+          see our <ExperienceLink href="/play/friends">Friends games</ExperienceLink>.
+        </ExperienceText>
+      </ExperienceSection>
 
-      <section className="gtk-section" aria-labelledby="gtk-conversation">
-        <h2 id="gtk-conversation" className="gtk-section__heading">
-          Turning an answer into a conversation
-        </h2>
-        <ul className="gtk-points gtk-points--pairs">
-          {CONVERSATION_TIPS.map((tip) => (
-            <li key={tip.title} className="gtk-point">
-              <h3 className="gtk-point__title">{tip.title}</h3>
-              <p className="gtk-point__text">{tip.text}</p>
-            </li>
-          ))}
-        </ul>
-      </section>
+      <ExperienceSection id="gtk-conversation" heading="Turning an answer into a conversation">
+        <ExperiencePoints points={CONVERSATION_TIPS} pairs />
+      </ExperienceSection>
 
-      <section className="gtk-section" aria-labelledby="gtk-later">
-        <h2 id="gtk-later" className="gtk-section__heading">
-          What these questions leave for later
-        </h2>
-        <p className="gtk-section__text">
+      <ExperienceSection id="gtk-later" heading="What these questions leave for later">
+        <ExperienceText>
           None of these {QUESTION_COUNT} questions ask about money, past relationships, kids, or
           where things are going. That&apos;s on purpose: they&apos;re for getting to know the
-          person first. When you&apos;re ready for the bigger topics,{" "}
-          <Link href="/play/dating-couples" className="gtk-inline-link">
-            Are we on the same page?
-          </Link>{" "}
+          person first. When you&apos;re ready for the bigger topics, the{" "}
+          <ExperienceLink href="/play/dating-couples/couples-compatibility-test">
+            couples compatibility test
+          </ExperienceLink>{" "}
           covers how you handle disagreements, money, and plans like marriage and kids.
-        </p>
-      </section>
+        </ExperienceText>
+      </ExperienceSection>
 
-      <section className="gtk-cta" aria-labelledby="gtk-cta-heading">
-        <h2 id="gtk-cta-heading" className="gtk-cta__heading">
-          Start with the first question
-        </h2>
-        <p className="gtk-cta__text">
-          Answer first, then send the link. You&apos;ll see each other&apos;s answers once
-          you&apos;ve both finished.
-        </p>
-        <StartForm />
-      </section>
+      <ExperienceCta
+        id="gtk-cta"
+        heading="Start with the first question"
+        text="Answer first, then send the link. You'll see each other's answers once you've both finished."
+      >
+        <StartGameForm gameId={GAME_ID} label={START_LABEL} />
+      </ExperienceCta>
 
-      <section className="gtk-section" aria-labelledby="gtk-faq">
-        <h2 id="gtk-faq" className="gtk-section__heading">
-          Questions people ask
-        </h2>
-        <FaqAccordion categoryId="gtk" items={FAQ} tint="blue" />
-      </section>
+      <ExperienceFaq categoryId="gtk" items={FAQ} tint="blue" />
 
-      <RelatedExperiences />
-    </article>
+      <ExperienceRelated heading="More for the two of you" items={RELATED} />
+    </ExperienceArticle>
   );
 }
 
@@ -282,29 +201,7 @@ const FAQ: FaqItem[] = [
   },
 ];
 
-function StartForm() {
-  return (
-    <form action={startReadyMadeGame}>
-      <input type="hidden" name="gameId" value={GAME_ID} />
-      <button type="submit" className="landing-button landing-button--primary landing-button--play">
-        Start getting to know each other <span aria-hidden="true">→</span>
-      </button>
-    </form>
-  );
-}
-
-/**
- * "More for the two of you". Eyebrows come from each experience's own
- * catalog card subtitle in READY_MADE_GAMES where it has one, so they can't
- * drift from the Couples catalog.
- */
-const RELATED_EXPERIENCES: {
-  href: string;
-  eyebrow: string;
-  title: string;
-  text: string;
-  tone: "lavender" | "peach" | "mint";
-}[] = [
+const RELATED: RelatedExperience[] = [
   {
     href: "/play/dating-couples/36-questions-to-fall-in-love",
     eyebrow: "Guided conversation",
@@ -320,37 +217,10 @@ const RELATED_EXPERIENCES: {
     tone: "peach",
   },
   {
-    href: "/play/dating-couples",
+    href: "/play/dating-couples/couples-compatibility-test",
     eyebrow: getReadyMadeGame("how-well-do-you-know-each-other")?.subtitle ?? "Compatibility Quiz",
     title: "Are we on the same page?",
-    text: "A compatibility quiz for the bigger topics, and every other couples experience.",
+    text: "A couples compatibility test for the bigger topics: conflict, money, and the future.",
     tone: "mint",
   },
 ];
-
-function RelatedExperiences() {
-  return (
-    <nav className="gtk-section gtk-related" aria-labelledby="gtk-related">
-      <h2 id="gtk-related" className="gtk-section__heading">
-        More for the two of you
-      </h2>
-      <ul className="gtk-related__list">
-        {RELATED_EXPERIENCES.map((experience) => (
-          <li key={experience.href}>
-            <Link
-              href={experience.href}
-              className={`gtk-related__card gtk-related__card--${experience.tone}`}
-            >
-              <span className="gtk-related__eyebrow">{experience.eyebrow}</span>
-              <span className="gtk-related__title">{experience.title}</span>
-              <span className="gtk-related__text">{experience.text}</span>
-              <span className="gtk-related__go">
-                Explore <span aria-hidden="true">→</span>
-              </span>
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </nav>
-  );
-}

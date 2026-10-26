@@ -11,10 +11,20 @@ import dynamic from "next/dynamic";
  * skipping SSR for it entirely means its lazy `useState` initializers can
  * safely call `Math.random()`/read `localStorage` with no server-render
  * to mismatch against.
+ *
+ * Layout-shift fix: until the deck's chunk loads, `loading` renders an
+ * empty slot (server-rendered too) roughly the height of the deck's
+ * first state (.dn-experience-slot in app/globals.css), so the preview and
+ * guide below don't jump down when the deck appears. The slot is replaced
+ * by the deck itself, so it never constrains the deck afterwards (e.g.
+ * when a search shortens the Browse list). The deck is unchanged.
  */
 const DateNightExperience = dynamic(
   () => import("./date-night-experience").then((mod) => mod.DateNightExperience),
-  { ssr: false },
+  {
+    ssr: false,
+    loading: () => <div className="dn-experience-slot" aria-hidden="true" />,
+  },
 );
 
 export function DateNightExperienceLoader() {

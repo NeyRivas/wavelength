@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { READY_MADE_GAMES } from "@/lib/wavelength/ready-made-games";
 
 const BLOB_CLASS_BY_GAME_ID: Record<string, string> = {
@@ -18,6 +20,9 @@ const BLOB_CLASS_BY_GAME_ID: Record<string, string> = {
  * already uses (WaysToPlayModes, ForCouplesSummary), with the same
  * lavender/peach blob tints GameCategorySection's own BLOBS_BY_GROUP
  * already assigns to these two games on /play/friends.
+ *
+ * Each card links to its game's experience page (the game's `href`), so
+ * this informational page leads straight to both games.
  */
 export function ForFriendsGames() {
   const friendsGames = READY_MADE_GAMES.filter((game) => game.group === "friends");
@@ -32,14 +37,21 @@ export function ForFriendsGames() {
 
       <div className="landing-card-grid ff-games__grid">
         {friendsGames.map((game) => (
-          <div className="landing-card" key={game.id}>
+          <Link
+            href={game.href ?? "/play/friends"}
+            className="landing-card ff-games__card"
+            key={game.id}
+          >
             <div
               className={`landing-card__blob ${BLOB_CLASS_BY_GAME_ID[game.id] ?? "landing-card__blob--blue"}`}
               aria-hidden="true"
             />
             <h3 className="landing-card__title">{game.title}</h3>
             {game.builderSubtitle && <p className="landing-card__text">{game.builderSubtitle}</p>}
-          </div>
+            <span className="ff-games__go">
+              See how it works <span aria-hidden="true">→</span>
+            </span>
+          </Link>
         ))}
       </div>
     </section>

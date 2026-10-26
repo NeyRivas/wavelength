@@ -53,8 +53,9 @@ export interface ReadyMadeGame {
    * startReadyMadeGame from the card itself — either a standalone
    * experience (e.g. Date Night's conversation-starter library,
    * app/play/dating-couples/date-night) or an experience page whose own
-   * Start button submits startReadyMadeGame (36 Questions, Getting to know
-   * each other). Takes priority over `questions`/`playable` in GameCard. */
+   * Start button submits startReadyMadeGame (every game with `questions`
+   * or `conversation`). Takes priority over `questions`/`playable` in
+   * GameCard. */
   href?: string;
   /** Opt-in: how app/w/[token]/result/page.tsx should interpret this
    * game's finished answers. Omitted (the default) = the existing
@@ -605,6 +606,7 @@ export const READY_MADE_GAMES: ReadyMadeGame[] = [
     builderSubtitle: "A relationship compatibility quiz to see where you align.",
     group: "dating-couples",
     questions: COMPATIBILITY_QUIZ_QUESTIONS,
+    href: "/play/dating-couples/couples-compatibility-test",
   },
   {
     id: "getting-to-know-you",
@@ -644,6 +646,7 @@ export const READY_MADE_GAMES: ReadyMadeGame[] = [
     group: "friends",
     questions: HOW_WELL_DO_YOU_KNOW_ME_QUESTIONS,
     resultMode: "guess-accuracy",
+    href: "/play/friends/how-well-do-you-know-me",
   },
   {
     id: "friendship-check",
@@ -652,6 +655,7 @@ export const READY_MADE_GAMES: ReadyMadeGame[] = [
     group: "friends",
     questions: FRIENDSHIP_CHECK_QUESTIONS,
     resultMode: "friendship-memory",
+    href: "/play/friends/friendship-test",
   },
 ];
 
