@@ -1,0 +1,1185 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`protected questionnaire content > keeps every ready-made game's questions, options, order, and result mode 1`] = `
+[
+  {
+    "conversation": false,
+    "group": "dating-couples",
+    "id": "how-well-do-you-know-each-other",
+    "questions": [
+      {
+        "category": "relationship",
+        "options": [
+          "Spending quality time together",
+          "Words of affection and appreciation",
+          "Physical affection",
+          "Thoughtful gestures",
+          "Feeling supported when I need it",
+        ],
+        "text": "What makes you feel most loved in a relationship?",
+        "type": "choice",
+      },
+      {
+        "category": "relationship",
+        "options": [
+          "Choosing each other and building a life together",
+          "Being loyal and emotionally dependable",
+          "Making important decisions as a team",
+          "Staying committed through difficult times",
+        ],
+        "text": "What does commitment mean to you?",
+        "type": "choice",
+      },
+      {
+        "category": "relationship",
+        "options": [
+          "Talk about it right away",
+          "Take some time before bringing it up",
+          "Wait until the right moment",
+          "Try to work through it on my own first",
+          "Hope it passes on its own",
+        ],
+        "text": "When something is bothering you, what are you most likely to do?",
+        "type": "choice",
+      },
+      {
+        "category": "relationship",
+        "options": [
+          "Feeling understood",
+          "Finding a solution",
+          "Staying calm and avoiding unnecessary conflict",
+          "Being honest, even when it's uncomfortable",
+          "Reaching a compromise",
+        ],
+        "text": "When you disagree with your partner, what matters most to you?",
+        "type": "choice",
+      },
+      {
+        "category": "relationship",
+        "options": [
+          "I want to talk it out right away",
+          "I need a little time first",
+          "I need some space to process",
+          "I prefer to wait until I feel completely calm",
+          "I need quite a lot of time before talking",
+        ],
+        "text": "After an argument, how much space do you usually need before talking things through?",
+        "type": "choice",
+      },
+      {
+        "category": "lifestyle",
+        "options": [
+          "Almost none — I love doing most things together",
+          "A little — I like having some time to myself",
+          "A fair amount — I need regular time on my own",
+          "A lot — having my own time is very important to me",
+        ],
+        "text": "How much alone time do you need in a relationship?",
+        "type": "choice",
+      },
+      {
+        "category": "lifestyle",
+        "options": [
+          "I'd definitely want to",
+          "I'd probably want to",
+          "I'm not sure",
+          "I'd probably prefer not to",
+          "I'd definitely prefer not to",
+        ],
+        "text": "How would you feel about living together before marriage?",
+        "type": "choice",
+      },
+      {
+        "category": "money",
+        "options": [
+          "I like to save as much as I can",
+          "I like to enjoy my money while still saving",
+          "I'm somewhere in the middle",
+          "I tend to spend more than I save",
+          "I don't think about it much",
+        ],
+        "text": "How would you describe your approach to money?",
+        "type": "choice",
+      },
+      {
+        "category": "money",
+        "options": [
+          "I'd want to combine most of our finances",
+          "I'd prefer to combine some but keep some separate",
+          "I'd rather keep our finances mostly separate",
+          "I'd want to keep our finances completely separate",
+          "I'm not sure yet",
+        ],
+        "text": "How comfortable would you be combining finances with a serious partner?",
+        "type": "choice",
+      },
+      {
+        "category": "future",
+        "options": [
+          "Yes, definitely",
+          "Probably",
+          "I'm not sure",
+          "Probably not",
+          "No, definitely not",
+        ],
+        "text": "Do you want children someday?",
+        "type": "choice",
+      },
+      {
+        "category": "future",
+        "text": "How important is marriage to you?",
+        "type": "scale",
+      },
+      {
+        "category": "future",
+        "options": [
+          "I'd be very open to it",
+          "I'd consider it for the right reasons",
+          "I'd prefer to stay where I am",
+          "I'd strongly prefer not to move",
+          "It would depend on where",
+        ],
+        "text": "How open would you be to moving somewhere new for your partner?",
+        "type": "choice",
+      },
+    ],
+    "resultMode": null,
+  },
+  {
+    "conversation": false,
+    "group": "dating-couples",
+    "id": "getting-to-know-you",
+    "questions": [
+      {
+        "category": "values_priorities",
+        "options": [
+          "A family tradition or holiday memory",
+          "A funny or embarrassing moment",
+          "A moment with a close friend",
+          "A trip or adventure I went on",
+          "A quiet, ordinary moment that just stuck with me",
+        ],
+        "text": "What's a childhood memory you still think about sometimes?",
+        "type": "choice",
+      },
+      {
+        "category": "lifestyle",
+        "options": [
+          "Good music",
+          "A good meal",
+          "A message from someone I care about",
+          "Sunshine and being outside",
+          "A few minutes of quiet",
+        ],
+        "text": "What's something small that can instantly make your day better?",
+        "type": "choice",
+      },
+      {
+        "category": "lifestyle",
+        "options": [
+          "Exploring somewhere new",
+          "Relaxing at home, no plans at all",
+          "Spending it with people I love",
+          "Doing something active outdoors",
+          "Working on a personal project or hobby",
+        ],
+        "text": "If you had a completely free day with no responsibilities, how would you spend it?",
+        "type": "choice",
+      },
+      {
+        "category": "values_priorities",
+        "options": [
+          "Music",
+          "Movies or shows",
+          "Food and cooking",
+          "Sports",
+          "A hobby or creative project",
+        ],
+        "text": "What's something you're really into that you could happily talk about for hours?",
+        "type": "choice",
+      },
+      {
+        "category": "adventures_travel",
+        "options": [
+          "Traveling somewhere far away",
+          "Learning a new skill",
+          "An adrenaline-filled adventure",
+          "Trying a creative pursuit like art or music",
+          "Something completely outside my comfort zone",
+        ],
+        "text": "What's something you've always wanted to try at least once?",
+        "type": "choice",
+      },
+      {
+        "category": "relationship",
+        "options": [
+          "Spontaneous adventures",
+          "Deep, meaningful conversations",
+          "Laughing until it hurts",
+          "Trying new things together",
+          "Simple, cozy time together",
+        ],
+        "text": "What kind of memories do you love making with other people?",
+        "type": "choice",
+      },
+      {
+        "category": "values_priorities",
+        "options": [
+          "A family member",
+          "A close friend",
+          "A teacher or mentor",
+          "Someone I admired from a distance",
+          "A person who challenged me",
+        ],
+        "text": "Who has had a big influence on the person you are today?",
+        "type": "choice",
+      },
+      {
+        "category": "adventures_travel",
+        "options": [
+          "Because of the people I was with",
+          "Because of how peaceful it felt",
+          "Because there was more to explore",
+          "Because of a specific memory tied to it",
+          "Because I'd see it differently now",
+        ],
+        "text": "What's a place you've been that you'd love to experience again?",
+        "type": "choice",
+      },
+      {
+        "category": "values_priorities",
+        "options": [
+          "That I'm more thoughtful than I first seem",
+          "That I have a great sense of humor",
+          "That I care a lot about the people close to me",
+          "That I'm more adventurous than expected",
+          "That I notice small details others miss",
+        ],
+        "text": "What's something people tend to notice about you once they get to know you?",
+        "type": "choice",
+      },
+      {
+        "category": "lifestyle",
+        "options": [
+          "Playing an instrument",
+          "Cooking like a professional chef",
+          "Speaking another language fluently",
+          "A sport I've never mastered",
+          "A creative skill like painting or writing",
+        ],
+        "text": "If you could instantly become really good at something, what would you choose?",
+        "type": "choice",
+      },
+      {
+        "category": "values_priorities",
+        "options": [
+          "What actually makes me happy",
+          "How I handle stress or setbacks",
+          "What I look for in relationships",
+          "How I spend my free time",
+          "What success means to me",
+        ],
+        "text": "What's something you've changed your mind about as you've gotten older?",
+        "type": "choice",
+      },
+      {
+        "category": "relationship",
+        "options": [
+          "A hidden talent I don't often show",
+          "How loyal I am to the people I love",
+          "A quirky passion of mine",
+          "How much I care once I let someone in",
+          "A dream I'm quietly working toward",
+        ],
+        "text": "What's something about you that you'd love for someone you're dating to discover?",
+        "type": "choice",
+      },
+    ],
+    "resultMode": null,
+  },
+  {
+    "conversation": false,
+    "group": "dating-couples",
+    "id": "date-night",
+    "questions": null,
+    "resultMode": null,
+  },
+  {
+    "conversation": true,
+    "group": "dating-couples",
+    "id": "36-questions-to-fall-in-love",
+    "questions": null,
+    "resultMode": null,
+  },
+  {
+    "conversation": false,
+    "group": "friends",
+    "id": "how-well-do-you-know-me",
+    "questions": [
+      {
+        "category": "values_priorities",
+        "options": [
+          " ",
+          " ",
+        ],
+        "text": "What's a song that will instantly make me think of a specific memory?",
+        "type": "choice",
+      },
+      {
+        "category": "lifestyle",
+        "options": [
+          " ",
+          " ",
+        ],
+        "text": "Which artist or band could I listen to over and over?",
+        "type": "choice",
+      },
+      {
+        "category": "values_priorities",
+        "options": [
+          " ",
+          " ",
+        ],
+        "text": "What's a random thing I'm weirdly passionate about?",
+        "type": "choice",
+      },
+      {
+        "category": "lifestyle",
+        "options": [
+          " ",
+          " ",
+        ],
+        "text": "What's something I always say when I'm annoyed?",
+        "type": "choice",
+      },
+      {
+        "category": "values_priorities",
+        "options": [
+          " ",
+          " ",
+        ],
+        "text": "Which fictional character would I defend with my life?",
+        "type": "choice",
+      },
+      {
+        "category": "values_priorities",
+        "options": [
+          " ",
+          " ",
+        ],
+        "text": "What's something I would absolutely judge someone for?",
+        "type": "choice",
+      },
+      {
+        "category": "lifestyle",
+        "options": [
+          " ",
+          " ",
+        ],
+        "text": "Which celebrity would I probably have a crush on?",
+        "type": "choice",
+      },
+      {
+        "category": "lifestyle",
+        "options": [
+          " ",
+          " ",
+        ],
+        "text": "What's a celebrity or public figure we both agree is overrated?",
+        "type": "choice",
+      },
+      {
+        "category": "values_priorities",
+        "options": [
+          " ",
+          " ",
+        ],
+        "text": "What's the kind of person I instantly dislike?",
+        "type": "choice",
+      },
+      {
+        "category": "values_priorities",
+        "options": [
+          " ",
+          " ",
+        ],
+        "text": "What's my most irrational opinion?",
+        "type": "choice",
+      },
+      {
+        "category": "lifestyle",
+        "options": [
+          " ",
+          " ",
+        ],
+        "text": "If we made a playlist that represents me, what song would have to be on it?",
+        "type": "choice",
+      },
+      {
+        "category": "values_priorities",
+        "options": [
+          " ",
+          " ",
+        ],
+        "text": "What's something you could mention and immediately know I'd have an opinion about?",
+        "type": "choice",
+      },
+    ],
+    "resultMode": "guess-accuracy",
+  },
+  {
+    "conversation": false,
+    "group": "friends",
+    "id": "friendship-check",
+    "questions": [
+      {
+        "category": "relationship",
+        "options": [
+          " ",
+          " ",
+        ],
+        "text": "Where did we first meet?",
+        "type": "choice",
+      },
+      {
+        "category": "relationship",
+        "options": [
+          " ",
+          " ",
+        ],
+        "text": "What was the first thing we ever did together?",
+        "type": "choice",
+      },
+      {
+        "category": "lifestyle",
+        "options": [
+          " ",
+          " ",
+        ],
+        "text": "What’s the dumbest thing we’ve ever laughed about together?",
+        "type": "choice",
+      },
+      {
+        "category": "adventures_travel",
+        "options": [
+          " ",
+          " ",
+        ],
+        "text": "What’s something we’ve done together that sounded like a good idea at the time?",
+        "type": "choice",
+      },
+      {
+        "category": "lifestyle",
+        "options": [
+          " ",
+          " ",
+        ],
+        "text": "What’s the most embarrassing thing we’ve experienced together?",
+        "type": "choice",
+      },
+      {
+        "category": "relationship",
+        "options": [
+          " ",
+          " ",
+        ],
+        "text": "What’s an inside joke between us that would make absolutely no sense to anyone else?",
+        "type": "choice",
+      },
+      {
+        "category": "relationship",
+        "options": [
+          " ",
+          " ",
+        ],
+        "text": "What’s something that happened between us that we still randomly bring up?",
+        "type": "choice",
+      },
+      {
+        "category": "adventures_travel",
+        "options": [
+          " ",
+          " ",
+        ],
+        "text": "What’s a place, trip, or night out that instantly makes me think of you?",
+        "type": "choice",
+      },
+      {
+        "category": "relationship",
+        "options": [
+          " ",
+          " ",
+        ],
+        "text": "What’s the most “us” thing we’ve ever done?",
+        "type": "choice",
+      },
+      {
+        "category": "lifestyle",
+        "options": [
+          " ",
+          " ",
+        ],
+        "text": "What’s a phrase, song, place, or random thing that will always remind us of each other?",
+        "type": "choice",
+      },
+      {
+        "category": "relationship",
+        "options": [
+          " ",
+          " ",
+        ],
+        "text": "What’s a moment between us that I would happily relive?",
+        "type": "choice",
+      },
+      {
+        "category": "relationship",
+        "options": [
+          " ",
+          " ",
+        ],
+        "text": "What’s one story about us that we’ll probably still be telling years from now?",
+        "type": "choice",
+      },
+    ],
+    "resultMode": "friendship-memory",
+  },
+]
+`;
+
+exports[`protected questionnaire content > keeps the 36 Questions stages, titles, descriptions, and question wording 1`] = `
+{
+  "id": "36-questions-to-fall-in-love",
+  "stages": [
+    {
+      "description": "Light, personal questions to get comfortable — the places, habits, and small joys that make you who you are.",
+      "number": 1,
+      "questions": [
+        "What's a small, ordinary thing that reliably puts you in a good mood?",
+        "Which place from your childhood can you still picture in detail?",
+        "What's a skill or hobby you picked up that surprised the people around you?",
+        "What does a really good weekend morning look like for you?",
+        "What's a book, film, or song that arrived in your life at exactly the right moment?",
+        "If you could spend a year living in another city, where would you go and why?",
+        "What's something you're curious about right now and would love to learn more about?",
+        "Who was the first friend you remember choosing for yourself, and what drew you to them?",
+        "What's a compliment you received that you still think about?",
+        "What's a tradition, big or small, that you'd like to keep for the rest of your life?",
+        "What kind of moments make you lose track of time?",
+        "What's something about where you grew up that you only appreciated after you left?",
+      ],
+      "title": "Building a Connection",
+    },
+    {
+      "description": "Experiences, values, and memories — the moments and beliefs that have shaped you.",
+      "number": 2,
+      "questions": [
+        "What's a decision you made that changed the direction of your life?",
+        "When did you last feel truly proud of yourself, and why did that moment matter?",
+        "Which value do you try hardest to live by, even when it's inconvenient?",
+        "What's a lesson you learned the hard way that you're now grateful for?",
+        "Who taught you the most about how to treat other people, and how did they teach you?",
+        "What's something you believed strongly a few years ago that you see differently now?",
+        "What helps you feel at home when you're somewhere unfamiliar?",
+        "What's a fear you've grown out of, and what helped you move past it?",
+        "When you're going through something difficult, what do you most need from the people around you?",
+        "When did a stranger's kindness stay with you long after the moment passed?",
+        "What part of your everyday life would you protect no matter how busy you got?",
+        "What do you hope people feel after spending time with you?",
+      ],
+      "title": "Going Deeper",
+    },
+    {
+      "description": "Feelings, hopes, and what you see in each other — the questions that ask for a little more openness.",
+      "number": 3,
+      "questions": [
+        "What's something you rarely say out loud but often feel?",
+        "When do you feel most like yourself around another person?",
+        "What's a part of yourself you're still learning to accept?",
+        "What's a hope for your future that you don't often share?",
+        "How do you usually show someone you care, and how do you most like to be cared for?",
+        "What's a question you wish more people asked you?",
+        "What makes it hard for you to let people in, and what makes it easier?",
+        "What does feeling truly understood look like for you?",
+        "When did you last feel really close to someone, and what made it feel that way?",
+        "What's something you appreciate about the person you're answering these questions with?",
+        "What's something you'd love the two of you to experience together?",
+        "What's one thing you'd like them to know about you that hasn't come up yet?",
+      ],
+      "title": "Growing Closer",
+    },
+  ],
+  "title": "36 Questions to Fall in Love",
+}
+`;
+
+exports[`protected questionnaire content > keeps the Date Night deck, its moods, and their labels 1`] = `
+{
+  "labels": {
+    "deep": "Deep",
+    "flirty": "Flirty",
+    "funny": "Funny",
+    "hypothetical": "Hypothetical",
+    "random": "Random",
+    "romantic": "Romantic",
+  },
+  "moods": [
+    "flirty",
+    "funny",
+    "romantic",
+    "random",
+    "deep",
+    "hypothetical",
+  ],
+  "questions": [
+    {
+      "id": "dn-01",
+      "moods": [
+        "romantic",
+      ],
+      "text": "What's something that instantly makes a moment feel romantic to you?",
+    },
+    {
+      "id": "dn-02",
+      "moods": [
+        "romantic",
+        "deep",
+      ],
+      "text": "What's a small gesture that would make you feel really loved?",
+    },
+    {
+      "id": "dn-03",
+      "moods": [
+        "romantic",
+      ],
+      "text": "What's your idea of a genuinely perfect date?",
+    },
+    {
+      "id": "dn-04",
+      "moods": [
+        "romantic",
+        "random",
+      ],
+      "text": "What's a song that feels a little romantic to you?",
+    },
+    {
+      "id": "dn-05",
+      "moods": [
+        "romantic",
+        "hypothetical",
+      ],
+      "text": "What's something you'd love to experience with someone you're dating?",
+    },
+    {
+      "id": "dn-06",
+      "moods": [
+        "romantic",
+        "deep",
+      ],
+      "text": "What's your favorite kind of affection?",
+    },
+    {
+      "id": "dn-07",
+      "moods": [
+        "romantic",
+      ],
+      "text": "What's a moment between two people that you find unexpectedly romantic?",
+    },
+    {
+      "id": "dn-08",
+      "moods": [
+        "romantic",
+        "deep",
+      ],
+      "text": "What's something you'd love someone to remember about you?",
+    },
+    {
+      "id": "dn-09",
+      "moods": [
+        "romantic",
+        "hypothetical",
+      ],
+      "text": "If we could relive one moment together, which one would you choose?",
+    },
+    {
+      "id": "dn-10",
+      "moods": [
+        "romantic",
+        "deep",
+      ],
+      "text": "What's something about falling for someone that you secretly love?",
+    },
+    {
+      "id": "dn-11",
+      "moods": [
+        "flirty",
+        "romantic",
+      ],
+      "text": "What's the first thing you actually noticed about me?",
+    },
+    {
+      "id": "dn-12",
+      "moods": [
+        "flirty",
+        "funny",
+        "random",
+      ],
+      "text": "What's a trait you find attractive that you have absolutely no business finding attractive?",
+    },
+    {
+      "id": "dn-13",
+      "moods": [
+        "flirty",
+      ],
+      "text": "What's something someone can do that instantly makes them more attractive to you?",
+    },
+    {
+      "id": "dn-14",
+      "moods": [
+        "flirty",
+      ],
+      "text": "What's your favorite kind of flirting?",
+    },
+    {
+      "id": "dn-15",
+      "moods": [
+        "flirty",
+        "funny",
+      ],
+      "text": "What's something you find ridiculously charming?",
+    },
+    {
+      "id": "dn-16",
+      "moods": [
+        "flirty",
+      ],
+      "text": "What's the most attractive thing someone can do without realizing it?",
+    },
+    {
+      "id": "dn-17",
+      "moods": [
+        "flirty",
+        "romantic",
+      ],
+      "text": "What's a compliment that would actually make you blush?",
+    },
+    {
+      "id": "dn-18",
+      "moods": [
+        "flirty",
+        "funny",
+      ],
+      "text": "What's your biggest weakness when you're attracted to someone?",
+    },
+    {
+      "id": "dn-19",
+      "moods": [
+        "flirty",
+        "romantic",
+      ],
+      "text": "What's something you'd consider dangerously good chemistry?",
+    },
+    {
+      "id": "dn-20",
+      "moods": [
+        "flirty",
+      ],
+      "text": "What's the most obvious sign that you're into someone?",
+    },
+    {
+      "id": "dn-21",
+      "moods": [
+        "funny",
+        "random",
+      ],
+      "text": "What's a completely normal thing that people do that irrationally annoys you?",
+    },
+    {
+      "id": "dn-22",
+      "moods": [
+        "funny",
+        "random",
+      ],
+      "text": "What's the worst text you've ever sent to the wrong person?",
+    },
+    {
+      "id": "dn-23",
+      "moods": [
+        "funny",
+        "hypothetical",
+      ],
+      "text": "If I got arrested, what would you assume I had done?",
+    },
+    {
+      "id": "dn-24",
+      "moods": [
+        "funny",
+        "deep",
+      ],
+      "text": "What's something you do that your 18-year-old self would be embarrassed about?",
+    },
+    {
+      "id": "dn-25",
+      "moods": [
+        "funny",
+        "random",
+      ],
+      "text": "What's the weirdest thing you believed as a kid?",
+    },
+    {
+      "id": "dn-26",
+      "moods": [
+        "funny",
+        "hypothetical",
+      ],
+      "text": "If we had to compete on a reality show together, which one would we absolutely fail at?",
+    },
+    {
+      "id": "dn-27",
+      "moods": [
+        "funny",
+      ],
+      "text": "What's your most embarrassing "I thought nobody saw that" moment?",
+    },
+    {
+      "id": "dn-28",
+      "moods": [
+        "funny",
+        "random",
+      ],
+      "text": "If your personality came with a warning label, what would it say?",
+    },
+    {
+      "id": "dn-29",
+      "moods": [
+        "funny",
+        "flirty",
+      ],
+      "text": "What's the most ridiculous thing you've ever done because you were trying to impress someone?",
+    },
+    {
+      "id": "dn-30",
+      "moods": [
+        "funny",
+        "hypothetical",
+        "random",
+      ],
+      "text": "If I gave you $1,000 to spend on something completely useless tonight, what would you buy?",
+    },
+    {
+      "id": "dn-31",
+      "moods": [
+        "random",
+        "deep",
+      ],
+      "text": "What's something you could talk about for way longer than anyone expects?",
+    },
+    {
+      "id": "dn-32",
+      "moods": [
+        "random",
+        "funny",
+      ],
+      "text": "What's a completely random opinion you feel surprisingly strongly about?",
+    },
+    {
+      "id": "dn-33",
+      "moods": [
+        "random",
+        "hypothetical",
+      ],
+      "text": "If you could instantly become amazing at one completely random skill, what would you choose?",
+    },
+    {
+      "id": "dn-34",
+      "moods": [
+        "random",
+        "hypothetical",
+      ],
+      "text": "What's something you've always wanted to try just because it looks fun?",
+    },
+    {
+      "id": "dn-35",
+      "moods": [
+        "random",
+        "hypothetical",
+      ],
+      "text": "If you could have dinner with any fictional character, who would you pick?",
+    },
+    {
+      "id": "dn-36",
+      "moods": [
+        "random",
+        "romantic",
+      ],
+      "text": "What's a place you'd go back to tomorrow if you could?",
+    },
+    {
+      "id": "dn-37",
+      "moods": [
+        "random",
+        "hypothetical",
+      ],
+      "text": "If you had to live in one movie or TV show for a week, which one would you choose?",
+    },
+    {
+      "id": "dn-38",
+      "moods": [
+        "random",
+        "romantic",
+      ],
+      "text": "What's something small that can instantly make your day better?",
+    },
+    {
+      "id": "dn-39",
+      "moods": [
+        "random",
+        "hypothetical",
+        "romantic",
+      ],
+      "text": "If you could wake up tomorrow anywhere in the world, where would you want to be?",
+    },
+    {
+      "id": "dn-40",
+      "moods": [
+        "random",
+        "funny",
+      ],
+      "text": "What's a totally unnecessary thing you would still hate to live without?",
+    },
+    {
+      "id": "dn-41",
+      "moods": [
+        "deep",
+      ],
+      "text": "What's something you've changed your mind about as you've gotten older?",
+    },
+    {
+      "id": "dn-42",
+      "moods": [
+        "deep",
+      ],
+      "text": "What's something you're proud of that nobody ever asks you about?",
+    },
+    {
+      "id": "dn-43",
+      "moods": [
+        "deep",
+      ],
+      "text": "What's something you understand about yourself now that you didn't a few years ago?",
+    },
+    {
+      "id": "dn-44",
+      "moods": [
+        "deep",
+      ],
+      "text": "What's something you're still figuring out about yourself?",
+    },
+    {
+      "id": "dn-45",
+      "moods": [
+        "deep",
+      ],
+      "text": "What's a part of your life that feels really good right now?",
+    },
+    {
+      "id": "dn-46",
+      "moods": [
+        "deep",
+        "romantic",
+      ],
+      "text": "What's something you wish people understood about you sooner?",
+    },
+    {
+      "id": "dn-47",
+      "moods": [
+        "deep",
+      ],
+      "text": "What's something you wouldn't want to change about yourself?",
+    },
+    {
+      "id": "dn-48",
+      "moods": [
+        "deep",
+      ],
+      "text": "What's something that has had a bigger influence on who you are than people might realize?",
+    },
+    {
+      "id": "dn-49",
+      "moods": [
+        "deep",
+        "romantic",
+      ],
+      "text": "What's something you've learned from a relationship that stayed with you?",
+    },
+    {
+      "id": "dn-50",
+      "moods": [
+        "deep",
+        "hypothetical",
+      ],
+      "text": "What's something you hope your future self never forgets about who you are today?",
+    },
+    {
+      "id": "dn-51",
+      "moods": [
+        "hypothetical",
+        "romantic",
+        "random",
+      ],
+      "text": "If we could disappear for 24 hours and go anywhere, where would we go?",
+    },
+    {
+      "id": "dn-52",
+      "moods": [
+        "hypothetical",
+        "random",
+      ],
+      "text": "If I gave you a plane ticket and said "pack one bag," where are we going?",
+    },
+    {
+      "id": "dn-53",
+      "moods": [
+        "hypothetical",
+        "funny",
+      ],
+      "text": "If we had to open a business together tomorrow, what would we sell?",
+    },
+    {
+      "id": "dn-54",
+      "moods": [
+        "hypothetical",
+        "random",
+        "deep",
+      ],
+      "text": "If we could swap lives for one day, what would you be most curious to experience?",
+    },
+    {
+      "id": "dn-55",
+      "moods": [
+        "hypothetical",
+        "funny",
+        "romantic",
+      ],
+      "text": "If we won $10 million tomorrow, what's the first thing you think we'd do?",
+    },
+    {
+      "id": "dn-56",
+      "moods": [
+        "hypothetical",
+        "random",
+      ],
+      "text": "If we could instantly become experts at one thing together, what would you choose?",
+    },
+    {
+      "id": "dn-57",
+      "moods": [
+        "hypothetical",
+        "romantic",
+      ],
+      "text": "If we had to spend a month living somewhere completely new, where would you pick?",
+    },
+    {
+      "id": "dn-58",
+      "moods": [
+        "hypothetical",
+        "romantic",
+        "random",
+      ],
+      "text": "If tonight could turn into one completely unexpected adventure, what would you want it to be?",
+    },
+    {
+      "id": "dn-59",
+      "moods": [
+        "hypothetical",
+        "romantic",
+        "random",
+      ],
+      "text": "If we could recreate one fictional date from a movie or show, which one would you choose?",
+    },
+    {
+      "id": "dn-60",
+      "moods": [
+        "hypothetical",
+        "romantic",
+        "deep",
+      ],
+      "text": "If you could know one thing about our future together, what would you want to know?",
+    },
+  ],
+}
+`;
+
+exports[`protected questionnaire content > keeps the builder, invitation, and answer copy for every game 1`] = `
+[
+  {
+    "answerHeading": "Time to answer",
+    "answerText": "Go with your gut — there are no wrong answers, and you can change any answer any time before you submit.",
+    "builderIntro": "Pick your own questions, answer them yourself, then share the link so the other person can answer too.",
+    "finalText": "Every question is answered. Submit to see your result.",
+    "finalizeButtonLabel": "Answer. Share. See how much you're on the same page.",
+    "id": "make-your-own",
+    "inviteHeading": "Ready to jump in?",
+    "inviteText": "Alex made a quiz and already answered it. Answer the same questions, then see the result together.",
+  },
+  {
+    "answerHeading": "Time to answer",
+    "answerText": "Answer honestly — these are the same questions Alex already answered. Once you're both done, you'll see where your answers align and where they differ.",
+    "builderIntro": "A relationship compatibility quiz. Answer the questions yourself, then invite your partner to answer the same ones and see where you align.",
+    "finalText": "Ready to see where you align?",
+    "finalizeButtonLabel": "Answer. Share. See where you align.",
+    "id": "how-well-do-you-know-each-other",
+    "inviteHeading": "Ready to compare notes?",
+    "inviteText": "Alex made a relationship compatibility quiz and already answered it. Answer the same questions, then see where you align and where you differ.",
+  },
+  {
+    "answerHeading": "Time to answer",
+    "answerText": "Answer honestly — these are the same questions Alex already answered. You'll both get to discover more about each other once you're done.",
+    "builderIntro": "A conversation quiz to discover more about each other. Answer the questions yourself, then invite someone to play and see what you both learn.",
+    "finalText": "Ready to see what you discovered about each other?",
+    "finalizeButtonLabel": "Answer. Share. Discover each other.",
+    "id": "getting-to-know-you",
+    "inviteHeading": "Ready to get to know each other?",
+    "inviteText": "Alex picked a set of questions to discover more about each other and already answered them. Answer honestly, and see what you both find out.",
+  },
+  {
+    "answerHeading": "Time to answer",
+    "answerText": "Go with your gut — there are no wrong answers, and you can change any answer any time before you submit.",
+    "builderIntro": "Pick your own questions, answer them yourself, then share the link so the other person can answer too.",
+    "finalText": "Every question is answered. Submit to see your result.",
+    "finalizeButtonLabel": "Answer. Share. See how much you're on the same page.",
+    "id": "date-night",
+    "inviteHeading": "Ready to jump in?",
+    "inviteText": "Alex made a quiz and already answered it. Answer the same questions, then see the result together.",
+  },
+  {
+    "answerHeading": "36 Questions to Fall in Love",
+    "answerText": "Take your time and answer in your own words. You won't see Alex's answers until you've finished — then you'll both see the whole conversation.",
+    "builderIntro": "Answer each question in your own words, one at a time, across three stages. Then share the link so they can answer the same questions — you'll read each other's answers once you've both finished.",
+    "finalText": "Every question is answered. Finish to open your conversation and read each other's answers.",
+    "finalizeButtonLabel": "Lock in my answers and get the link",
+    "id": "36-questions-to-fall-in-love",
+    "inviteHeading": "Ready for a real conversation?",
+    "inviteText": "Alex has answered 36 questions, from light to meaningful, in three stages. Answer the same ones in your own words — once you've both finished, you'll read each other's answers side by side.",
+  },
+  {
+    "answerHeading": "Think you know them?",
+    "answerText": "Every question here is about Alex. Pick the answer you think Alex actually chose about themself — not your own answer. You'll find out how well you know them at the end.",
+    "builderIntro": "Each question is already written — you just write your own real answers, mark which one's true, then see how well they can guess.",
+    "finalText": "Ready to find out how well you know them?",
+    "finalizeButtonLabel": "Lock it in. Share it. See how well they know you.",
+    "id": "how-well-do-you-know-me",
+    "inviteHeading": "Think you know them?",
+    "inviteText": "Alex made a quiz about themself and already picked their real answers. Guess which ones they chose, and find out how well you actually know them.",
+  },
+  {
+    "answerHeading": "How well do you remember us?",
+    "answerText": "Every question is about a memory, story, or inside joke Alex shares with you. Pick the answer you think Alex picked, based on what you remember together.",
+    "builderIntro": "Each question is about a memory you share. Write your own answers, mark the real one, then see how well they remember it too.",
+    "finalText": "Ready to see how well you remember your friendship?",
+    "finalizeButtonLabel": "Lock it in. Share it. See how well they remember.",
+    "id": "friendship-check",
+    "inviteHeading": "How well do you remember us?",
+    "inviteText": "Alex made a quiz about the memories, inside jokes, and moments you share. See how well you remember your friendship together.",
+  },
+]
+`;
