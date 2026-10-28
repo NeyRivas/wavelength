@@ -1,6 +1,7 @@
 "use client";
 
-import { m, useScroll, useTransform } from "motion/react";
+import { useScroll, useTransform } from "motion/react";
+import * as m from "motion/react-m";
 import Link from "next/link";
 import { useRef } from "react";
 

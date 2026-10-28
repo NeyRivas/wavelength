@@ -1,6 +1,7 @@
 "use client";
 
-import { AnimatePresence, m, useReducedMotion } from "motion/react";
+import { AnimatePresence, useReducedMotion } from "motion/react";
+import * as m from "motion/react-m";
 import { useEffect, useState } from "react";
 
 import { MotionRoot } from "@/components/overprint/motion-root";

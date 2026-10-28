@@ -1,6 +1,6 @@
 "use client";
 
-import { m } from "motion/react";
+import * as m from "motion/react-m";
 import { useActionState, useState } from "react";
 
 import type { ActionState } from "@/app/actions/shared";

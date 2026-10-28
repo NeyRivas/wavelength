@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 
 // Loaded on first use and shared by every island, so pages that never
 // animate never download Motion's animation features at all.
-const loadFeatures = () => import("motion/react").then((mod) => mod.domMax);
+const loadFeatures = () => import("./motion-features").then((mod) => mod.default);
 
 /**
  * Wraps one interactive island (not the whole app) in Motion's lazy

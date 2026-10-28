@@ -1148,3 +1148,11 @@ a:is(:hover, :focus-visible) .op-glyph--echo .op-glyph__disc--b {
     transition: none;
   }
 }
+
+/* Phones: shorter covers, so six games don't become six screens. */
+@media (max-width: 40rem) {
+  .catalog-card__glyph {
+    aspect-ratio: 2 / 1;
+    margin-bottom: 1rem;
+  }
+}
