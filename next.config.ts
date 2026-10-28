@@ -2,12 +2,6 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  experimental: {
-    // Motion isn't on Next's default list; without this, importing hooks
-    // from the "motion/react" barrel bundles the whole library instead of
-    // only the pieces used (components use `m` from "motion/react-m").
-    optimizePackageImports: ["motion"],
-  },
   // A private or unknown URL (/create, /w/[token]/*, a 404 for a mistyped
   // share link — anything outside lib/analytics/ga-privacy-guard.ts's
   // PUBLIC_PATHS) must never reach a public page as `document.referrer`:

@@ -6,7 +6,6 @@ import { gaPrivacyGuardScript } from "@/lib/analytics/ga-privacy-guard";
 import { SessionBootstrap } from "./session-bootstrap";
 
 import "./globals.css";
-import "./overprint.css";
 
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 

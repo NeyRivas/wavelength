@@ -1,110 +1,66 @@
-"use client";
-
-import { type Variants } from "motion/react";
-import * as m from "motion/react-m";
-
-import { MotionRoot } from "@/components/overprint/motion-root";
-
-/**
- * The three steps, drawn with the same two discs as the hero: you answer
- * alone, they answer alone (the discs stay apart, nobody sees the other's
- * answers), then you compare and the overlap prints. It's a real
- * sequence, so it's numbered and plays once, in order, when it scrolls
- * into view. Copy and content render on the server either way; only the
- * discs move.
- */
-
-const STEPS = [
+const STEPS: {
+  number: string;
+  title: string;
+  description: string;
+  blobClass: string;
+  vividClass: string;
+}[] = [
   {
-    title: "You answer",
-    text: "Pick a game and answer on your own. Go with your gut.",
+    number: "01",
+    title: "Create",
+    description:
+      "Pick your questions and answer them honestly. No second-guessing — go with your gut.",
+    blobClass: "landing-card__blob--pink",
+    vividClass: "game-card--vivid-a",
   },
   {
-    title: "They answer",
-    text: "Send them the link. They answer the same questions without seeing yours.",
+    number: "02",
+    title: "Share",
+    description: "Send the link to someone. They answer the same questions independently.",
+    blobClass: "landing-card__blob--blue",
+    vividClass: "game-card--vivid-b",
   },
   {
-    title: "You compare",
-    text: "See where you overlap, and where you don't.",
+    number: "03",
+    title: "Discover",
+    description: "See where your answers line up — and where you're completely different.",
+    blobClass: "landing-card__blob--mint",
+    vividClass: "game-card--vivid-c",
   },
-] as const;
+];
 
-const sequence: Variants = {
-  hidden: {},
-  shown: { transition: { staggerChildren: 0.35 } },
-};
-
-const frame: Variants = {
-  hidden: { opacity: 0.35 },
-  shown: { opacity: 1, transition: { duration: 0.4 } },
-};
-
-const fromLeft: Variants = {
-  hidden: { x: "-28%" },
-  shown: { x: 0, transition: { type: "spring", stiffness: 140, damping: 18 } },
-};
-
-const fromRight: Variants = {
-  hidden: { x: "28%" },
-  shown: { x: 0, transition: { type: "spring", stiffness: 140, damping: 18 } },
-};
-
-function StepVisual({ step }: { step: number }) {
-  if (step === 0) {
-    return (
-      <m.span className="op-step__discs op-step__discs--one" variants={frame}>
-        <m.span className="op-disc op-disc--you" variants={fromLeft} />
-      </m.span>
-    );
-  }
-  if (step === 1) {
-    return (
-      <m.span className="op-step__discs op-step__discs--apart" variants={frame}>
-        <m.span className="op-disc op-disc--you op-disc--quiet" variants={fromLeft} />
-        <m.span className="op-disc op-disc--them" variants={fromRight} />
-      </m.span>
-    );
-  }
-  return (
-    <m.span className="op-step__discs op-step__discs--overlap" variants={frame}>
-      <m.span className="op-disc op-disc--you" variants={fromLeft} />
-      <m.span className="op-disc op-disc--them" variants={fromRight} />
-    </m.span>
-  );
-}
-
+/** "How it works" (Figma reference, screenshot 2) — three numbered cards,
+ * each with a single decorative shape bleeding off its top-right corner.
+ * `id="how-it-works"` is the header's real in-page anchor target.
+ *
+ * Card visual-reuse pass: these cards carry the `.game-card`/
+ * `.game-card--vivid*` classes (app/globals.css) — gradient fills,
+ * translucent blob/corner-glow treatment, lift+shadow hover, and ink
+ * typography. `blobClass`/`vividClass` pair up index-for-index (pink↔a,
+ * blue↔b, mint↔c), the established pairing. `game-card--inert` keeps the
+ * cursor a plain default, since these three are presentational steps, not
+ * links or buttons — no `aria-disabled`, since they were never actionable
+ * to begin with. Number/title/description text, order, and content are
+ * entirely unchanged. */
 export function LandingHowItWorks() {
   return (
-    <MotionRoot>
-      <section id="how-it-works" className="op-section op-how" aria-labelledby="how-heading">
-        <h2 id="how-heading" className="op-section__heading">
-          How it works
-        </h2>
-        <m.ol
-          className="op-how__steps"
-          variants={sequence}
-          initial="hidden"
-          whileInView="shown"
-          viewport={{ once: true, amount: 0.4 }}
-        >
-          {STEPS.map((step, index) => (
-            <li key={step.title} className="op-step">
-              <span className="op-step__visual" aria-hidden="true">
-                <StepVisual step={index} />
-              </span>
-              <div className="op-step__copy">
-                <h3 className="op-step__title">
-                  <span className="op-step__number" aria-hidden="true">
-                    {index + 1}
-                  </span>
-                  {step.title}
-                </h3>
-                <p className="op-step__text">{step.text}</p>
-              </div>
-            </li>
-          ))}
-        </m.ol>
-      </section>
-    </MotionRoot>
+    <section id="how-it-works" className="landing-section landing-how">
+      <p className="landing-eyebrow landing-eyebrow--plain">The game</p>
+      <h2 className="landing-section__heading">How it works</h2>
+
+      <div className="landing-card-grid">
+        {STEPS.map((step) => (
+          <div
+            className={`landing-card game-card game-card--inert game-card--vivid ${step.vividClass}`}
+            key={step.number}
+          >
+            <div className={`landing-card__blob ${step.blobClass}`} aria-hidden="true" />
+            <p className="landing-card__number">{step.number}</p>
+            <h3 className="landing-card__title">{step.title}</h3>
+            <p className="landing-card__text">{step.description}</p>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }

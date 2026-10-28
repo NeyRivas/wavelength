@@ -96,7 +96,7 @@ export function GlobalSummary({
         <h1 id="global-summary-heading" className="global-summary__heading">
           {copy.heading(aliasA, aliasB)}
         </h1>
-        <WavelengthIndicator score={score} aliasA={aliasA} aliasB={aliasB} />
+        <WavelengthIndicator score={score} level={level} />
         <AlignmentBadge level={level} />
         <p className="global-summary__score">{score}% aligned</p>
         <p className="global-summary__interpretation">{ALIGNMENT_INTERPRETATION[level]}</p>

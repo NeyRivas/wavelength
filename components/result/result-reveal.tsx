@@ -1,113 +1,116 @@
 "use client";
 
-import { AnimatePresence, useReducedMotion } from "motion/react";
-import * as m from "motion/react-m";
 import { useEffect, useState } from "react";
-
-import { MotionRoot } from "@/components/overprint/motion-root";
 
 const FINDING_PHASE_MS = 1000;
 const READY_PHASE_MS = 550;
-// Under prefers-reduced-motion nothing travels, so there's nothing to
-// watch: keep a brief beat for the status text, then show the result.
-const REDUCED_TOTAL_MS = 350;
 
 type Phase = "finding" | "ready" | "revealed";
 
 /**
- * The anticipation beat before a result: a "finding" phase, a shorter
- * "ready" phase, then the already-fully-computed result. `children` is
- * that real result content, already rendered server-side (scored via
- * lib/scoring/score.ts, nothing computed here); this component only holds
- * it back for those two beats, same ~1.55s as before. `children` is never
- * rendered until `phase === "revealed"`, so nothing about the result is
- * visible before that.
+ * Restore pass: brings back the original two-phase anticipation screen
+ * from commit 5ed9e3e ("Add the results transition and redesign the
+ * final result screen") — a brief "finding" beat, a shorter "ready" beat,
+ * then the already-fully-computed result. `children` is that real result
+ * content, already rendered server-side (scored via lib/scoring/score.ts,
+ * nothing computed here); this component does nothing but hold off
+ * showing it for those two short beats. No AI, no recomputation, no data
+ * fetching of its own — same ~1.55s total delay as the original.
+ * `children` is never rendered until `phase === "revealed"`, so nothing
+ * about the result — including whether either side even answered — is
+ * ever visible before that.
  *
- * Visual: the overprint motif (app/overprint.css). Two discs, one per
- * person, drift toward each other while searching, then settle into an
- * overlap and print their shared colour; the result then rises in. The
- * status text stays in one live region throughout, so screen readers
- * hear "Finding your result…" then "See your results" exactly as before.
- * The `.wavelength-loading*` class names are kept from the previous
- * implementation (legacy internal naming, never rendered as text).
+ * This had been replaced (QA follow-up pass) by a single-phase
+ * SameeeishWordmark hero build — restoring the two-phase wave/dots motif
+ * here was independent of that component (components/result/
+ * sameeeish-reveal.tsx), which at the time was still the approved small
+ * flourish inside each result card itself. A later typography cleanup
+ * pass has since removed that flourish from every result card too (and
+ * deleted the now-unused component) — this transition was untouched by
+ * that pass and still shows exactly what's described above, only before
+ * those cards' own content, not inside them.
+ *
+ * Copy: the original's first-phase text was "Finding your wavelength…",
+ * which would visibly reintroduce the retired "Wavelength" brand name.
+ * "Finding your result…" is the brand-safe replacement already approved
+ * and in use elsewhere in this exact spot (previously as this
+ * component's sr-only status text) — same anticipatory meaning, no
+ * visible rebrand. The second phase's "See your results" needed no
+ * change; it never mentioned "wavelength" to begin with. The motif
+ * itself — the dashed wave path, the two converging dots, the center
+ * glow — and its CSS class names (`.wavelength-loading*`) are restored
+ * verbatim from 5ed9e3e: internal identifiers only, never rendered as
+ * text, same "legacy internal naming is fine" exception already applied
+ * to `wavelengthId`/the `wavelengths` table elsewhere in this codebase.
+ *
+ * No `celebrate` prop anymore — the original transition never varied by
+ * result tier (that was specific to the SameeeishWordmark hero build this
+ * restores away from), so the three call sites in app/w/[token]/
+ * result/page.tsx no longer pass one.
  */
-function Reveal({ children }: { children: React.ReactNode }) {
+export function ResultReveal({ children }: { children: React.ReactNode }) {
   const [phase, setPhase] = useState<Phase>("finding");
-  const reduceMotion = useReducedMotion();
 
   useEffect(() => {
-    if (reduceMotion) {
-      const toRevealed = setTimeout(() => setPhase("revealed"), REDUCED_TOTAL_MS);
-      return () => clearTimeout(toRevealed);
-    }
     const toReady = setTimeout(() => setPhase("ready"), FINDING_PHASE_MS);
     const toRevealed = setTimeout(() => setPhase("revealed"), FINDING_PHASE_MS + READY_PHASE_MS);
     return () => {
       clearTimeout(toReady);
       clearTimeout(toRevealed);
     };
-  }, [reduceMotion]);
+  }, []);
 
-  const ready = phase === "ready";
+  if (phase === "revealed") {
+    return <>{children}</>;
+  }
 
   return (
-    <AnimatePresence mode="wait" initial={false}>
-      {phase === "revealed" ? (
-        <m.div
-          key="result"
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        >
-          {children}
-        </m.div>
-      ) : (
-        <m.div
-          key="loading"
-          className={`wavelength-loading${ready ? " wavelength-loading--ready" : ""}`}
-          role="status"
-          aria-live="polite"
-          exit={{ opacity: 0, scale: 0.96, transition: { duration: 0.2 } }}
-        >
-          <div className="op-reveal" aria-hidden="true">
-            <m.span
-              className="op-disc op-disc--you op-reveal__disc"
-              initial={{ x: "-70%" }}
-              animate={
-                ready
-                  ? { x: "-22%", transition: { type: "spring", stiffness: 220, damping: 18 } }
-                  : {
-                      x: ["-70%", "-40%", "-62%", "-34%"],
-                      transition: { duration: FINDING_PHASE_MS / 1000, ease: "easeInOut" },
-                    }
-              }
-            />
-            <m.span
-              className="op-disc op-disc--them op-reveal__disc"
-              initial={{ x: "70%" }}
-              animate={
-                ready
-                  ? { x: "22%", transition: { type: "spring", stiffness: 220, damping: 18 } }
-                  : {
-                      x: ["70%", "44%", "58%", "36%"],
-                      transition: { duration: FINDING_PHASE_MS / 1000, ease: "easeInOut" },
-                    }
-              }
-            />
-          </div>
-          <p className="wavelength-loading__text">
-            {ready ? "See your results" : "Finding your result…"}
-          </p>
-        </m.div>
-      )}
-    </AnimatePresence>
-  );
-}
-
-export function ResultReveal({ children }: { children: React.ReactNode }) {
-  return (
-    <MotionRoot>
-      <Reveal>{children}</Reveal>
-    </MotionRoot>
+    <div
+      className={`wavelength-loading${phase === "ready" ? " wavelength-loading--ready" : ""}`}
+      role="status"
+      aria-live="polite"
+    >
+      <svg
+        className="wavelength-loading__motif"
+        viewBox="0 0 200 80"
+        fill="none"
+        aria-hidden="true"
+      >
+        <path
+          d="M20 40c30-24 60-24 80 0s50 24 80 0"
+          stroke="var(--wl-muted)"
+          strokeWidth="1.5"
+          strokeDasharray="5 6"
+        />
+        <circle
+          className="wavelength-loading__glow"
+          cx="100"
+          cy="40"
+          r="16"
+          fill="var(--wl-mint)"
+        />
+        <circle
+          className="wavelength-loading__dot wavelength-loading__dot--a"
+          cx="20"
+          cy="40"
+          r="9"
+          fill="#ffffff"
+          stroke="var(--wl-lavender)"
+          strokeWidth="4"
+        />
+        <circle
+          className="wavelength-loading__dot wavelength-loading__dot--b"
+          cx="180"
+          cy="40"
+          r="9"
+          fill="#ffffff"
+          stroke="var(--wl-blue)"
+          strokeWidth="4"
+        />
+      </svg>
+      <p className="wavelength-loading__text">
+        {phase === "finding" ? "Finding your result…" : "See your results"}
+      </p>
+    </div>
   );
 }

@@ -2,19 +2,20 @@ import type { Metadata } from "next";
 import { Fraunces, Nunito_Sans } from "next/font/google";
 
 import { LandingCtaSection } from "@/components/landing/landing-cta-section";
+import { LandingExperience } from "@/components/landing/landing-experience";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { LandingHeader } from "@/components/landing/landing-header";
-import { LandingGames } from "@/components/landing/landing-games";
 import { LandingHero } from "@/components/landing/landing-hero";
 import { LandingHowItWorks } from "@/components/landing/landing-how-it-works";
 
 // Landing page only (app/page.tsx / route "/"). Everything below is
 // presentation for this one route — no new functionality, no routing,
 // Supabase, or business-logic changes. Every actual entry point into the
-// product is still a plain link to /play. The visual language is the
-// "overprint" system (app/overprint.css): the hero is a playable round of
-// the game, and every section reuses the same two-disc motif (see
-// components/landing/* and components/overprint/* doc comments).
+// product is still the same plain link to /create it always was; this
+// only changes how that content is framed visually, to match the
+// approved Figma Make reference (see components/landing/* doc comments
+// for section-by-section notes on what was reproduced and any
+// deliberate deviation).
 //
 // Fonts are instantiated here, not in the root layout, and their CSS
 // variables are applied only to this page's own wrapper div — every
@@ -34,7 +35,7 @@ import { LandingHowItWorks } from "@/components/landing/landing-how-it-works";
 // eyebrow copy, and "on the same page", its own H1) rather than inventing
 // new brand language. Deliberately not couples-only — "two people" covers
 // the Dating & Couples and Friends categories alike, matching what /play
-// actually offers. The H1 text is unchanged.
+// actually offers; the H1 and visual design are unchanged.
 const SITE_TITLE = "Sameeeish — A Game for Two: See If You're on the Same Page";
 const SITE_DESCRIPTION =
   "A playful question game for two — couples, friends, or anyone curious. Answer honestly, compare notes, and discover how aligned you really are. Free, no sign-up needed.";
@@ -80,7 +81,7 @@ export default function HomePage() {
       <main>
         <LandingHero />
         <LandingHowItWorks />
-        <LandingGames />
+        <LandingExperience />
         <LandingCtaSection />
       </main>
       <LandingFooter />
