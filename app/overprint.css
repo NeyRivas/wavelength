@@ -1,0 +1,1150 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   Overprint: the Sameeeish visual system.
+
+   Each person is a translucent pastel disc. Where two discs overlap they
+   multiply (mix-blend-mode: multiply), printing a deeper third colour:
+   the part you share. The same two shapes carry the home hero demo, the
+   how-it-works sequence, every game's cover, the result reveal and the
+   result score, so the whole journey reads as one idea.
+
+   Palette and type are the established identity (Fraunces display,
+   Nunito Sans interface, the five pastels, white and #181820); this file
+   only adds how they're used. Everything is namespaced `op-` except the
+   deliberate overrides of existing catalog and result classes, which are
+   grouped and labelled below.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --op-ink: #181820;
+  --op-lavender: #c9c3f4;
+  --op-blue: #b9ddf4;
+  --op-pink: #f3c7dd;
+  --op-peach: #f7d0b5;
+  --op-mint: #c5e8dd;
+  --op-paper: #ffffff;
+  /* Text tones derived from ink, not a new grey. */
+  --op-ink-soft: color-mix(in srgb, var(--op-ink) 74%, white);
+  --op-ink-faint: color-mix(in srgb, var(--op-ink) 18%, white);
+  /* A deeper lavender for small accents (step numbers, links), dark
+     enough for 4.5:1 on white. */
+  --op-accent: #5b4fc4;
+  --op-gutter: clamp(1.25rem, 5vw, 4rem);
+  --op-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.op-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── Discs ─────────────────────────────────────────────────────────────── */
+
+.op-disc {
+  display: block;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  mix-blend-mode: multiply;
+}
+
+.op-disc--you,
+.op-tone--lavender {
+  background: var(--op-lavender);
+}
+
+.op-disc--them,
+.op-tone--blue {
+  background: var(--op-blue);
+}
+
+.op-tone--pink {
+  background: var(--op-pink);
+}
+
+.op-tone--peach {
+  background: var(--op-peach);
+}
+
+.op-tone--mint {
+  background: var(--op-mint);
+}
+
+.op-disc--quiet {
+  opacity: 0.6;
+}
+
+/* ── Buttons and links ─────────────────────────────────────────────────── */
+
+.op-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3.25rem;
+  padding: 0.85rem 2rem;
+  border: 0;
+  border-radius: 999px;
+  font-family: var(--font-nunito), system-ui, sans-serif;
+  font-size: 1.0625rem;
+  font-weight: 800;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s var(--op-ease-out);
+}
+
+.op-button--ink {
+  background: var(--op-ink);
+  color: var(--op-paper);
+}
+
+.op-button--ink:hover {
+  background: color-mix(in srgb, var(--op-ink) 82%, var(--op-accent));
+}
+
+.op-button:active {
+  transform: scale(0.97);
+}
+
+.op-button:focus-visible,
+.op-link:focus-visible,
+.op-demo__next:focus-visible {
+  outline: 3px solid var(--op-accent);
+  outline-offset: 3px;
+}
+
+.op-link {
+  color: var(--op-ink);
+  font-weight: 800;
+  text-decoration: underline;
+  text-decoration-color: var(--op-lavender);
+  text-decoration-thickness: 0.18em;
+  text-underline-offset: 0.25em;
+  transition: text-decoration-color 0.2s ease;
+}
+
+.op-link:hover {
+  text-decoration-color: var(--op-accent);
+}
+
+/* ── Home: header over a white page ────────────────────────────────────── */
+
+/* The previous home hero was a framed gradient panel with the header
+   floating transparently on top of it. On a white page that would let
+   content scroll under bare nav text, so home now uses the same sticky
+   header as every other page, frosted rather than solid. */
+.landing--home .landing-header {
+  position: sticky;
+  top: 0;
+  inset-inline: auto;
+  background: color-mix(in srgb, var(--op-paper) 94%, transparent);
+  backdrop-filter: saturate(1.4) blur(14px);
+  -webkit-backdrop-filter: saturate(1.4) blur(14px);
+}
+
+/* ── Home: hero ────────────────────────────────────────────────────────── */
+
+.op-hero {
+  display: grid;
+  gap: clamp(2.5rem, 6vw, 4rem);
+  align-items: center;
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: clamp(2rem, 6vw, 4.5rem) var(--op-gutter) clamp(3.5rem, 8vw, 6rem);
+}
+
+@media (min-width: 60rem) {
+  .op-hero {
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+    min-height: calc(100svh - 5.5rem);
+  }
+}
+
+.op-hero__heading {
+  margin: 0;
+  max-width: 11ch;
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(2.75rem, 6.4vw, 5.5rem);
+  line-height: 1;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+
+.op-hero__lede {
+  margin: 1.5rem 0 0;
+  max-width: 30ch;
+  font-size: clamp(1.125rem, 1.6vw, 1.3125rem);
+  line-height: 1.5;
+  color: var(--op-ink-soft);
+}
+
+.op-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem 1.5rem;
+  margin-top: 2.25rem;
+}
+
+.op-hero__note {
+  font-size: 0.9375rem;
+  color: var(--op-ink-soft);
+}
+
+/* ── Home: the playable demo ───────────────────────────────────────────── */
+
+.op-demo {
+  --op-disc: 42%;
+  --op-step: 14.5%;
+  width: 100%;
+  max-width: 34rem;
+  margin-inline: auto;
+}
+
+.op-demo__fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.op-demo__question {
+  display: block;
+  float: left;
+  width: 100%;
+  margin: 0 0 1.5rem;
+  padding: 0;
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(1.375rem, 2.4vw, 1.75rem);
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+.op-demo__stage {
+  clear: both;
+  position: relative;
+  aspect-ratio: 100 / 42;
+  isolation: isolate;
+}
+
+.op-demo__disc {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--op-disc);
+  will-change: transform;
+}
+
+.op-demo__disc-label {
+  position: absolute;
+  top: 50%;
+  translate: 0 -50%;
+  font-size: 0.875rem;
+  font-weight: 800;
+  color: var(--op-ink);
+  mix-blend-mode: normal;
+}
+
+.op-disc--you .op-demo__disc-label {
+  left: 22%;
+}
+
+.op-disc--them .op-demo__disc-label {
+  right: 20%;
+}
+
+.op-demo__track {
+  position: relative;
+  height: 2.75rem;
+  margin-top: 0.75rem;
+}
+
+.op-demo__track::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: calc(var(--op-disc) / 2);
+  right: calc(var(--op-disc) / 2);
+  height: 2px;
+  translate: 0 -50%;
+  border-radius: 2px;
+  background: var(--op-ink-faint);
+}
+
+.op-demo__stop {
+  position: absolute;
+  top: 0;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  translate: -50% 0;
+  cursor: pointer;
+}
+
+.op-demo__input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.op-demo__dot {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid color-mix(in srgb, var(--op-ink) 55%, white);
+  border-radius: 50%;
+  background: var(--op-paper);
+  pointer-events: none;
+  transition:
+    transform 0.25s var(--op-ease-out),
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.op-demo__stop:hover .op-demo__dot {
+  transform: scale(1.25);
+  border-color: var(--op-ink);
+}
+
+.op-demo__input:checked + .op-demo__dot {
+  transform: scale(1.35);
+  border-color: var(--op-ink);
+  background: var(--op-ink);
+}
+
+.op-demo__input:focus-visible + .op-demo__dot {
+  outline: 3px solid var(--op-accent);
+  outline-offset: 3px;
+}
+
+.op-demo__ends {
+  position: relative;
+  height: 1.5rem;
+  font-size: 0.875rem;
+  color: var(--op-ink-soft);
+}
+
+.op-demo__ends span {
+  position: absolute;
+  top: 0;
+  translate: -50% 0;
+  white-space: nowrap;
+}
+
+.op-demo__ends span:first-child {
+  left: calc(var(--op-disc) / 2);
+}
+
+.op-demo__ends span:last-child {
+  left: calc(100% - var(--op-disc) / 2);
+}
+
+.op-demo__result {
+  margin-top: 1.75rem;
+  min-height: 11.5rem;
+}
+
+.op-demo__verdict {
+  margin: 0;
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(2.75rem, 5.2vw, 4.25rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.op-demo__word,
+.op-demo__letter {
+  display: inline-block;
+  white-space: pre;
+}
+
+.op-demo__detail {
+  margin: 0.75rem 0 0;
+  font-size: 1.0625rem;
+  font-weight: 700;
+}
+
+.op-demo__answers {
+  margin: 0.25rem 0 0;
+  font-size: 0.9375rem;
+  color: var(--op-ink-soft);
+}
+
+.op-demo__next {
+  margin-top: 1.25rem;
+  padding: 0.6rem 1.25rem;
+  border: 1.5px solid var(--op-ink-faint);
+  border-radius: 999px;
+  background: var(--op-paper);
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 800;
+  color: var(--op-ink);
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    transform 0.2s var(--op-ease-out);
+}
+
+.op-demo__next:hover {
+  border-color: var(--op-ink);
+}
+
+.op-demo__next:active {
+  transform: scale(0.97);
+}
+
+/* ── Home: sections ────────────────────────────────────────────────────── */
+
+.op-section {
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: clamp(4rem, 9vw, 7rem) var(--op-gutter);
+}
+
+.op-section__heading {
+  margin: 0;
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(2.25rem, 4.6vw, 3.5rem);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.op-section__lede {
+  margin: 0;
+  max-width: 36ch;
+  font-size: 1.125rem;
+  line-height: 1.5;
+  color: var(--op-ink-soft);
+}
+
+/* How it works */
+
+.op-how__steps {
+  display: grid;
+  gap: 2.5rem;
+  margin: clamp(2rem, 5vw, 3.5rem) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 48rem) {
+  .op-how__steps {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(1.5rem, 3vw, 2.5rem);
+  }
+}
+
+.op-step__visual {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 10;
+  border-radius: 2rem;
+  background: color-mix(in srgb, var(--op-lavender) 16%, white);
+}
+
+.op-step:nth-child(2) .op-step__visual {
+  background: color-mix(in srgb, var(--op-blue) 18%, white);
+}
+
+.op-step:nth-child(3) .op-step__visual {
+  background: color-mix(in srgb, var(--op-mint) 22%, white);
+}
+
+.op-step__discs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 74%;
+  isolation: isolate;
+}
+
+.op-step__discs .op-disc {
+  width: 47%;
+  flex: none;
+}
+
+.op-step__discs--apart {
+  justify-content: space-between;
+}
+
+.op-step__discs--overlap .op-disc + .op-disc {
+  margin-left: -20%;
+}
+
+.op-step__copy {
+  margin-top: 1.25rem;
+}
+
+/* Phones: picture beside the words, so three steps fit in about one
+   screen instead of three. */
+@media (max-width: 47.99rem) {
+  .op-step {
+    display: grid;
+    grid-template-columns: 8.5rem minmax(0, 1fr);
+    gap: 1.25rem;
+    align-items: center;
+  }
+
+  .op-step__visual {
+    aspect-ratio: 1;
+    border-radius: 1.5rem;
+  }
+
+  .op-step__discs {
+    width: 86%;
+  }
+
+  .op-step__copy {
+    margin-top: 0;
+  }
+
+  .op-how__steps {
+    gap: 1.5rem;
+  }
+}
+
+.op-step__title {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.op-step__number {
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 1.5rem;
+  color: var(--op-accent);
+}
+
+.op-step__text {
+  margin: 0.4rem 0 0;
+  max-width: 32ch;
+  font-size: 1rem;
+  line-height: 1.55;
+  color: var(--op-ink-soft);
+}
+
+/* Games */
+
+.op-games__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem 2rem;
+}
+
+.op-games__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr));
+  gap: clamp(2rem, 4vw, 3rem) clamp(1.25rem, 2.5vw, 2rem);
+  margin: clamp(2rem, 5vw, 3rem) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.op-games__grid > li {
+  display: flex;
+  min-width: 0;
+}
+
+.op-games__own {
+  margin: clamp(2.5rem, 5vw, 3.5rem) 0 0;
+  font-size: 1.125rem;
+}
+
+/* Closing */
+
+.op-closing {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: clamp(34rem, 86vh, 46rem);
+  padding: 4rem var(--op-gutter);
+  overflow: hidden;
+  text-align: center;
+  isolation: isolate;
+}
+
+.op-closing__discs {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  z-index: -1;
+  isolation: isolate;
+}
+
+.op-closing__disc {
+  grid-area: 1 / 1;
+  width: min(74vw, 36rem);
+}
+
+.op-closing__content {
+  display: grid;
+  justify-items: center;
+  max-width: 36rem;
+}
+
+.op-closing__heading {
+  margin: 0;
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(2.5rem, 6.2vw, 4.75rem);
+  line-height: 1;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+
+.op-closing__text {
+  margin: 1.25rem 0 2rem;
+  max-width: 32ch;
+  font-size: 1.125rem;
+  line-height: 1.5;
+  color: color-mix(in srgb, var(--op-ink) 86%, transparent);
+}
+
+/* ── Game covers: catalog card overrides ───────────────────────────────── */
+
+/* Deliberate overrides of the catalog card rules in globals.css: the
+   gradient-filled card becomes a cover (a tinted field with the game's
+   overprint glyph) with its text set on the page underneath. Markup and
+   copy are unchanged (tests/unit/play-catalog.test.ts pins both). */
+
+.catalog-card {
+  padding: 0;
+  overflow: visible;
+  border-radius: 0;
+  background: none;
+}
+
+.catalog-card--mint,
+.catalog-card--blue,
+.catalog-card--lavender,
+.catalog-card--peach,
+.catalog-card--pink {
+  background: none;
+}
+
+.catalog-card__glyph {
+  margin-bottom: 1.25rem;
+}
+
+.catalog-card__subtitle {
+  margin-top: 0.35rem;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--op-accent);
+}
+
+.catalog-card__description {
+  margin: 0.6rem 0 1.25rem;
+  color: var(--op-ink-soft);
+}
+
+.catalog-card__cta {
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  font-size: 1rem;
+  text-decoration: underline;
+  text-decoration-color: var(--op-lavender);
+  text-decoration-thickness: 0.18em;
+  text-underline-offset: 0.25em;
+  transition: text-decoration-color 0.2s ease;
+}
+
+.catalog-card:hover .catalog-card__cta,
+.catalog-card:focus-visible .catalog-card__cta {
+  text-decoration-color: var(--op-accent);
+}
+
+.catalog-card:focus-visible {
+  outline: 3px solid var(--op-accent);
+  outline-offset: 6px;
+  border-radius: 1.75rem;
+}
+
+/* The cover field takes a light tint of the card's own tone. */
+.catalog-card--mint .op-glyph {
+  background: color-mix(in srgb, var(--op-mint) 30%, white);
+}
+.catalog-card--blue .op-glyph {
+  background: color-mix(in srgb, var(--op-blue) 26%, white);
+}
+.catalog-card--lavender .op-glyph {
+  background: color-mix(in srgb, var(--op-lavender) 24%, white);
+}
+.catalog-card--peach .op-glyph {
+  background: color-mix(in srgb, var(--op-peach) 30%, white);
+}
+.catalog-card--pink .op-glyph {
+  background: color-mix(in srgb, var(--op-pink) 28%, white);
+}
+
+/* ── Glyph arrangements ────────────────────────────────────────────────── */
+
+.op-glyph {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 10;
+  border-radius: 1.75rem;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.op-glyph__disc {
+  --dx: 0%;
+  --dy: 0%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 34%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  mix-blend-mode: multiply;
+  transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy)));
+  transition: transform 0.6s var(--op-ease-out);
+}
+
+/* Each pair below: resting position, then the closer position on hover
+   or keyboard focus of the card. */
+
+.op-glyph--overlap .op-glyph__disc--a {
+  --dx: -32%;
+}
+.op-glyph--overlap .op-glyph__disc--b {
+  --dx: 32%;
+}
+a:is(:hover, :focus-visible) .op-glyph--overlap .op-glyph__disc--a {
+  --dx: -16%;
+}
+a:is(:hover, :focus-visible) .op-glyph--overlap .op-glyph__disc--b {
+  --dx: 16%;
+}
+
+.op-glyph--touch .op-glyph__disc--a {
+  --dx: -54%;
+  --dy: 8%;
+}
+.op-glyph--touch .op-glyph__disc--b {
+  --dx: 54%;
+  --dy: -8%;
+}
+a:is(:hover, :focus-visible) .op-glyph--touch .op-glyph__disc--a {
+  --dx: -40%;
+  --dy: 0%;
+}
+a:is(:hover, :focus-visible) .op-glyph--touch .op-glyph__disc--b {
+  --dx: 40%;
+  --dy: 0%;
+}
+
+.op-glyph--nested .op-glyph__disc--a {
+  width: 46%;
+}
+.op-glyph--nested .op-glyph__disc--b {
+  width: 18%;
+  --dx: 140%;
+  --dy: -120%;
+}
+a:is(:hover, :focus-visible) .op-glyph--nested .op-glyph__disc--b {
+  --dx: 20%;
+  --dy: 10%;
+}
+
+.op-glyph--horizon .op-glyph__disc--a {
+  width: 36%;
+  --dy: 8%;
+}
+.op-glyph--horizon .op-glyph__disc--b {
+  top: auto;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 36%;
+  aspect-ratio: auto;
+  border-radius: 0;
+  transform: none;
+}
+a:is(:hover, :focus-visible) .op-glyph--horizon .op-glyph__disc--a {
+  --dy: 34%;
+}
+
+.op-glyph--guess .op-glyph__disc--a {
+  --dx: -30%;
+}
+.op-glyph--guess .op-glyph__disc--b {
+  --dx: 44%;
+  --dy: -10%;
+  background: none;
+  border: 2.5px dashed color-mix(in srgb, var(--op-ink) 50%, transparent);
+  mix-blend-mode: normal;
+}
+a:is(:hover, :focus-visible) .op-glyph--guess .op-glyph__disc--b {
+  --dx: -22%;
+  --dy: 0%;
+}
+
+.op-glyph--echo .op-glyph__disc--a {
+  --dx: -34%;
+  --dy: -22%;
+}
+.op-glyph--echo .op-glyph__disc--b {
+  --dx: 34%;
+  --dy: 22%;
+}
+a:is(:hover, :focus-visible) .op-glyph--echo .op-glyph__disc--a {
+  --dx: -14%;
+  --dy: -8%;
+}
+a:is(:hover, :focus-visible) .op-glyph--echo .op-glyph__disc--b {
+  --dx: 14%;
+  --dy: 8%;
+}
+
+/* ── Reduced motion ────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  /* Overrides the scroll-linked inline transform Motion writes. */
+  .op-closing__disc--you {
+    transform: translateX(-18%) !important;
+  }
+
+  .op-closing__disc--them {
+    transform: translateX(18%) !important;
+  }
+
+  .op-button,
+  .op-demo__dot,
+  .op-demo__next,
+  .op-glyph__disc {
+    transition: none;
+  }
+
+  .op-button:active,
+  .op-demo__next:active {
+    transform: none;
+  }
+}
+
+/* ── Result: reveal ────────────────────────────────────────────────────── */
+
+.op-reveal {
+  display: grid;
+  place-items: center;
+  width: min(18rem, 80vw);
+  isolation: isolate;
+}
+
+.op-reveal__disc {
+  grid-area: 1 / 1;
+  width: 52%;
+}
+
+/* ── Result: score ─────────────────────────────────────────────────────── */
+
+.op-score {
+  display: grid;
+  place-items: center;
+  width: min(22rem, 86%);
+  margin: 0.5rem auto 1.5rem;
+  isolation: isolate;
+}
+
+.op-score__disc {
+  position: relative;
+  grid-area: 1 / 1;
+  width: 54%;
+}
+
+.op-score__name {
+  position: absolute;
+  top: 50%;
+  max-width: 40%;
+  overflow: hidden;
+  translate: 0 -50%;
+  font-size: 0.875rem;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--op-ink);
+}
+
+.op-disc--you .op-score__name {
+  left: 12%;
+}
+
+.op-disc--them .op-score__name {
+  right: 12%;
+  text-align: right;
+}
+
+/* Deliberate overrides of the result summary in globals.css: the frosted
+   glass panel over blurred blobs gives way to an open composition, so the
+   discs and the number carry the moment. Copy and structure unchanged. */
+
+.global-summary__ambient {
+  display: none;
+}
+
+.global-summary__glass {
+  padding: 1rem 0 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.global-summary__eyebrow {
+  font-size: 0.9375rem;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--op-accent);
+}
+
+.global-summary__heading {
+  font-size: clamp(2rem, 6vw, 2.75rem);
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+
+.global-summary__score {
+  margin-top: 1rem;
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(2.5rem, 8vw, 3.5rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+/* ── Questionnaire: answer options ─────────────────────────────────────── */
+
+/* The selected fill is its own element (.op-answer-ink, see
+   components/questionnaire/answer-control.tsx) that slides between
+   options, so the checked pill itself goes transparent and the fill sits
+   underneath it. Text colour still comes from the existing :checked
+   rules in globals.css. */
+
+.op-answer .create-answer-pill-option {
+  position: relative;
+  isolation: isolate;
+}
+
+/* Unselected options go transparent too (the page behind them is already
+   white) so the fill stays visible for its whole slide, not just once it
+   arrives. Extra classes in the checked selector out-rank the per-tint
+   :checked rules in globals.css. */
+.op-answer .create-answer-pill {
+  background: transparent;
+}
+
+.op-answer.create-answer
+  .create-answer-pill-option
+  .create-answer-pill-input:checked
+  + .create-answer-pill {
+  background: transparent;
+  border-color: transparent;
+}
+
+.op-answer-ink {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: 999px;
+  background: var(--wl-ink, var(--op-ink));
+}
+
+.op-answer.create-answer--lavender .op-answer-ink {
+  background: var(--op-lavender);
+}
+.op-answer.create-answer--blue .op-answer-ink {
+  background: var(--op-blue);
+}
+.op-answer.create-answer--mint .op-answer-ink {
+  background: var(--op-mint);
+}
+.op-answer.create-answer--pink .op-answer-ink {
+  background: var(--op-pink);
+}
+.op-answer.create-answer--peach .op-answer-ink {
+  background: var(--op-peach);
+}
+
+/* ── Experience pages: hero discs ──────────────────────────────────────── */
+
+/* The two pastel circles beside each game page's title become an
+   overprinted pair that meets once, on load, and prints its overlap. */
+
+.xp-hero__shapes {
+  position: relative;
+  inset: auto;
+  display: flex;
+  justify-content: center;
+  margin: 0 auto 1.75rem;
+  isolation: isolate;
+}
+
+.xp-hero__shape {
+  position: relative;
+  inset: auto;
+  width: clamp(5.5rem, 13vw, 8rem);
+  height: auto;
+  aspect-ratio: 1;
+  opacity: 1;
+  mix-blend-mode: multiply;
+}
+
+.xp-hero__shape--second {
+  width: clamp(5.5rem, 13vw, 8rem);
+  height: auto;
+  margin-left: calc(clamp(5.5rem, 13vw, 8rem) * -0.36);
+}
+
+.xp-hero__eyebrow {
+  font-size: 1rem;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--op-accent);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .xp-hero__shape--first {
+    animation: op-meet-left 1.1s var(--op-ease-out) both;
+  }
+
+  .xp-hero__shape--second {
+    animation: op-meet-right 1.1s var(--op-ease-out) both;
+  }
+}
+
+@keyframes op-meet-left {
+  from {
+    translate: -2.5rem 0;
+    opacity: 0;
+  }
+}
+
+@keyframes op-meet-right {
+  from {
+    translate: 2.5rem 0;
+    opacity: 0;
+  }
+}
+
+/* ── Catalog: make your own ────────────────────────────────────────────── */
+
+/* Deliberate override of .catalog-create in globals.css: the dark card
+   with blurred blobs becomes a light panel led by three overprinted discs
+   (your own mix), which pull together on hover/focus like the covers. */
+
+.catalog-create {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  background: color-mix(in srgb, var(--op-lavender) 18%, white);
+  color: var(--op-ink);
+}
+
+.catalog-create .catalog-create__title {
+  color: var(--op-ink);
+}
+
+.catalog-create .catalog-create__subtitle {
+  color: var(--op-accent);
+}
+
+.catalog-create .catalog-create__description {
+  color: var(--op-ink-soft);
+}
+
+.catalog-create__cta {
+  background: var(--op-ink);
+  color: var(--op-paper);
+}
+
+.catalog-create__shapes {
+  position: relative;
+  inset: auto;
+  width: 7.5rem;
+  height: 6.5rem;
+  isolation: isolate;
+}
+
+.catalog-create .catalog-create__shape {
+  width: 4.25rem;
+  height: 4.25rem;
+  inset: auto;
+  opacity: 1;
+  filter: none;
+  mix-blend-mode: multiply;
+  transition: transform 0.6s var(--op-ease-out);
+}
+
+.catalog-create .catalog-create__shape--lavender {
+  top: 0;
+  left: 0;
+}
+
+.catalog-create .catalog-create__shape--mint {
+  bottom: 0;
+  left: 1.6rem;
+}
+
+.catalog-create .catalog-create__shape--pink {
+  top: 0.4rem;
+  left: 3.25rem;
+}
+
+.catalog-create:is(:hover, :focus-visible) .catalog-create__shape--lavender {
+  transform: translate(0.6rem, 0.5rem);
+}
+
+.catalog-create:is(:hover, :focus-visible) .catalog-create__shape--mint {
+  transform: translate(0, -0.6rem);
+}
+
+.catalog-create:is(:hover, :focus-visible) .catalog-create__shape--pink {
+  transform: translate(-0.6rem, 0.4rem);
+}
+
+@media (max-width: 44rem) {
+  .catalog-create {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .catalog-create .catalog-create__shape {
+    transition: none;
+  }
+}

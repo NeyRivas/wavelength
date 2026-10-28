@@ -1,6 +1,12 @@
 import Link from "next/link";
 
 import {
+  OverprintGlyph,
+  type OverprintArrangement,
+  type OverprintTone,
+} from "@/components/overprint/overprint-glyph";
+
+import {
   catalogHref,
   MAKE_YOUR_OWN,
   type CatalogCard,
@@ -32,11 +38,29 @@ const TONE_BY_GAME_ID: Record<string, Tone> = {
   "friendship-check": "pink",
 };
 
+// Each game's cover: which two tones overprint, and how the discs sit
+// (see components/overprint/overprint-glyph.tsx for what each means).
+const GLYPH_BY_GAME_ID: Record<
+  string,
+  { arrangement: OverprintArrangement; tones: [OverprintTone, OverprintTone] }
+> = {
+  "how-well-do-you-know-each-other": { arrangement: "overlap", tones: ["mint", "blue"] },
+  "getting-to-know-you": { arrangement: "touch", tones: ["blue", "lavender"] },
+  "36-questions-to-fall-in-love": { arrangement: "nested", tones: ["lavender", "pink"] },
+  "date-night": { arrangement: "horizon", tones: ["peach", "pink"] },
+  "how-well-do-you-know-me": { arrangement: "guess", tones: ["lavender", "lavender"] },
+  "friendship-check": { arrangement: "echo", tones: ["pink", "mint"] },
+};
+
 export function CatalogCardLink({ card }: { card: CatalogCard }) {
   const tone = TONE_BY_GAME_ID[card.gameId] ?? "lavender";
   return (
     <Link href={catalogHref(card)} className={`catalog-card catalog-card--${tone}`}>
-      <span className="catalog-card__glow" aria-hidden="true" />
+      <OverprintGlyph
+        className="catalog-card__glyph"
+        arrangement={GLYPH_BY_GAME_ID[card.gameId]?.arrangement ?? "overlap"}
+        tones={GLYPH_BY_GAME_ID[card.gameId]?.tones ?? [tone, "blue"]}
+      />
       <h3 className="catalog-card__title">{card.title}</h3>
       <p className="catalog-card__subtitle">{card.subtitle}</p>
       <p className="catalog-card__description">{card.description}</p>

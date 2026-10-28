@@ -1,40 +1,58 @@
+"use client";
+
+import { m, useScroll, useTransform } from "motion/react";
 import Link from "next/link";
+import { useRef } from "react";
 
-const DOT_CLASSES = [
-  "landing-dot--lavender",
-  "landing-dot--blue",
-  "landing-dot--pink",
-  "landing-dot--mint",
-  "landing-dot--peach",
-];
+import { MotionRoot } from "@/components/overprint/motion-root";
 
-/** The dark closing CTA band (Figma reference, screenshot 4, top half —
- * the white footer below it is LandingFooter). Same /play entry-point
- * destination as every other CTA on this page. */
-export function LandingCtaSection() {
+/**
+ * Closing call to action. Two large discs start apart and slide into an
+ * overlap as the section scrolls toward the middle of the viewport, so
+ * the page ends on the same image the product ends on. Scroll-linked
+ * values bypass MotionConfig's reducedMotion, so that case lives in CSS
+ * (.op-closing__disc in app/overprint.css): the discs simply sit in their
+ * final, overlapped position. Doing it in CSS rather than branching on
+ * useReducedMotion() here keeps server and client markup identical.
+ */
+function Closing() {
+  const ref = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "center center"] });
+  const youX = useTransform(scrollYProgress, [0, 1], ["-58%", "-18%"]);
+  const themX = useTransform(scrollYProgress, [0, 1], ["58%", "18%"]);
+
   return (
-    <section className="landing-dark-cta">
-      <div className="landing-dark-cta__shapes" aria-hidden="true">
-        <div className="dark-shape dark-shape--1" />
-        <div className="dark-shape dark-shape--2" />
-        <div className="dark-shape dark-shape--3" />
+    <section ref={ref} className="op-closing" aria-labelledby="closing-heading">
+      <div className="op-closing__discs" aria-hidden="true">
+        <m.span
+          className="op-disc op-disc--you op-closing__disc op-closing__disc--you"
+          style={{ x: youX }}
+        />
+        <m.span
+          className="op-disc op-disc--them op-closing__disc op-closing__disc--them"
+          style={{ x: themX }}
+        />
       </div>
-
-      <div className="landing-dark-cta__content">
-        <h2 className="landing-dark-cta__heading">See how much you&apos;re on the same page.</h2>
-        <p className="landing-dark-cta__description">
-          It only takes a few minutes. You might learn something new about someone you&apos;ve known
-          for years.
+      <div className="op-closing__content">
+        <h2 id="closing-heading" className="op-closing__heading">
+          See where you overlap.
+        </h2>
+        <p className="op-closing__text">
+          A few minutes each. You might learn something new about someone you&apos;ve known for
+          years.
         </p>
-        <Link href="/play" className="landing-button landing-button--light landing-button--play">
-          Create your questionnaire <span aria-hidden="true">→</span>
+        <Link href="/play" className="op-button op-button--ink">
+          Start playing
         </Link>
-        <div className="landing-dot-row" aria-hidden="true">
-          {DOT_CLASSES.map((c) => (
-            <span key={c} className={`landing-dot ${c}`} />
-          ))}
-        </div>
       </div>
     </section>
+  );
+}
+
+export function LandingCtaSection() {
+  return (
+    <MotionRoot>
+      <Closing />
+    </MotionRoot>
   );
 }

@@ -140,61 +140,6 @@ dialog::backdrop {
   text-align: center;
 }
 
-.wavelength-loading__motif {
-  display: block;
-  width: min(16rem, 100%);
-  height: auto;
-}
-
-.wavelength-loading__dot {
-  animation: wavelength-converge-a 1.4s ease-in-out infinite alternate;
-}
-
-.wavelength-loading__dot--b {
-  animation-name: wavelength-converge-b;
-}
-
-@keyframes wavelength-converge-a {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(80px);
-  }
-}
-
-@keyframes wavelength-converge-b {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-80px);
-  }
-}
-
-.wavelength-loading__glow {
-  opacity: 0;
-  transform: scale(0.6);
-  transform-origin: 100px 40px;
-  transition:
-    opacity 0.4s ease,
-    transform 0.4s ease;
-}
-
-.wavelength-loading--ready .wavelength-loading__dot {
-  animation: none;
-  transform: translateX(80px);
-}
-
-.wavelength-loading--ready .wavelength-loading__dot--b {
-  transform: translateX(-80px);
-}
-
-.wavelength-loading--ready .wavelength-loading__glow {
-  opacity: 0.5;
-  transform: scale(1);
-}
-
 .wavelength-loading__text {
   margin: 0;
   font-family: var(--font-fraunces), serif;
@@ -202,17 +147,6 @@ dialog::backdrop {
   font-weight: 500;
   font-size: 1.25rem;
   color: var(--wl-ink);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .wavelength-loading__dot {
-    animation: none;
-    transform: translateX(80px);
-  }
-
-  .wavelength-loading__dot--b {
-    transform: translateX(-80px);
-  }
 }
 
 /* Standard visually-hidden-but-announced utility. No longer used by the
@@ -343,55 +277,6 @@ dialog::backdrop {
   margin: 0 auto 1.25rem;
   max-width: 22rem;
   overflow: visible;
-}
-
-/* Two wavelengths (A + B), each drifting on its own independent CSS
- * animation — see components/result/wavelength-indicator.tsx for how
- * Wave B's duration is derived from the real score (near-identical to
- * Wave A's at a high score, increasingly slower/more independent as
- * score drops). The SVG root's own default overflow:hidden clips
- * anything that drifts past the visible viewBox, so the paths are simply
- * drawn wider than it (no explicit clip-path needed here, unlike the
- * Hero's circular glass surface). */
-.wavelength-wave--a {
-  animation: wavelength-wave-drift-a 4.5s ease-in-out infinite alternate;
-}
-
-.wavelength-wave--b {
-  animation-name: wavelength-wave-drift-b;
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: infinite;
-  animation-direction: alternate;
-  /* animation-duration is set inline per score — see the component. */
-}
-
-@keyframes wavelength-wave-drift-a {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-9px);
-  }
-}
-
-@keyframes wavelength-wave-drift-b {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(8px);
-  }
-}
-
-.wavelength-indicator__glow {
-  filter: blur(14px);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .wavelength-wave--a,
-  .wavelength-wave--b {
-    animation: none;
-  }
 }
 
 /* Percentage is deliberately smaller than the badge/interpretation below
@@ -1233,11 +1118,6 @@ dialog::backdrop {
   color: #ffffff;
 }
 
-.landing-button--light {
-  background: var(--wl-lavender);
-  color: var(--wl-ink);
-}
-
 /* Hero CTA glass treatment (visual-signature pass) — additive to
    .landing-button--primary, applied only on the Hero's own CTA link
    (components/landing/landing-hero.tsx). Every other page/section using
@@ -1615,179 +1495,6 @@ dialog::backdrop {
   scroll-snap-align: start;
 }
 
-/* The rounded card itself — structurally the same idea as the page's own
-   .landing-dark-cta band (position: relative; overflow: hidden;
-   border-radius), carrying the hero's gradient instead of that section's
-   solid ink fill. No padding here — that lives on .landing-hero__inner
-   below instead, specifically so .landing-hero__ambient's `inset: 0` (its
-   containing block is this element's padding box) lines up with this
-   card's full visible area rather than stopping short of it by a
-   padding's width on every side. */
-.landing-hero__frame {
-  position: relative;
-  overflow: hidden;
-  border-radius: 1.5rem;
-}
-
-/* Content layout + padding, moved here from .landing-hero itself (see
-   that rule's own comment) — otherwise identical: one centered vertical
-   column (content, then the wave illustration + social proof), same gap,
-   same text-align.
-   Fit-to-fold pass: the vertical padding (top and bottom both) and the
-   gap before the illustration used to be larger — `--landing-hero-breathing`
-   is the one shared value behind both this rule's own padding and the
-   home-only top-extra below, reduced so the whole rounded rectangle fits
-   within a 1440×900 viewport on first load without scrolling. Horizontal
-   padding, text-align, and every other property are unchanged.
-   Taller-by-a-bit pass: nudged back up slightly (clamp max 1.75rem ->
-   2rem) per explicit follow-up request to make the rectangle a little
-   taller, while keeping it clear of the fold at 1440x900 (frame still
-   bottoms out comfortably above the 900px line). This only grows the
-   rectangle's own internal padding — `.landing-hero`'s outer padding (the
-   top and side margins against the viewport) is untouched.
-   Taller-still pass: nudged once more (clamp max 2rem -> 2.15rem) per
-   explicit follow-up request to make it a bit taller yet again, still
-   clear of the fold at 1440x900.
-   Taller-by-3x pass: per explicit follow-up request for three times the
-   size of the previous nudge (clamp max 2rem -> 2.15rem, a 0.15rem step),
-   applied a 0.45rem step instead (2.15rem -> 2.6rem, same ratio on
-   min/vw). At 1440x900 this puts the rectangle's bottom edge past the
-   fold by roughly a page's own typical scroll amount — no longer fully
-   visible without scrolling at that exact viewport, which is the
-   explicit tradeoff requested over the previous rounds' "fits within
-   900px" constraint. Side margins remain exactly as before. */
-.landing-hero__inner {
-  --landing-hero-breathing: clamp(1.375rem, 3.75vw, 2.6rem);
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1.25rem;
-  text-align: center;
-  padding: var(--landing-hero-breathing) clamp(1.5rem, 4vw, 4rem);
-}
-
-/* Unify pass: extra top padding, home page only, to reserve room for the
-   fixed header (see .landing--home .landing-header above) floating on top
-   of this card instead of sitting in its own row before it — needed only
-   here, for the page's initial scroll-position-0 state; every other
-   section below relies on scroll-margin-top instead, since the header
-   stays in view at every scroll position now (section-scroll pass), not
-   just while the hero is on screen. */
-.landing--home .landing-hero__inner {
-  padding-top: calc(var(--landing-hero-breathing) + var(--landing-nav-height));
-}
-
-/* Showpiece pass: widened from 36rem so the larger heading below has
-   room to settle into its intended two-line break ("Are you really" /
-   "on the same page?", an explicit <br/> in landing-hero.tsx) without a
-   too-narrow column forcing a third, orphaned line. The description and
-   CTA below keep their own narrower max-widths regardless (30rem /
-   intrinsic button width), so they don't stretch to match. */
-.landing-hero__content {
-  position: relative;
-  z-index: 1;
-  max-width: 44rem;
-}
-
-/* Showpiece pass: noticeably larger than before (was clamp(2.5rem, 4.5vw,
-   3.75rem)) so this reads as the page's immediate visual protagonist
-   rather than competing on equal footing with the rest of the content
-   column. The line break itself is no longer left to whatever a `ch`
-   measure happens to wrap to at a given font size — landing-hero.tsx now
-   breaks it explicitly after "really" ("Are you really" / "on the same
-   page?"), a deliberate, balanced two-line split with no isolated
-   single-word line; this rule carries no max-width of its own anymore
-   (a narrower one here fought the parent .landing-hero__content's own
-   44rem ceiling, below the heading's big font size, and forced an
-   unwanted third line) — 100% of that 44rem parent is the only
-   constraint, wide enough for "on the same page?" at this font size
-   while still wrapping further on its own if a viewport is ever narrower
-   than that line itself. */
-.landing-hero__heading {
-  margin: 0 auto 1.5rem;
-  max-width: 100%;
-  font-family: var(--font-fraunces), serif;
-  font-style: italic;
-  font-weight: 500;
-  font-size: clamp(2.75rem, 7vw, 5.25rem);
-  line-height: 1.08;
-  color: var(--wl-ink);
-  /* No hard-coded <br/> any more (see landing-hero.tsx) — text-wrap:
-     balance lets the browser pick the line break itself at every
-     breakpoint, so the heading never produces an orphaned single word on
-     its own line the way a fixed break can once the viewport narrows. */
-  text-wrap: balance;
-}
-
-.landing-hero__description {
-  margin: 0 auto 2.5rem;
-  max-width: 30rem;
-  font-size: 1.125rem;
-  line-height: 1.6;
-  color: var(--wl-muted);
-}
-
-/* Hierarchy pass: stacked (not side-by-side) so the "Free · No sign-up
-   needed" note reads as a caption directly under the CTA rather than a
-   second, competing action next to it — still centered, still the same
-   two children, just column instead of row. */
-.landing-hero__actions {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.875rem;
-}
-
-/* Hierarchy pass: the Hero's own CTA only (additive to .landing-button,
-   otherwise unchanged and still used as-is by the header and other
-   pages) — noticeably larger so it reads unmistakably as the page's
-   primary action, same pill shape, just bigger. Sized up again for the
-   solid-CTA visual test so the larger footprint plus the new solid fill
-   both read as a clear step up from the rest of the page's buttons. */
-.landing-button--hero {
-  padding: 1.5rem 3.25rem;
-  gap: 0.75rem;
-  font-size: 1.25rem;
-  transition:
-    background-color 0.2s ease,
-    box-shadow 0.2s ease,
-    transform 0.2s ease;
-}
-
-/* Hover pass: .landing-button--primary (shared with Experience's own
-   CTA) has never had a hover state of its own — scoped to
-   .landing-button--hero only, so Experience's button is untouched. A
-   background tint + shadow, kept so the button's flat, solid,
-   border-free identity — the same "visual language" as Experience's own
-   button — stays exactly as it is at rest. (.landing-header__cta's own
-   hover is a simpler, separate recipe — see its own rule — not reused
-   here.) */
-@media (hover: hover) {
-  .landing-button--hero:hover {
-    background-color: color-mix(in srgb, var(--wl-lavender) 16%, var(--wl-ink));
-    box-shadow: 0 18px 36px -16px rgba(24, 24, 32, 0.5);
-  }
-}
-
-/* The scale-up is its own rule, gated on prefers-reduced-motion, so the
-   tint/shadow above still respond on hover either way — only the motion
-   itself is suppressed. A pure transform never reflows the page, so nothing
-   else shifts when this kicks in. */
-@media (hover: hover) and (prefers-reduced-motion: no-preference) {
-  .landing-button--hero:hover {
-    transform: scale(1.04);
-  }
-}
-
-.landing-button--hero:focus-visible {
-  outline: 2px solid #ffffff;
-  outline-offset: 3px;
-  box-shadow: 0 0 0 5px rgba(24, 24, 32, 0.45);
-}
-
 /* ── play-entry button hover (standardized across the site) ───────────
    Every other button whose job is to start or enter a game/questionnaire
    — Experience's CTA, dark-cta's "Create your questionnaire", ways-to-
@@ -1831,229 +1538,6 @@ dialog::backdrop {
   box-shadow: 0 0 0 5px rgba(24, 24, 32, 0.45);
 }
 
-/* .landing-button--light's resting fill is lavender, not ink, so mixing
-   16% MORE lavender into it on hover would barely register — the same
-   16% ratio and transition instead mixes toward ink (deepening it,
-   mirroring the Hero's own "mix toward the opposite tone" mechanic), and
-   the focus ring swaps to ink since a white halo would barely show
-   against an already-light fill. Only `.landing-cta-section.tsx`'s
-   "Create your questionnaire" button currently uses both classes
-   together. */
-@media (hover: hover) {
-  .landing-button--light.landing-button--play:hover {
-    background-color: color-mix(in srgb, var(--wl-ink) 16%, var(--wl-lavender));
-    box-shadow: 0 18px 36px -16px rgba(24, 24, 32, 0.32);
-  }
-}
-
-.landing-button--light.landing-button--play:focus-visible {
-  outline: 2px solid var(--wl-ink);
-  outline-offset: 3px;
-  box-shadow: 0 0 0 5px rgba(24, 24, 32, 0.22);
-}
-
-/* Centers the shared .landing-eyebrow's own flex row (dots + label)
-   without touching that shared class — same modifier-class pattern as
-   .hiw-hero__eyebrow / .fc-hero__eyebrow. */
-.landing-hero__eyebrow {
-  justify-content: center;
-}
-
-.landing-hero__note {
-  font-size: 0.875rem;
-  /* var(--wl-muted) reads fine on the plain white background other
-     .landing-* text sits on, but these two words sit over the Hero's
-     colorful ambient gradient, where that gray loses contrast — ink
-     instead, kept legible/secondary purely through the small size and
-     regular weight (unlike the bold, larger headline). A very soft light
-     text-shadow (no new background/card) keeps it readable regardless of
-     which part of the moving gradient happens to sit behind it. */
-  color: var(--wl-ink);
-  text-shadow: 0 1px 3px rgba(255, 255, 255, 0.65);
-}
-
-.landing-social-proof {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  font-size: 0.875rem;
-  color: var(--wl-ink);
-}
-
-.landing-avatars {
-  display: flex;
-}
-
-.landing-avatar {
-  width: 2rem;
-  height: 2rem;
-  margin-left: -0.5rem;
-  border-radius: 50%;
-  border: 2px solid #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--wl-ink);
-}
-
-.landing-avatar:first-child {
-  margin-left: 0;
-}
-
-.landing-avatar--pink {
-  background: var(--wl-pink);
-}
-
-.landing-avatar--lavender {
-  background: var(--wl-lavender);
-}
-
-.landing-avatar--blue {
-  background: var(--wl-blue);
-}
-
-.landing-avatar--mint {
-  background: var(--wl-mint);
-}
-
-/* ── hero ambient background ──────────────────────────────────────────
-   New-background pass: one soft diagonal pastel wash across the whole
-   card plus one gentle white glow, instead of two separate radial blobs
-   (see git history for that earlier version).
-   Showpiece pass: previously full-bleed (left: 50% + width: 100vw +
-   translateX(-50%), breaking out to the true viewport edges) with a
-   bottom mask-image fading it into "How it works" below. Now that the
-   gradient lives inside .landing-hero__frame's own rounded, clipped box
-   instead, neither trick is needed: `inset: 0` fills this wrapper's
-   containing block — .landing-hero__frame's padding box, which (since
-   that element carries no padding of its own; see its own comment) is
-   its full visible area — and .landing-hero__frame's own `overflow:
-   hidden` clips the wash/glow children at the card's rounded edge, so
-   there's no seam left to mask: the gradient simply ends where the card
-   does. */
-.landing-hero__ambient {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-}
-
-/* The diagonal wash: one continuous linear-gradient (no separate shapes,
-   no visible boundaries) through the full approved palette, low opacity
-   so the colors read as light, delicate pastels rather than saturated
-   swatches — exactly the approved mockup's values, unchanged.
-   Floating-animation pass: inset: -4rem (bigger than the wrapper's own
-   -6rem/-6rem top/bottom bleed, so this layer is bigger than its parent
-   on every side) gives hero-ambient-wash-float below room to translate a
-   few rem without ever revealing this layer's own edge within the
-   viewport. Animating the layer's transform (not its gradient stops)
-   means the gradient image itself never changes — only its position
-   shifts slightly underneath the same viewport-sized window, which reads
-   as the color slowly drifting/breathing rather than any shape visibly
-   moving (there's no edge to perceive a shape by, since a linear
-   gradient has none) — this is the "extract only the animation, keep the
-   existing background exactly as it looks" approach: the gradient
-   recipe itself (colors, stops, opacity, blur) is byte-for-byte the
-   approved mockup's. */
-.landing-hero__ambient-wash {
-  position: absolute;
-  inset: -4rem;
-  background: linear-gradient(
-    135deg,
-    var(--wl-peach) 0%,
-    var(--wl-pink) 32%,
-    var(--wl-lavender) 62%,
-    var(--wl-blue) 100%
-  );
-  opacity: 0.4;
-  filter: blur(60px);
-  animation: hero-ambient-wash-float 28s ease-in-out infinite;
-}
-
-/* The soft glow: a single large, heavily-blurred white radial highlight
-   near the top of the section, for the same gentle airiness/brightness
-   the approved mockup's own white radial layer added — same position,
-   size, color, opacity, blur as that mockup.
-   Floating-animation pass: its own independent translate + scale,
-   different duration (34s vs. the wash's 28s) and direction
-   (alternate-reverse) than the wash layer, so the two never read as
-   moving in sync — the same "independent per-layer drift" principle
-   this file already uses for other multi-layer ambient effects (see
-   hero-wave-drift-a/-b below, and git history for the previous
-   hero-blob-drift-a/-b). Distances stay small relative to this layer's
-   own ~60rem size (a few percent at most, well under what the supplied
-   FloatingGradient reference moves its own layers) so the composition
-   never visibly changes, just breathes — "slow, fluid, subtle," not an
-   obvious moving circle. */
-.landing-hero__ambient-glow {
-  position: absolute;
-  width: 60rem;
-  height: 50rem;
-  top: -14rem;
-  left: calc(50% - 30rem);
-  border-radius: 50%;
-  background: radial-gradient(ellipse at 50% 50%, rgba(255, 255, 255, 0.55) 0%, transparent 72%);
-  filter: blur(60px);
-  animation: hero-ambient-glow-float 34s ease-in-out infinite;
-  animation-direction: alternate-reverse;
-}
-
-@keyframes hero-ambient-wash-float {
-  0%,
-  100% {
-    transform: translate(0, 0) scale(1);
-  }
-  50% {
-    transform: translate(2rem, -1.5rem) scale(1.06);
-  }
-}
-
-@keyframes hero-ambient-glow-float {
-  0%,
-  100% {
-    transform: translate(0, 0) scale(1);
-  }
-  50% {
-    transform: translate(-2.5rem, 2rem) scale(1.08);
-  }
-}
-
-/* ── hero illustration: two wavelengths ───────────────────────────────
-   Three soft, animated gradient blobs (CSS) behind one inline SVG. The
-   SVG's focal content is two independently-animated wave paths — "Wave
-   A" and "Wave B", each with its own participant dot — drifting toward
-   and away from phase, floating freely (no framing circle), plus a slow
-   ambient sync-glow pulse. See components/landing/landing-hero.tsx for
-   how the wave shapes/dot positions are computed. */
-
-/* Redesign pass: groups the illustration with the social-proof row right
-   below it, centered as one unit under the CTA, instead of the
-   illustration sitting beside the text column. */
-.landing-hero__visual {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-  width: 100%;
-}
-
-.landing-hero__illustration {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  max-width: 26rem;
-  /* A short band rather than the SVG's own full square: the wave paths,
-     dots, and sync-glow all sit within roughly y=110–290 of the 400×400
-     viewBox, so a ~2.2:1 box (with the SVG's preserveAspectRatio="xMidYMid
-     slice" — see landing-hero.tsx) crops in tight on that band instead of
-     showing the mostly-empty upper/lower thirds, which is what was
-     pushing the CTA and the social-proof row apart. */
-  aspect-ratio: 2.2 / 1;
-}
-
 /* `hero-blob-drift` (kept, shared): components/landing/for-couples-hero.tsx,
    faq-hero.tsx, how-it-works-hero.tsx, and ways-to-play-hero.tsx all still
    use this for their own decorative blobs, untouched. The hero's own two
@@ -2068,85 +1552,6 @@ dialog::backdrop {
   }
   50% {
     transform: translate(-0.75rem, 1rem) scale(1.05);
-  }
-}
-
-.hero-shape__svg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-
-/* Two wavelengths, two rhythms: each wave + its dot drifts back and
-   forth on its OWN independent duration (7.5s vs 9.5s, different
-   direction), so their relative phase keeps evolving — sometimes closer,
-   sometimes farther apart — without ever being scripted to a specific
-   "synced" frame. The two waves' shapes (amplitude/frequency/phase) also
-   differ statically, so they stay visually distinguishable even with the
-   animation fully stopped (prefers-reduced-motion, below). */
-.hero-wave--a {
-  animation: hero-wave-drift-a 7.5s ease-in-out infinite alternate;
-}
-
-.hero-wave--b {
-  animation: hero-wave-drift-b 9.5s ease-in-out infinite alternate;
-}
-
-@keyframes hero-wave-drift-a {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-45px);
-  }
-}
-
-@keyframes hero-wave-drift-b {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(35px);
-  }
-}
-
-/* A recurring, soft "moment of alignment" — pulses on its own slower,
-   independent cycle rather than being precisely timed to the two waves'
-   actual relative phase (which would need JS); artistically it still
-   reads as "every so often, a moment of connection". */
-.hero-sync-glow {
-  transform-box: fill-box;
-  transform-origin: center;
-  filter: blur(20px);
-  opacity: 0.15;
-  animation: hero-sync-pulse 11s ease-in-out infinite;
-}
-
-@keyframes hero-sync-pulse {
-  0%,
-  100% {
-    opacity: 0.15;
-    transform: scale(0.85);
-  }
-  50% {
-    opacity: 0.4;
-    transform: scale(1.1);
-  }
-}
-
-/* Floating-animation pass: .landing-hero__ambient-wash/-glow join this
-   list — under reduced motion the new background stays fully visible
-   (nothing here touches opacity/display, only animation), it just stops
-   drifting. The wave illustration's own reduced-motion behavior
-   (.hero-wave--a/--b, .hero-sync-glow) is unchanged. */
-@media (prefers-reduced-motion: reduce) {
-  .landing-hero__ambient-wash,
-  .landing-hero__ambient-glow,
-  .hero-wave--a,
-  .hero-wave--b,
-  .hero-sync-glow {
-    animation: none;
   }
 }
 
@@ -2352,52 +1757,6 @@ dialog::backdrop {
   display: contents;
 }
 
-/* Shared by the <button> ready-made-game cards (game-card.tsx) and the
-   plain <a> category cards (category-card.tsx) — text-decoration/color
-   resets matter only for the anchor case (a <button> has neither by
-   default), everything else applies equally to both. */
-.game-card {
-  position: relative;
-  overflow: hidden;
-  display: block;
-  width: 100%;
-  padding: 1.75rem;
-  border: 1px solid var(--color-border);
-  border-radius: 1rem;
-  background: #ffffff;
-  text-align: left;
-  text-decoration: none;
-  font: inherit;
-  color: inherit;
-  appearance: none;
-  cursor: pointer;
-  transition:
-    transform 0.15s ease,
-    box-shadow 0.2s ease,
-    border-color 0.2s ease;
-}
-
-/* Amplification pass: the lift/shadow here used to read as quite subtle
-   — bumped to a slightly taller lift, a touch of scale, and a deeper,
-   wider shadow so the interaction feels clearly more responsive, while
-   staying restrained (no rotation, no large movement). One rule, shared
-   by every .game-card everywhere it's used (How It Works' three step
-   cards, and Dating & Couples/Friends' game cards), so all three read as
-   one consistent hover language rather than needing separate tuning. */
-.game-card:hover {
-  transform: translateY(-4px) scale(1.015);
-  border-color: transparent;
-  box-shadow: 0 26px 44px -20px rgba(24, 24, 32, 0.36);
-}
-
-.game-card:active {
-  transform: translateY(0);
-}
-
-.game-card--inert {
-  cursor: default;
-}
-
 /* "Getting to know each other" only (game-card.tsx's `secondary` branch)
    — the outer wrapper <div> now carries every .game-card visual style
    (border/padding/background/hover lift), so the submit <button> inside
@@ -2513,18 +1872,6 @@ dialog::backdrop {
    this pass. */
 .game-card--vivid {
   border-color: transparent;
-}
-
-.game-card--vivid-a {
-  background: linear-gradient(135deg, var(--wl-lavender) 0%, var(--wl-blue) 100%);
-}
-
-.game-card--vivid-b {
-  background: linear-gradient(135deg, var(--wl-pink) 0%, var(--wl-peach) 100%);
-}
-
-.game-card--vivid-c {
-  background: linear-gradient(135deg, var(--wl-mint) 0%, var(--wl-lavender) 100%);
 }
 
 /* A second, smaller soft shape in the opposite corner from the existing
@@ -2658,15 +2005,6 @@ dialog::backdrop {
   color: var(--wl-ink);
 }
 
-/* Size pass: "slightly larger than their current size" — scoped to the
-   home page's own How It Works section only (`.landing--home .landing-how`).
-   Dating & Couples/Friends get the identical padding/gap bump separately
-   below, via `.play-category` instead of this selector, since they're
-   `.landing--internal` pages, not `.landing--home`. */
-.landing--home .landing-how .game-card {
-  padding: 2.25rem;
-}
-
 .landing--home .landing-how .landing-card-grid {
   gap: 2rem;
 }
@@ -2689,10 +2027,6 @@ dialog::backdrop {
    either way. */
 .play-category {
   max-width: 80rem;
-}
-
-.play-category .game-card {
-  padding: 2.25rem;
 }
 
 .play-category .landing-card-grid {
@@ -2732,36 +2066,11 @@ dialog::backdrop {
   align-items: center;
 }
 
-/* Width pass: the 60rem "Ad-rail" narrowing that used to live here is
-   removed — .landing-experience--home now falls through to the bare
-   `.landing-section` rule above (80rem, already centered), the same
-   width for-couples-questions.tsx's unmodified `.landing-experience`
-   already uses. Nothing else about this section changed: `display: grid;
-   align-items: center;` on the base `.landing-experience` rule above is
-   untouched.
-   Section-scroll pass (corrected): scroll-only — scroll-margin-top/
-   scroll-snap-align pair with --landing-nav-height and the proximity snap
-   on `html` (search "Section-scroll pass" near the top of this file) so
-   scrolling here settles with this section's own, unchanged top content
-   clear of the fixed header. Scoped to `.landing--home` even though
-   .landing-experience--home is already exclusive to this page's own
-   section, matching this file's established double-scoping convention
-   for every other home-only rule. */
-.landing--home .landing-experience--home {
-  scroll-margin-top: var(--landing-nav-height);
-  scroll-snap-align: start;
-}
-
 .landing-pill-row {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
   margin-top: 1.75rem;
-}
-
-.landing-experience__actions {
-  display: flex;
-  margin-top: 2rem;
 }
 
 .landing-experience__demo {
@@ -3058,143 +2367,6 @@ dialog::backdrop {
   color: var(--wl-muted);
 }
 
-/* ── dark closing CTA ─────────────────────────────────────────────────── */
-
-/* Section-scroll pass (corrected): scroll-only — this section's existing
-   height, padding, and layout are untouched (.landing-dark-cta__content
-   still just sits in this box's normal block flow, no flex). Only
-   scroll-margin-top/scroll-snap-align pair with --landing-nav-height and
-   the proximity snap on `html` (search "Section-scroll pass" near the top
-   of this file) so scrolling here settles with the section's own,
-   unchanged top edge clear of the fixed header. An earlier version also
-   forced min-height/display:flex/justify-content to make this read as a
-   full "scene" — that inflated the final CTA's actual height and was
-   reverted; its copy, typography, spacing, and button are exactly as
-   approved.
-   LandingCtaSection (components/landing/landing-cta-section.tsx) is
-   shared by /, /how-it-works, /about, /for-couples, /faq, and
-   /ways-to-play — this rule's width (no max-width, just the small
-   clamp-based margin below) is every one of those six pages' actual,
-   original "near-full-bleed" panel, confirmed against git history
-   (commit 72b2068, kept through 409d0cb's revert of a later, since-
-   abandoned attempt to narrow it on home alone to 60rem). .landing-hero
-   above now matches this exact width/gutter instead of the other way
-   around — see that rule's own comment. */
-.landing-dark-cta {
-  position: relative;
-  overflow: hidden;
-  margin: 0 clamp(0px, 2vw, 1.5rem);
-  border-radius: 1.5rem;
-  background: var(--wl-ink);
-  padding: clamp(4rem, 10vw, 7rem) clamp(1.5rem, 4vw, 4rem);
-  text-align: center;
-}
-
-/* Width-correction pass (superseded): a brief home-only 60rem override
-   lived here, reviving a since-abandoned commit-9ff589a experiment. Per
-   explicit follow-up request, the dark CTA's width stays the base rule's
-   original near-full-bleed sizing — confirmed against git history
-   (commit 72b2068, kept through 409d0cb's revert of that same 60rem
-   experiment) — on every page including home, unmodified; .landing-hero
-   above now matches THIS width instead (see its own comment). Scroll
-   behavior only, same as every other home-only section. */
-.landing--home .landing-dark-cta {
-  scroll-margin-top: var(--landing-nav-height);
-  scroll-snap-align: start;
-}
-
-.landing-dark-cta__shapes {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-.dark-shape {
-  position: absolute;
-  border-radius: 50%;
-  opacity: 0.5;
-}
-
-.dark-shape--1 {
-  width: 20rem;
-  height: 20rem;
-  top: -6rem;
-  left: -6rem;
-  background: #38384a;
-}
-
-.dark-shape--2 {
-  width: 16rem;
-  height: 16rem;
-  top: 2rem;
-  right: 12%;
-  background: #26262f;
-}
-
-.dark-shape--3 {
-  width: 18rem;
-  height: 18rem;
-  bottom: -7rem;
-  right: -5rem;
-  background: #3a2e35;
-}
-
-.landing-dark-cta__content {
-  position: relative;
-  z-index: 1;
-  max-width: 34rem;
-  margin: 0 auto;
-}
-
-.landing-dark-cta__heading {
-  margin: 0 0 1rem;
-  font-family: var(--font-fraunces), serif;
-  font-style: italic;
-  font-weight: 500;
-  font-size: clamp(2.25rem, 5vw, 3.5rem);
-  color: #ffffff;
-}
-
-.landing-dark-cta__description {
-  margin: 0 0 2rem;
-  font-size: 1.0625rem;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.65);
-}
-
-.landing-dot-row {
-  display: flex;
-  justify-content: center;
-  gap: 0.625rem;
-  margin-top: 2rem;
-}
-
-.landing-dot {
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: 50%;
-}
-
-.landing-dot--lavender {
-  background: var(--wl-lavender);
-}
-
-.landing-dot--blue {
-  background: var(--wl-blue);
-}
-
-.landing-dot--pink {
-  background: var(--wl-pink);
-}
-
-.landing-dot--mint {
-  background: var(--wl-mint);
-}
-
-.landing-dot--peach {
-  background: var(--wl-peach);
-}
-
 /* ── footer ───────────────────────────────────────────────────────────── */
 
 /* Width-bug fix: on every internal page, `.landing-footer` is a direct
@@ -3398,10 +2570,6 @@ dialog::backdrop {
   }
 
   .landing-pill-row {
-    justify-content: center;
-  }
-
-  .landing-experience__actions {
     justify-content: center;
   }
 
@@ -7655,19 +6823,6 @@ dialog::backdrop {
 
 .catalog-card--pink {
   background: linear-gradient(135deg, var(--wl-pink) 0%, var(--wl-lavender) 100%);
-}
-
-/* One soft highlight in the top-right corner, behind the text. */
-.catalog-card__glow {
-  position: absolute;
-  top: -2.5rem;
-  right: -2.5rem;
-  width: 8rem;
-  height: 8rem;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.45);
-  filter: blur(14px);
-  pointer-events: none;
 }
 
 .catalog-card__title,

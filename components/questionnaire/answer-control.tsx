@@ -1,8 +1,10 @@
 "use client";
 
-import { useActionState } from "react";
+import { m } from "motion/react";
+import { useActionState, useState } from "react";
 
 import type { ActionState } from "@/app/actions/shared";
+import { MotionRoot } from "@/components/overprint/motion-root";
 import { initialActionState } from "@/app/actions/shared";
 import { SCALE_LABELS, SCALE_VALUES } from "@/lib/wavelength/categories";
 
@@ -53,6 +55,37 @@ export function answerInputId(questionId: string, value: number): string {
  * `<label htmlFor>` at the exact same input instead of growing a second,
  * parallel selection mechanism — see that file's own doc comment.
  */
+// The selected option's fill is one shared element (layoutId) that
+// travels from the previous answer to the new one, so changing your mind
+// visibly moves your answer rather than swapping two colours.
+function Pill({
+  questionId,
+  selected,
+  children,
+}: {
+  questionId: string;
+  selected: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <>
+      <m.span className="create-answer-pill" whileTap={{ scale: 0.97 }}>
+        {children}
+      </m.span>
+      {/* After the pill, so the existing `input:checked + .create-answer-pill`
+          and focus-ring selectors still match; CSS layers it underneath. */}
+      {selected && (
+        <m.span
+          layoutId={`answer-ink-${questionId}`}
+          className="op-answer-ink"
+          aria-hidden="true"
+          transition={{ type: "spring", stiffness: 420, damping: 34 }}
+        />
+      )}
+    </>
+  );
+}
+
 export function AnswerControl({
   action,
   wavelengthId,
@@ -82,67 +115,91 @@ export function AnswerControl({
   tint?: CategoryTint;
 }) {
   const [state, formAction, pending] = useActionState(action, initialActionState);
+  // Only drives the sliding highlight below; the radios themselves stay
+  // uncontrolled and the saved value still comes from the form submit.
+  const [selected, setSelected] = useState(currentValue);
+  // Follow the saved value when the server sends a new one.
+  const [savedValue, setSavedValue] = useState(currentValue);
+  if (currentValue !== savedValue) {
+    setSavedValue(currentValue);
+    setSelected(currentValue);
+  }
 
   function submitOnChange(event: React.ChangeEvent<HTMLInputElement>) {
-    onSelect?.(Number(event.currentTarget.value));
+    const value = Number(event.currentTarget.value);
+    setSelected(value);
+    onSelect?.(value);
     event.currentTarget.form?.requestSubmit();
   }
 
   return (
-    <form action={formAction} className={`create-answer${tint ? ` create-answer--${tint}` : ""}`}>
-      <input type="hidden" name="wavelengthId" value={wavelengthId} />
-      <input type="hidden" name="questionId" value={question.id} />
+    <MotionRoot>
+      <form
+        action={formAction}
+        // React resets this form after each submit, back to the last saved
+        // answer (the new one once the page has revalidated, the old one if
+        // the save failed); keep the highlight on whatever is checked.
+        onReset={() => setSelected(currentValue)}
+        className={`create-answer op-answer${tint ? ` create-answer--${tint}` : ""}`}
+      >
+        <input type="hidden" name="wavelengthId" value={wavelengthId} />
+        <input type="hidden" name="questionId" value={question.id} />
 
-      <fieldset className="create-answer__fieldset" disabled={pending}>
-        <legend className="create-field__label">Your answer</legend>
-        <div className="create-answer-options">
-          {question.type === "scale"
-            ? SCALE_VALUES.map((v) => (
-                <label key={v} className="create-answer-pill-option">
-                  <input
-                    id={answerInputId(question.id, v)}
-                    type="radio"
-                    name="value"
-                    value={v}
-                    className="create-answer-pill-input"
-                    defaultChecked={currentValue === v}
-                    onChange={submitOnChange}
-                    required
-                  />
-                  <span className="create-answer-pill">{SCALE_LABELS[v]}</span>
-                </label>
-              ))
-            : // Keyed by index, not option text: a brand-new ready-made
-              // question (e.g. "How Well Do You Know Me?") can briefly have
-              // two identical empty-string options before A has typed
-              // anything in — a text-based key would collide there.
-              question.options?.map((option, index) => (
-                <label key={index} className="create-answer-pill-option">
-                  <input
-                    id={answerInputId(question.id, index)}
-                    type="radio"
-                    name="value"
-                    value={index}
-                    className="create-answer-pill-input"
-                    defaultChecked={currentValue === index}
-                    onChange={submitOnChange}
-                    required
-                  />
-                  <span className="create-answer-pill">{option}</span>
-                </label>
-              ))}
-        </div>
-      </fieldset>
+        <fieldset className="create-answer__fieldset" disabled={pending}>
+          <legend className="create-field__label">Your answer</legend>
+          <div className="create-answer-options">
+            {question.type === "scale"
+              ? SCALE_VALUES.map((v) => (
+                  <label key={v} className="create-answer-pill-option">
+                    <input
+                      id={answerInputId(question.id, v)}
+                      type="radio"
+                      name="value"
+                      value={v}
+                      className="create-answer-pill-input"
+                      defaultChecked={currentValue === v}
+                      onChange={submitOnChange}
+                      required
+                    />
+                    <Pill questionId={question.id} selected={selected === v}>
+                      {SCALE_LABELS[v]}
+                    </Pill>
+                  </label>
+                ))
+              : // Keyed by index, not option text: a brand-new ready-made
+                // question (e.g. "How Well Do You Know Me?") can briefly have
+                // two identical empty-string options before A has typed
+                // anything in — a text-based key would collide there.
+                question.options?.map((option, index) => (
+                  <label key={index} className="create-answer-pill-option">
+                    <input
+                      id={answerInputId(question.id, index)}
+                      type="radio"
+                      name="value"
+                      value={index}
+                      className="create-answer-pill-input"
+                      defaultChecked={currentValue === index}
+                      onChange={submitOnChange}
+                      required
+                    />
+                    <Pill questionId={question.id} selected={selected === index}>
+                      {option}
+                    </Pill>
+                  </label>
+                ))}
+          </div>
+        </fieldset>
 
-      <p className="create-save-status" aria-live="polite">
-        {pending ? "Saving…" : currentValue !== undefined ? "Saved" : ""}
-      </p>
-
-      {state.error && (
-        <p role="alert" className="create-form-error">
-          {state.error}
+        <p className="create-save-status" aria-live="polite">
+          {pending ? "Saving…" : currentValue !== undefined ? "Saved" : ""}
         </p>
-      )}
-    </form>
+
+        {state.error && (
+          <p role="alert" className="create-form-error">
+            {state.error}
+          </p>
+        )}
+      </form>
+    </MotionRoot>
   );
 }
