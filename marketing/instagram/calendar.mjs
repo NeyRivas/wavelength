@@ -253,22 +253,15 @@ ${PLAY}`,
     n: 9,
     date: "2026-10-29",
     format: "reel",
-    kind: "filmed",
+    kind: "animated",
+    motion: "howto",
+    coverFrame: 14.7,
     pillar: "Producto",
     pin: true,
-    title: "How it works in 15 seconds",
-    cover: "How to play *Sameeeish* in 15 seconds",
-    script: [
-      "Grabación de pantalla del celular (sin cara). Texto grande arriba en cada paso.",
-      "0–3 s · “Pick a game” → tocar Date Night / Friendship Check en sameeeish.com.",
-      "3–7 s · “Answer the questions” → responder 2 preguntas rápido.",
-      "7–10 s · “Send the link” → compartir por WhatsApp/iMessage.",
-      "10–13 s · “See where you're same… or -ish” → pantalla de resultados.",
-      "13–15 s · “Free. No account. Link in bio.”",
-    ],
+    title: "How to play Sameeeish in 15 seconds",
     caption: `How it works:
 1. Pick a game (or write your own questions)
-2. Answer them yourself
+2. Answer them on your own
 3. Send the link to your person
 4. See where you're the same… and where you're -ish 💜
 
@@ -276,7 +269,7 @@ No app to download. No account. ${PLAY}`,
     tags: TAGS.general,
     audio: "Audio tendencia upbeat",
     notes:
-      "Post fijado #3. Graba la pantalla del celular en el sitio real; acelera a 1.5x si hace falta.",
+      "Post fijado #3. Era grabación de pantalla; pasó a tutorial animado con un celular ilustrado (no es captura real de la app).",
   },
   {
     n: 10,

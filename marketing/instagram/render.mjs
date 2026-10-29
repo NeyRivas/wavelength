@@ -255,6 +255,8 @@ const reelCover = (p) => {
   if (p.coverStyle === "post") return questionSlide(STORY, "solid", p.mood, p.question, send);
   if (p.motion === "chatplus")
     return chatplusCover(p, { fraunces: FRAUNCES, frauncesItalic: FRAUNCES_I, nunito: NUNITO });
+  if (p.motion === "howto")
+    return coverSlide(STORY, p.tint, null, "In 15 seconds", "How to play *Sameeeish*", "");
   if (p.motion === "intro")
     return introCover(p, { fraunces: FRAUNCES, frauncesItalic: FRAUNCES_I, nunito: NUNITO });
   return questionSlide(
@@ -318,6 +320,20 @@ for (const p of todo) {
         join(OUT, `${nn}-reel.mp4`),
         join(OUT, `.tmp-${nn}`),
       );
+    // A still from the finished video makes the best cover for some reels.
+    if (p.kind === "animated" && p.coverFrame != null)
+      execFileSync("ffmpeg", [
+        "-y",
+        "-loglevel",
+        "error",
+        "-ss",
+        String(p.coverFrame),
+        "-i",
+        join(OUT, `${nn}-reel.mp4`),
+        "-frames:v",
+        "1",
+        join(OUT, `${nn}-reel-cover.png`),
+      ]);
   }
   console.log(`✓ ${nn} ${p.format}${p.kind ? `/${p.kind}` : ""}`);
 }

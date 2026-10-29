@@ -518,7 +518,152 @@ function chatplusCoverMinimal(p, fonts) {
   );
 }
 
-const STYLES = { intro, chat, rapid, chatplus };
+// ── how-to ────────────────────────────────────────────────────────────────
+// Product tutorial: a stylised phone (not a screen recording) walks through
+// the real flow — pick a game, answer alone, send the link, see SAME / -ISH —
+// with a tapping finger, typed step titles and a 15-second countdown chip.
+const HOWTO_CSS = `
+.timer-chip{position:absolute;right:90px;top:288px;font-weight:800;font-size:34px;font-variant-numeric:tabular-nums;
+  padding:10px 24px;border-radius:999px;background:rgba(244,242,253,.1);color:${SNOW}}
+.timer-chip.done{background:${LAV};color:${INK}}
+.htitle{position:absolute;left:90px;right:90px;top:560px;font-family:Fraunces;font-weight:600;font-size:150px;line-height:1}
+.hsub{font-family:Nunito;font-weight:800;font-size:46px;color:${LAV};margin-top:34px;opacity:0;animation:pop .35s forwards}
+.step{position:absolute;left:90px;right:90px;top:380px;display:flex;flex-direction:column;gap:14px}
+.step .kick{opacity:0;animation:pop .3s forwards}
+.step .t{font-family:Fraunces;font-weight:600;font-size:84px;line-height:1.04}
+.phone{position:absolute;left:50%;top:560px;width:600px;height:900px;margin-left:-300px;zoom:1.14;border-radius:72px;background:${PAPER};
+  border:14px solid #2b2a37;box-shadow:0 40px 120px -30px rgba(0,0,0,.7),0 0 0 2px rgba(244,242,253,.08);overflow:hidden;color:${INK};
+  opacity:0;transform:translateY(220px) scale(.96)}
+@keyframes phonein{to{opacity:1;transform:none}}
+@keyframes phoneout{to{opacity:0;transform:translateY(-80px) scale(.9)}}
+.notch{position:absolute;left:50%;top:16px;width:150px;height:34px;margin-left:-75px;border-radius:20px;background:#2b2a37;z-index:5}
+.screen{position:absolute;inset:0;padding:86px 40px 40px;display:flex;flex-direction:column;gap:22px;transform:translateX(105%)}
+@keyframes sin{to{transform:none}}
+@keyframes sout{from{transform:none}to{transform:translateX(-105%)}}
+.sh{font-family:Fraunces;font-weight:600;font-size:46px;line-height:1.1}
+.ss{font-weight:800;font-size:20px;letter-spacing:.14em;text-transform:uppercase;opacity:.5}
+.game{border-radius:30px;padding:28px 30px;font-family:Fraunces;font-weight:600;font-size:36px;background:#fff;border:2px solid #e6e3f0;position:relative}
+.game small{display:block;font-family:Nunito;font-weight:700;font-size:20px;opacity:.55;margin-top:6px}
+.game.hl{background:${LAV};border-color:${LAV}}
+.game.own{background:transparent;border-style:dashed;opacity:.6}
+@keyframes pick{0%{transform:none}40%{transform:scale(.95)}100%{transform:scale(1);box-shadow:0 0 0 6px ${INK}}}
+.qbox{background:#fff;border-radius:34px;padding:34px 32px;border:2px solid #e6e3f0;display:flex;flex-direction:column;gap:22px}
+.qq{font-family:Fraunces;font-weight:600;font-size:50px;line-height:1.08}
+.opt{border-radius:999px;padding:20px 28px;font-weight:800;font-size:30px;border:2px solid #d9d5e6;position:relative}
+@keyframes chosen{to{background:${INK};color:${SNOW};border-color:${INK}}}
+.lockline{align-self:center;font-weight:800;font-size:24px;opacity:0;animation:pop .3s forwards}
+.done{align-self:flex-start;font-weight:800;font-size:24px;background:#e3f1ea;color:#1f6b4a;padding:10px 20px;border-radius:999px}
+.link{background:#fff;border:2px dashed #cfcae0;border-radius:24px;padding:24px 26px;font-weight:800;font-size:28px}
+.btn{align-self:stretch;text-align:center;background:${INK};color:${SNOW};border-radius:999px;padding:24px;font-weight:800;font-size:32px;position:relative}
+.toast{align-self:center;background:${INK};color:${SNOW};border-radius:999px;padding:14px 26px;font-weight:800;font-size:24px;opacity:0;animation:pop .3s forwards}
+.notif{position:absolute;left:24px;right:24px;top:-140px;background:rgba(24,24,32,.92);color:${SNOW};border-radius:30px;padding:22px 26px;
+  font-weight:700;font-size:26px;display:flex;flex-direction:column;gap:4px;z-index:6}
+.notif b{font-size:20px;letter-spacing:.12em;text-transform:uppercase;color:${LAV}}
+@keyframes drop{to{transform:translateY(200px)}}
+.res{display:flex;justify-content:space-between;align-items:center;gap:16px;background:#fff;border:2px solid #e6e3f0;border-radius:28px;padding:22px 26px}
+.res span{font-weight:800;font-size:26px;line-height:1.2}
+.res i{font-family:Fraunces;font-style:italic;font-weight:600;font-size:44px;color:#6c5fd0;opacity:0;transform:scale(2) rotate(-10deg);animation:tagin .3s cubic-bezier(.3,1.6,.5,1) forwards}
+@keyframes fade2{to{opacity:.18;filter:blur(2px)}}
+@keyframes tagin{to{opacity:1;transform:rotate(-6deg)}}
+.finger{position:absolute;width:86px;height:86px;border-radius:50%;background:rgba(24,24,32,.28);border:4px solid rgba(255,255,255,.95);
+  box-shadow:0 8px 24px rgba(0,0,0,.25);opacity:0;z-index:7;margin:-43px 0 0 -43px}
+@keyframes tap{0%{opacity:0;transform:scale(1.5)}30%{opacity:1;transform:scale(1)}55%{transform:scale(.78)}75%{transform:scale(1)}100%{opacity:0;transform:scale(1)}}
+.ripple{position:absolute;width:86px;height:86px;border-radius:50%;border:4px solid ${INK};opacity:0;z-index:6;margin:-43px 0 0 -43px}
+@keyframes ripple{0%{opacity:.6;transform:scale(.6)}100%{opacity:0;transform:scale(2.6)}}
+.pstamp{position:absolute;left:50%;top:52%;font-family:Fraunces;font-style:italic;font-weight:600;font-size:250px;color:#6c5fd0;z-index:8;white-space:nowrap;transform:translate(-50%,-50%) scale(3) rotate(-14deg);opacity:0;animation:stamp .38s cubic-bezier(.3,1.6,.5,1) forwards}
+@keyframes stamp{to{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(-8deg)}}
+.flash{position:absolute;inset:0;background:${LAV};opacity:0}
+@keyframes flash{0%{opacity:0}15%{opacity:.3}100%{opacity:0}}
+.fin{position:absolute;left:90px;right:90px;top:620px;display:flex;flex-direction:column;gap:40px}
+.fin .display{font-size:132px}`;
+
+function howto(p, fonts) {
+  const T = { phone: 1.9, s1: 2.0, s2: 5.0, s3: 8.2, s4: 11.4, out: 15.0, end: 15.3 };
+  const duration = 18.6;
+  const d = (x) => `${x.toFixed(2)}s`;
+  const at = (x) => `style="animation-delay:${d(x)}"`;
+  const tap = (x, y, t) =>
+    `<span class="finger" style="left:${x}px;top:${y}px;animation:tap .75s ease-out ${d(t)} forwards"></span>` +
+    `<span class="ripple" style="left:${x}px;top:${y}px;animation:ripple .55s ease-out ${d(t + 0.32)} forwards"></span>`;
+  const screen = (i, from, to, inner) =>
+    `<div class="screen" style="animation:sin .4s cubic-bezier(.6,0,.2,1) ${d(from)} forwards${
+      to ? `,sout .4s cubic-bezier(.6,0,.2,1) ${d(to)} forwards` : ""
+    }">${inner}</div>`;
+  const steps = [
+    { t: T.s1, kick: "Step 1", title: "Pick a game" },
+    { t: T.s2, kick: "Step 2", title: "Answer on your own" },
+    { t: T.s3, kick: "Step 3", title: "Send them the link" },
+    { t: T.s4, kick: "Step 4", title: "See where you're *same… or -ish*" },
+  ];
+  const stepHtml = steps
+    .map((s, i) => {
+      const next = steps[i + 1]?.t ?? T.out;
+      return `<div class="step" style="animation:leave .25s ease-in ${d(next - 0.25)} forwards">
+  <span class="kick" ${at(s.t)}>${s.kick}</span>
+  <div class="t">${typed(s.title, s.t + 0.15, next - 0.3, 0.035).html}</div>
+</div>`;
+    })
+    .join("");
+
+  const s1 = `<span class="ss">Ways to play</span><span class="sh">What are we playing?</span>
+<div class="game hl" style="animation:pick .45s ease-out ${d(T.s1 + 1.85)} forwards">Date Night<small>Conversation starters for two</small></div>
+<div class="game">Friendship Check<small>The ultimate friendship test</small></div>
+<div class="game">How Well Do You Know Me?<small>Think you know me?</small></div>
+<div class="game own">+ Write your own (5–12 questions)</div>`;
+  const s2 = `<span class="ss">Question 2 of 8</span>
+<div class="qbox"><span class="qq">Beach or mountains?</span>
+<span class="opt">Beach</span><span class="opt" style="animation:chosen .2s ${d(T.s2 + 1.95)} forwards">Mountains</span><span class="opt">Honestly, both</span></div>
+<span class="lockline" ${at(T.s2 + 2.4)}>🔒 They can't see your answers</span>`;
+  const s3 = `<span class="done">✓ You're done</span><span class="sh">Now it's their turn.</span>
+<div class="link">sameeeish.com/w/7xk2…</div><span class="btn">Copy link</span>
+<span class="toast" ${at(T.s3 + 1.7)}>Link copied</span>
+<div class="notif" style="animation:drop .45s cubic-bezier(.2,1.3,.4,1) ${d(T.s3 + 2.3)} forwards"><b>Leo</b>ok answering now 👀</div>`;
+  const rows = [
+    ["Beach or mountains?", "-ish"],
+    ["Night in or night out?", "Same"],
+    ["Who apologizes first?", "-ish"],
+    ["Dream trip?", "Same"],
+  ];
+  const s4 = `<span class="ss">Your result</span><span class="sh">Ana &amp; Leo</span>
+<div style="display:flex;flex-direction:column;gap:22px;animation:fade2 .35s ease ${d(T.s4 + 2.6)} forwards">
+${rows.map(([q, tag], i) => `<div class="res"><span>${q}</span><i ${at(T.s4 + 0.8 + i * 0.42)}>${tag}</i></div>`).join("")}</div>`;
+
+  const body = `<div class="glow" style="animation:drift ${duration}s ease-in-out forwards"></div>
+<span class="timer-chip" id="timer">0:15</span>
+<div class="htitle" style="animation:leave .3s ease-in ${d(T.phone - 0.3)} forwards">${typed("How to play\n*Sameeeish*", 0.1, T.phone, 0.05).html}
+  <div class="hsub" ${at(0.95)}>in 15 seconds ⏱</div></div>
+${stepHtml}
+<div class="phone" style="animation:phonein .5s cubic-bezier(.2,1.2,.4,1) ${d(T.phone)} forwards,phoneout .4s ease-in ${d(T.out)} forwards">
+  <span class="notch"></span>
+  ${screen(1, T.s1 - 0.4, T.s2, s1)}
+  ${screen(2, T.s2, T.s3, s2)}
+  ${screen(3, T.s3, T.s4, s3)}
+  ${screen(4, T.s4, 0, s4)}
+  ${tap(300, 258, T.s1 + 1.55)}
+  ${tap(300, 432, T.s2 + 1.65)}
+  ${tap(300, 370, T.s3 + 1.3)}
+  <div class="flash" style="animation:flash .45s ${d(T.s4 + 2.75)} forwards"></div>
+  <span class="pstamp" ${at(T.s4 + 2.75)}>-ish</span>
+</div>
+<div class="fin">
+  <div class="display">${typed("Free. Two players.\n*No sign up.*", T.end, duration, 0.04).html}</div>
+  <span class="cta" ${at(T.end + 1.4)}>Play now → link in bio</span>
+</div>
+<style>
+@keyframes drift{0%{transform:translate(0,0)}50%{transform:translate(-260px,420px)}100%{transform:translate(-80px,820px)}}
+</style>
+<script>
+window.__tick = (ms) => {
+  const t = ms / 1000, el = document.getElementById("timer");
+  const left = Math.max(0, Math.ceil(15 - Math.max(0, t - ${T.phone})));
+  el.textContent = left === 0 ? "0:00 ✓" : "0:" + String(left).padStart(2, "0");
+  el.classList.toggle("done", left === 0);
+};
+</script>`;
+  return { duration, html: shell(fonts, duration, CHATPLUS_CSS + HOWTO_CSS, body) };
+}
+
+const STYLES = { intro, chat, rapid, chatplus, howto };
 
 /** Renders the post's motion reel to `file` (H.264, 30 fps, silent). */
 export async function renderMotion(page, p, fonts, file, tmpDir) {

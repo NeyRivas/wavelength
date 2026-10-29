@@ -92,7 +92,7 @@ details summary { cursor: pointer; font-weight: 800; font-size: .75rem; letter-s
     <button type="button" class="filter" id="f-carousel" data-f="carousel" aria-pressed="false">Carruseles</button>
     <button type="button" class="filter" id="f-post" data-f="post" aria-pressed="false">Posts</button>
     <button type="button" class="filter" id="f-film" data-f="film" aria-pressed="false">Por grabar</button>
-    <span class="totals">30 publicaciones · 1 por grabar</span>
+    <span class="totals">30 publicaciones · 0 por grabar</span>
   </div>
   <section class="week"><h2>Semana 1 <small>19 oct – 25 oct</small></h2><article class="post" data-format="reel" id="p1">
   <div class="when"><span class="n">1</span><span class="day">mar</span><span class="date">20 oct</span></div>
@@ -267,23 +267,23 @@ Play it free (no sign up) → link in bio
   <div class="when"><span class="n">9</span><span class="day">jue</span><span class="date">29 oct</span></div>
   <div class="body">
     <header class="head">
-      <h3>How it works in 15 seconds</h3>
-      <div class="chips"><span class="chip chip--reel">Reel</span><span class="chip">Producto</span><span class="chip chip--todo">Hay que grabar</span><span class="chip chip--pin">Fijar</span></div>
+      <h3>How to play Sameeeish in 15 seconds</h3>
+      <div class="chips"><span class="chip chip--reel">Reel</span><span class="chip">Producto</span><span class="chip chip--ready">Listo para subir</span><span class="chip chip--pin">Fijar</span></div>
     </header>
-    <div class="frames"><img src="out/09-reel-cover.png" alt="" loading="lazy" width="1080" height="1920"></div>
+    <div class="frames"><video src="out/09-reel.mp4" poster="out/09-reel-cover.png" controls muted loop playsinline preload="none" width="1080" height="1920"></video></div>
     <div class="copy">
       <div class="caption-head"><span class="label">Caption</span><button type="button" class="copy-btn" data-copy="c9">Copiar caption</button></div>
       <pre class="caption" id="c9">How it works:
 1. Pick a game (or write your own questions)
-2. Answer them yourself
+2. Answer them on your own
 3. Send the link to your person
 4. See where you're the same… and where you're -ish 💜
 
 No app to download. No account. Play it free (no sign up) → link in bio
 
 #questionsforcouples #bestfriendquiz #conversationstarters #twoplayergame</pre>
-      <details open><summary>Guion</summary><ol class="script"><li>Grabación de pantalla del celular (sin cara). Texto grande arriba en cada paso.</li><li>0–3 s · “Pick a game” → tocar Date Night / Friendship Check en sameeeish.com.</li><li>3–7 s · “Answer the questions” → responder 2 preguntas rápido.</li><li>7–10 s · “Send the link” → compartir por WhatsApp/iMessage.</li><li>10–13 s · “See where you're same… or -ish” → pantalla de resultados.</li><li>13–15 s · “Free. No account. Link in bio.”</li></ol></details>
-      <dl class="meta"><div><dt>Audio</dt><dd>Audio tendencia upbeat</dd></div><div><dt>Nota</dt><dd>Post fijado #3. Graba la pantalla del celular en el sitio real; acelera a 1.5x si hace falta.</dd></div></dl>
+      
+      <dl class="meta"><div><dt>Audio</dt><dd>Audio tendencia upbeat</dd></div><div><dt>Nota</dt><dd>Post fijado #3. Era grabación de pantalla; pasó a tutorial animado con un celular ilustrado (no es captura real de la app).</dd></div></dl>
     </div>
   </div>
 </article><article class="post" data-format="carousel" id="p10">
@@ -730,7 +730,7 @@ Play it free (no sign up) → link in bio
 </article></section>
 </div>
 <script>
-const KIND = {"1":"animated","2":"","3":"animated","4":"animated","5":"","6":"animated","7":"","8":"","9":"filmed","10":"","11":"animated","12":"animated","13":"","14":"","15":"animated","16":"","17":"animated","18":"animated","19":"","20":"","21":"animated","22":"","23":"animated","24":"animated","25":"","26":"","27":"animated","28":"","29":"animated","30":""};
+const KIND = {"1":"animated","2":"","3":"animated","4":"animated","5":"","6":"animated","7":"","8":"","9":"animated","10":"","11":"animated","12":"animated","13":"","14":"","15":"animated","16":"","17":"animated","18":"animated","19":"","20":"","21":"animated","22":"","23":"animated","24":"animated","25":"","26":"","27":"animated","28":"","29":"animated","30":""};
 document.querySelectorAll(".filter").forEach((b) => b.addEventListener("click", () => {
   document.querySelectorAll(".filter").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
   const f = b.dataset.f;
