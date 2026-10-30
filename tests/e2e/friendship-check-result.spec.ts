@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { answerChoice, answerRow, joinAsB, questionCard, submitFinal } from "./utils/wavelength";
+import { answerQuizChoice, submitFinal, writeQuizOptions } from "./utils/wavelength";
 
 /**
  * QA follow-up pass regression guard (item #1/#2): Friendship Check's
@@ -18,10 +18,10 @@ import { answerChoice, answerRow, joinAsB, questionCard, submitFinal } from "./u
  * against it quietly coming back.
  *
  * Drives the real ready-made "Friendship Check" flow end to end (no
- * shortcuts): these questions ship with unwritten (blank) answer options
- * — A has to type both options in before picking the "correct" one, same
- * as tests/e2e/option-persists-after-save.spec.ts already does for one
- * question. Every question gets the exact same two option strings so B
+ * shortcuts), through the guided quiz on both sides: these questions ship
+ * with unwritten (blank) answer options — A types both options in and
+ * marks the "correct" one on each question's own screen, and B taps their
+ * guess. Every question gets the exact same two option strings so B
  * can trivially match all of them (this game's "excellent" tier),
  * without that detail affecting what's being asserted here.
  */
@@ -53,24 +53,11 @@ test("Friendship Check's result shows the memory count exactly once, with no ani
     .getByRole("button", { name: /Make your friendship test/ })
     .first()
     .click();
-  await expect(page.getByRole("heading", { name: "Build your questionnaire" })).toBeVisible();
-
   for (const text of FRIENDSHIP_CHECK_QUESTIONS) {
-    const card = questionCard(page, text);
-    const optionInputs = card.locator('input[name="options"]');
-    const editForm = optionInputs.first().locator("xpath=ancestor::form[1]");
-
-    await optionInputs.nth(0).fill(OPTION_A);
-    await optionInputs.nth(0).blur();
-    await expect(editForm.getByText("Saved", { exact: true })).toBeVisible();
-
-    await optionInputs.nth(1).fill(OPTION_B);
-    await optionInputs.nth(1).blur();
-    await expect(editForm.getByText("Saved", { exact: true })).toBeVisible();
-
-    await answerChoice(card, OPTION_A);
+    await writeQuizOptions(page, text, [OPTION_A, OPTION_B], OPTION_A);
   }
 
+  await expect(page.getByRole("heading", { name: "That's every question" })).toBeVisible();
   await page.getByLabel("Your name").fill("Alex");
   await page
     .getByRole("button", { name: "Lock it in. Share it. See how well they remember." })
@@ -80,11 +67,14 @@ test("Friendship Check's result shows the memory count exactly once, with no ani
 
   const bContext = await browser.newContext();
   const bPage = await bContext.newPage();
-  await joinAsB(bPage, shareLink, "Bailey");
+  await bPage.goto(shareLink);
+  await bPage.getByLabel("Your name").fill("Bailey");
+  await bPage.getByRole("button", { name: "Start answering" }).click();
 
   for (const text of FRIENDSHIP_CHECK_QUESTIONS) {
-    await answerChoice(answerRow(bPage, text), OPTION_A);
+    await answerQuizChoice(bPage, text, OPTION_A);
   }
+  await expect(bPage.getByRole("heading", { name: "That's every question" })).toBeVisible();
   await submitFinal(bPage);
 
   await expect(bPage.locator("#friendship-memory-heading")).toBeVisible({ timeout: 10_000 });

@@ -405,6 +405,13 @@ Flow: the landing page CTA → `startReadyMadeGame` seeds the draft (one INSERT 
 
 To add another experience: an entry in `CONVERSATION_EXPERIENCES`, a matching `READY_MADE_GAMES` entry with `conversation: true` and `href`, an `EXPERIENCE_COPY` entry, a landing page under `app/play/`, and the sitemap + `PUBLIC_PATHS` entries.
 
+## 15. Guided quiz for ready-made scored games
+
+Every ready-made game with a fixed, scored question set (`isPresetQuizGame`, `lib/wavelength/preset-quiz.ts` — today: "Are we on the same page?", "Getting to know each other", "How Well Do You Know Me?", "Friendship Check") is played one question at a time in `components/quiz/quiz-stepper.tsx` instead of opening the builder. Not a parallel system: the same DRAFT row seeded by `startReadyMadeGame`, the same `saveAnswerA` / `saveAnswerB` / `updateQuestion` Server Actions, the same `FinalizeForm` → `finalize_draft` → share link, and the same `SubmitFinalForm` → result. No schema, RLS, or analytics change.
+
+- **A** (`/create?game=<id>`): one question per screen, large answer buttons, progress. Tapping an answer selects it and advances after `ADVANCE_DELAY_MS` while the save runs in the background through one ordered queue; progress and the finalize step only count server-confirmed answers, and a failed save is reported on its question. In games whose questions ship with `UNWRITTEN_OPTION` slots, A writes 2–5 options and marks the real one on each screen (saved with `updateQuestion`, then `saveAnswerA`). "Customize questions" opens the unchanged builder on the same draft at `/create?game=<id>&mode=edit`.
+- **B** (`/w/[token]/answer`): when the wavelength's `source_game_id` is one of these games, the same stepper (answer buttons only). Make Your Own questionnaires keep the existing list.
+
 ---
 
 **READY FOR IMPLEMENTATION**

@@ -2,14 +2,16 @@ import { expect, test } from "@playwright/test";
 
 import { DATE_NIGHT_QUESTIONS } from "../../lib/date-night/questions";
 import { getReadyMadeGame } from "../../lib/wavelength/ready-made-games";
-import { questionCard } from "./utils/wavelength";
+import { questionCard, quizQuestion } from "./utils/wavelength";
 
 /**
  * The integrated experience pages added in the SEO plan: each catalog card
  * opens its game's page, and the page's Start button seeds A's own draft
  * with the game's exact questions (Supabase-backed, like every flow that
- * reaches /create — see playwright.config.ts). Plus Date Night, whose deck
- * must keep working with the guide added below it (no backend needed).
+ * reaches /create — see playwright.config.ts) and opens the guided quiz on
+ * its first question; "Customize questions" opens the same draft in the
+ * builder. Plus Date Night, whose deck must keep working with the guide
+ * added below it (no backend needed).
  */
 
 const GAME_FLOWS = [
@@ -40,7 +42,7 @@ const GAME_FLOWS = [
 ] as const;
 
 for (const flow of GAME_FLOWS) {
-  test(`${flow.h1}: catalog card → experience page → Start seeds the game's questions`, async ({
+  test(`${flow.h1}: catalog card → experience page → Start opens the first question`, async ({
     page,
   }) => {
     await page.goto(flow.catalog);
@@ -52,6 +54,13 @@ for (const flow of GAME_FLOWS) {
     await expect(page).toHaveURL(new RegExp(`/create\\?game=${flow.gameId}$`));
 
     const questions = getReadyMadeGame(flow.gameId)!.questions!;
+    await expect(quizQuestion(page, questions[0]!.text)).toBeVisible();
+    await expect(page.getByText(`Question 1 of ${questions.length}`)).toBeVisible();
+    await expect(page.getByRole("article", { name: /^Question: / })).toHaveCount(0);
+
+    // The builder is one link away and holds the very same seeded draft.
+    await page.getByRole("link", { name: "Customize questions" }).click();
+    await expect(page).toHaveURL(new RegExp(`/create\\?game=${flow.gameId}&mode=edit$`));
     for (const question of questions) {
       await expect(questionCard(page, question.text)).toBeVisible();
     }

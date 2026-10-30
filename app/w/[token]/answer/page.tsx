@@ -5,17 +5,20 @@ import { redirect } from "next/navigation";
 import { ConversationStepper } from "@/components/conversation/conversation-stepper";
 import { AnswerQuestionCard } from "@/components/questionnaire/answer-question-card";
 import { CreateHeader } from "@/components/questionnaire/create-header";
+import { QuizStepper } from "@/components/quiz/quiz-stepper";
 import { SubmitFinalForm } from "@/components/wavelength/submit-final-form";
 import { WavelengthLockedNotice } from "@/components/wavelength/wavelength-locked-notice";
 import { requireUserId } from "@/lib/supabase/identity";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getConversationExperience } from "@/lib/wavelength/conversation-experiences";
 import { getExperienceCopy } from "@/lib/wavelength/experience-copy";
+import { isPresetQuizGame } from "@/lib/wavelength/preset-quiz";
 import {
   numericAnswerRows,
   standardQuestionRows,
   writtenAnswerMap,
 } from "@/lib/wavelength/question-rows";
+import { getReadyMadeGame } from "@/lib/wavelength/ready-made-games";
 
 /**
  * Participant B's answering flow (ARCHITECTURE.md §12 Phase 5). Only
@@ -182,6 +185,44 @@ export default async function AnswerPage({ params }: { params: Promise<{ token: 
                 heading="Ready when you are"
                 finalText={`Once you finish, your answers are locked and you'll both be able to read the whole conversation — yours and ${aliasA}'s, side by side.`}
                 buttonLabel="Open our conversation"
+              />
+            }
+          />
+        </main>
+      </div>
+    );
+  }
+
+  // A ready-made scored game: the same guided quiz A played, one question
+  // at a time, saved through saveAnswerB, then the unchanged
+  // SubmitFinalForm. "Make Your Own" questionnaires keep the list below.
+  const presetGame = wavelength.source_game_id
+    ? getReadyMadeGame(wavelength.source_game_id)
+    : undefined;
+  if (isPresetQuizGame(presetGame)) {
+    return (
+      <div className={`${fraunces.variable} ${nunitoSans.variable} wl-create`}>
+        <CreateHeader />
+        <main className="create-shell answer-shell quiz-shell">
+          <div className="create-shell__intro">
+            <h1 className="create-shell__heading">{experienceCopy.answerHeading}</h1>
+            <p className="create-shell__text">{experienceCopy.answerText(aliasA)}</p>
+          </div>
+          <QuizStepper
+            participant="B"
+            wavelengthId={wavelength.id}
+            questions={standardQuestionRows(questions ?? [])}
+            initialAnswers={Object.fromEntries(
+              numericAnswerRows(answers ?? []).map((answer) => [answer.question_id, answer.value]),
+            )}
+            hint={`You won't see ${aliasA}'s answers until you've both finished.`}
+            completionHeading="That's every question"
+            completionText={`Your answers are saved. Submit them to see the result with ${aliasA}.`}
+            completion={
+              <SubmitFinalForm
+                wavelengthId={wavelength.id}
+                shareToken={token}
+                finalText={experienceCopy.finalText}
               />
             }
           />
