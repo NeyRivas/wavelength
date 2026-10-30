@@ -1,14 +1,16 @@
 import { expect, test } from "@playwright/test";
 
 import { GETTING_TO_KNOW_EACH_OTHER_QUESTIONS } from "../../lib/wavelength/ready-made-games";
-import { questionCard } from "./utils/wavelength";
+import { questionCard, quizQuestion } from "./utils/wavelength";
 
 /**
  * The "Getting to know each other" journey after its catalog card became a
  * single link to the integrated experience page: /play catalog card →
  * experience page → Start → A's own draft on /create, seeded with the
- * game's exact 12 questions, in order. Starting again from the page
- * resumes the same draft rather than creating a second one.
+ * game's exact 12 questions, in order, and opened in the guided quiz on
+ * the first one (the builder is behind "Customize questions"). Starting
+ * again from the page resumes the same draft rather than creating a
+ * second one.
  *
  * Needs the real Supabase Anonymous Auth backend (see playwright.config.ts).
  */
@@ -30,7 +32,9 @@ test("the catalog card opens the experience page, and Start seeds the 12 questio
     .first()
     .click();
   await expect(page).toHaveURL(/\/create\?game=getting-to-know-you$/);
+  await expect(quizQuestion(page, GETTING_TO_KNOW_EACH_OTHER_QUESTIONS[0]!.text)).toBeVisible();
 
+  await page.getByRole("link", { name: "Customize questions" }).click();
   for (const question of GETTING_TO_KNOW_EACH_OTHER_QUESTIONS) {
     await expect(questionCard(page, question.text)).toBeVisible();
   }
@@ -56,6 +60,7 @@ test("starting again from the experience page resumes the same draft", async ({ 
     .last()
     .click();
   await expect(page).toHaveURL(/\/create\?game=getting-to-know-you$/);
+  await page.getByRole("link", { name: "Customize questions" }).click();
   await expect(page.getByRole("article", { name: /^Question: / })).toHaveCount(
     GETTING_TO_KNOW_EACH_OTHER_QUESTIONS.length,
   );

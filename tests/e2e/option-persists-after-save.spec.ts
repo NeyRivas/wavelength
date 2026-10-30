@@ -29,7 +29,9 @@ import { expect, test } from "@playwright/test";
  * the current pill-based QuestionAddForm — this test instead starts from
  * a Friends ready-made game (where every question already has real,
  * approved text and only the *options* are unwritten), which is also
- * exactly where this bug was actually found.
+ * exactly where this bug was actually found. Ready-made games now open
+ * in the guided quiz, so this goes through "Customize questions" to reach
+ * the builder that owns this form.
  */
 test("a typed answer option survives its own auto-save, without a reload, and 'Your answer' keeps working", async ({
   page,
@@ -39,6 +41,7 @@ test("a typed answer option survives its own auto-save, without a reload, and 'Y
     .getByRole("button", { name: /Make your quiz/ })
     .first()
     .click();
+  await page.getByRole("link", { name: "Customize questions" }).click();
 
   const firstQuestionText = "What's a song that will instantly make me think of a specific memory?";
   const card = page.getByRole("article", { name: `Question: ${firstQuestionText}` });

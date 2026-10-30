@@ -171,3 +171,48 @@ export async function joinAsB(page: Page, shareLink: string, alias = "Bailey"): 
 export async function submitFinal(page: Page): Promise<void> {
   await page.getByRole("button", { name: "See our results" }).click();
 }
+
+/** The guided quiz's current question (components/quiz/quiz-stepper.tsx):
+ * a <section> labelled by its own question heading. Ready-made games
+ * (/create?game=… and B's answer page) play here instead of the builder. */
+export function quizQuestion(page: Page, text: string): Locator {
+  return page.getByRole("region", { name: text, exact: true });
+}
+
+/** Taps one answer on the current guided-quiz question; the quiz saves it
+ * and moves on by itself. */
+export async function answerQuizChoice(
+  page: Page,
+  questionText: string,
+  optionText: string,
+): Promise<void> {
+  const card = quizQuestion(page, questionText);
+  await expect(card).toBeVisible();
+  await card.getByRole("button", { name: optionText, exact: true }).click();
+  await expect(card).toBeHidden();
+}
+
+/** A's guided-quiz step in games where A writes their own options (How
+ * Well Do You Know Me?, Friendship Check): fills the answer fields, marks
+ * the real one, and moves on. */
+export async function writeQuizOptions(
+  page: Page,
+  questionText: string,
+  options: string[],
+  realOption: string,
+): Promise<void> {
+  const card = quizQuestion(page, questionText);
+  await expect(card).toBeVisible();
+  for (let i = 0; i < options.length; i++) {
+    const field = card.getByRole("textbox", { name: `Answer ${i + 1}`, exact: true });
+    if ((await field.count()) === 0) {
+      await card.getByRole("button", { name: "+ Add another answer" }).click();
+    }
+    await field.fill(options[i]!);
+  }
+  await card
+    .getByRole("radio", { name: `Answer ${options.indexOf(realOption) + 1} is the real one` })
+    .check();
+  await card.getByRole("button", { name: /^(Next|Finish)/ }).click();
+  await expect(card).toBeHidden();
+}
