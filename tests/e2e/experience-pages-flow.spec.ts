@@ -76,7 +76,7 @@ test("Date Night: the deck still filters, shuffles, searches, and saves favorite
 
   await page.getByRole("tab", { name: "Deep" }).click();
   await expect(page.getByRole("tab", { name: "Deep" })).toHaveAttribute("aria-selected", "true");
-  await page.getByRole("button", { name: /Next/ }).click();
+  await page.getByRole("button", { name: "Next", exact: true }).click();
   await page.getByRole("button", { name: /Shuffle/ }).click();
 
   await page.getByRole("tab", { name: "All" }).click();
