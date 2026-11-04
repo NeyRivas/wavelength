@@ -20,10 +20,12 @@ import { GettingToKnowContent } from "@/components/play/getting-to-know-content"
  * instantiation, shared LandingHeader/LandingFooter/BackLink, .landing
  * landing--internal wrapper). The page body lives in GettingToKnowContent.
  *
- * Keyword map (Oct 2026 research): title targets "getting to know you
- * questions for couples"; the H1 and URL keep "getting to know each other
- * questions", the phrasing that already earns impressions. The URL and its
- * canonical are unchanged.
+ * Keyword map (Nov 2026 research, US/UK/CA/AU/NZ): title targets
+ * "getting to know you questions" without limiting it to couples, and the
+ * extra question list targets "questions to ask when getting to know
+ * someone"; the H1 and URL keep "getting to know each other questions", the
+ * phrasing that already earns impressions. The URL and its canonical are
+ * unchanged.
  */
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -41,9 +43,9 @@ const nunitoSans = Nunito_Sans({
 });
 
 const PAGE_PATH = "/play/dating-couples/getting-to-know-each-other-questions";
-const PAGE_TITLE = "Getting to Know You Questions for Couples — Sameeeish";
+const PAGE_TITLE = "Getting to Know You Questions to Ask Each Other — Sameeeish";
 const PAGE_DESCRIPTION =
-  "12 getting to know you questions for couples and early dates. Answer on your own, send the link, then see where you match. Free, no sign-up.";
+  "12 getting to know you questions to play together, plus 50 more to ask someone new or a partner. Answer apart, compare, talk. Free, no sign-up.";
 
 export const metadata: Metadata = {
   title: PAGE_TITLE,

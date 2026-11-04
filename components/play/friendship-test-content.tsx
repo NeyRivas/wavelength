@@ -1,5 +1,6 @@
 import type { FaqItem } from "@/components/landing/faq-data";
 import { FRIENDSHIP_MEMORY_MESSAGES } from "@/lib/wavelength/friendship-memory";
+import { countIdeas, FRIENDSHIP_TRIVIA_IDEAS } from "@/lib/wavelength/question-ideas";
 import { getReadyMadeGame } from "@/lib/wavelength/ready-made-games";
 
 import {
@@ -7,6 +8,7 @@ import {
   ExperienceCta,
   ExperienceFaq,
   ExperienceHero,
+  ExperienceIdeaGroups,
   ExperienceLink,
   ExperiencePoints,
   ExperienceQuestionList,
@@ -30,10 +32,15 @@ import {
  * result tiers straight from FRIENDSHIP_MEMORY_MESSAGES. Kept deliberately
  * distinct from How Well Do You Know Me? (questions about one person): this
  * page is about "us".
+ *
+ * Below the game's own questions, a separate list of friendship trivia
+ * questions to ask out loud (FRIENDSHIP_TRIVIA_IDEAS); the page says plainly
+ * the test doesn't use them.
  */
 export const FRIENDSHIP_GAME_ID = "friendship-check";
 const QUESTIONS = getReadyMadeGame(FRIENDSHIP_GAME_ID)?.questions ?? [];
 const QUESTION_COUNT = QUESTIONS.length;
+const IDEA_COUNT = countIdeas(FRIENDSHIP_TRIVIA_IDEAS);
 const START_LABEL = "Make your friendship test";
 
 export function FriendshipTestContent() {
@@ -41,15 +48,15 @@ export function FriendshipTestContent() {
     <ExperienceArticle tone="peach">
       <ExperienceHero
         eyebrow="How well do you remember us?"
-        title="Friendship Test"
+        title="Friendship Quiz"
         shapes={["peach", "pink"]}
         action={<StartGameForm gameId={FRIENDSHIP_GAME_ID} label={START_LABEL} />}
         note="Free · No sign-up · One link, one friend"
       >
         <p>
-          A friendship test built on the things only the two of you would know: where you met, the
+          A friendship quiz built on the things only the two of you would know: where you met, the
           inside jokes, the stories you still tell. You write the answers, your friend guesses which
-          one really happened.
+          one really happened. Think of it as a BFF test for your shared memories.
         </p>
       </ExperienceHero>
 
@@ -99,13 +106,25 @@ export function FriendshipTestContent() {
 
       <ExperienceSection id="ft-versus" heading="Friendship Test or How Well Do You Know Me?">
         <ExperienceText>
-          Both are guessing games for two friends. This one is about your friendship: shared places,
-          jokes, and moments. If you&apos;d rather be quizzed on your favorite songs and your
-          strongest opinions, try{" "}
+          Both are guessing games for two friends. This friendship quiz is about your friendship:
+          shared places, jokes, and moments. If you&apos;d rather be quizzed on your favorite songs
+          and your strongest opinions, try{" "}
           <ExperienceLink href="/play/friends/how-well-do-you-know-me">
             How Well Do You Know Me?
           </ExperienceLink>{" "}
           instead.
+        </ExperienceText>
+      </ExperienceSection>
+
+      <ExperienceSection id="ft-ideas" heading="Friendship trivia questions to ask in person">
+        <ExperienceText>
+          {IDEA_COUNT} more questions about the two of you, for a road trip, a dinner, or the group
+          chat. They aren&apos;t in the test, which always uses the {QUESTION_COUNT} above: ask one,
+          see if your answers match, then argue about who remembers it right.
+        </ExperienceText>
+        <ExperienceIdeaGroups groups={FRIENDSHIP_TRIVIA_IDEAS} />
+        <ExperienceText>
+          Want a score? Make the {QUESTION_COUNT}-question friendship test and send the link.
         </ExperienceText>
       </ExperienceSection>
 
@@ -192,6 +211,11 @@ const FAQ: FaqItem[] = [
   {
     question: "Can my friend see my answers before guessing?",
     answer: "No. They see the answer choices you wrote, not which one you marked as true.",
+  },
+  {
+    question: "Is this a BFF test?",
+    answer:
+      "Yes, of a kind: it tests how well you and your best friend remember the same moments. For a BFF test about you instead (your tastes, habits, and opinions), try How Well Do You Know Me?",
   },
   {
     question: "Do we need an account?",

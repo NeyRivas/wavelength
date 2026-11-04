@@ -13,9 +13,11 @@ import { HowWellDoYouKnowMeContent } from "@/components/play/how-well-do-you-kno
  * catalog card links here (its only button); the page's Start buttons
  * submit the unchanged startReadyMadeGame action with the game's id.
  *
- * Keyword map (Oct 2026 research): primary "how well do you know me quiz";
- * "best friend quiz/test" variants also belong here (questions about the
- * person), while shared-memory terms belong to /play/friends/friendship-test.
+ * Keyword map (Oct 2026 research, revisited Nov 2026 for US/UK/CA/AU/NZ):
+ * "how well do you know me quiz" and "… questions" (the larger search, served
+ * by the extra question list); "best friend quiz/test" variants also belong
+ * here (questions about the person), while shared-memory and "friendship
+ * quiz"/"bff test" terms belong to /play/friends/friendship-test.
  */
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -33,9 +35,9 @@ const nunitoSans = Nunito_Sans({
 });
 
 const PAGE_PATH = "/play/friends/how-well-do-you-know-me";
-const PAGE_TITLE = "How Well Do You Know Me? Quiz for Friends — Sameeeish";
+const PAGE_TITLE = "How Well Do You Know Me Quiz & Questions — Sameeeish";
 const PAGE_DESCRIPTION =
-  "Make a how well do you know me quiz: answer 12 questions about yourself, send the link, and see how many your friend gets right. Free, no sign-up.";
+  "Make a how well do you know me quiz for your best friend: 12 questions about you, plus 40 more ideas. Send the link and see their score. Free.";
 
 export const metadata: Metadata = {
   title: PAGE_TITLE,

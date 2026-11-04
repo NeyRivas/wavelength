@@ -45,9 +45,9 @@ const textOf = (html: string) =>
 describe("Getting to know each other page: metadata", () => {
   it("has the approved title and description, and keeps its canonical URL", async () => {
     const { metadata } = await loadPage();
-    expect(metadata.title).toBe("Getting to Know You Questions for Couples — Sameeeish");
+    expect(metadata.title).toBe("Getting to Know You Questions to Ask Each Other — Sameeeish");
     expect(metadata.description).toBe(
-      "12 getting to know you questions for couples and early dates. Answer on your own, send the link, then see where you match. Free, no sign-up.",
+      "12 getting to know you questions to play together, plus 50 more to ask someone new or a partner. Answer apart, compare, talk. Free, no sign-up.",
     );
     expect(String(metadata.description).length).toBeLessThanOrEqual(160);
     expect(metadata.alternates?.canonical).toBe(PATH);
@@ -77,6 +77,7 @@ describe("Getting to know each other page: content", () => {
       "When to use them",
       "Turning an answer into a conversation",
       "What these questions leave for later",
+      "50 more questions to ask when getting to know someone",
       "Start with the first question",
       "Questions people ask",
       "More for the two of you",

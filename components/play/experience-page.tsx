@@ -5,6 +5,7 @@ import { startReadyMadeGame } from "@/app/actions/ready-made-games";
 import { FaqAccordion } from "@/components/landing/faq-accordion";
 import type { FaqItem, FaqTint } from "@/components/landing/faq-data";
 import { CATEGORY_LABELS, type Category } from "@/lib/wavelength/categories";
+import type { QuestionIdeaGroup } from "@/lib/wavelength/question-ideas";
 
 /**
  * Shared building blocks for the integrated experience pages under /play
@@ -138,6 +139,29 @@ export function ExperiencePoints({
         <li key={point.title} className="xp-point">
           <h3 className="xp-point__title">{point.title}</h3>
           <p className="xp-point__text">{point.text}</p>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/** Extra question ideas to ask out loud, grouped, numbered straight through
+ * across groups (lib/wavelength/question-ideas.ts). Not a game's questions:
+ * those render with ExperienceQuestionList. */
+export function ExperienceIdeaGroups({ groups }: { groups: QuestionIdeaGroup[] }) {
+  const starts = groups.map((_, index) =>
+    groups.slice(0, index).reduce((total, group) => total + group.questions.length, 1),
+  );
+  return (
+    <ul className="xp-points xp-points--pairs xp-ideas">
+      {groups.map((group, index) => (
+        <li key={group.title} className="xp-point">
+          <h3 className="xp-point__title">{group.title}</h3>
+          <ol className="xp-ideas__list" start={starts[index]}>
+            {group.questions.map((question) => (
+              <li key={question}>{question}</li>
+            ))}
+          </ol>
         </li>
       ))}
     </ul>
