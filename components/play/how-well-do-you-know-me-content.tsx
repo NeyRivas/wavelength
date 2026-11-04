@@ -1,5 +1,6 @@
 import type { FaqItem } from "@/components/landing/faq-data";
 import { GUESS_ACCURACY_MESSAGES } from "@/lib/wavelength/guess-accuracy";
+import { countIdeas, HOW_WELL_DO_YOU_KNOW_ME_IDEAS } from "@/lib/wavelength/question-ideas";
 import { getReadyMadeGame } from "@/lib/wavelength/ready-made-games";
 
 import {
@@ -7,6 +8,7 @@ import {
   ExperienceCta,
   ExperienceFaq,
   ExperienceHero,
+  ExperienceIdeaGroups,
   ExperienceLink,
   ExperiencePoints,
   ExperienceQuestionList,
@@ -29,10 +31,15 @@ import {
  * result tiers straight from GUESS_ACCURACY_MESSAGES, so the page can't
  * drift from what the game actually asks or says. There are no answer
  * choices to show: each player writes their own.
+ *
+ * Below the quiz's own questions, a separate list of extra questions to ask
+ * out loud (HOW_WELL_DO_YOU_KNOW_ME_IDEAS) covers the "how well do you know
+ * me questions" search; the page says plainly the quiz doesn't use them.
  */
 export const HOW_WELL_GAME_ID = "how-well-do-you-know-me";
 const QUESTIONS = getReadyMadeGame(HOW_WELL_GAME_ID)?.questions ?? [];
 const QUESTION_COUNT = QUESTIONS.length;
+const IDEA_COUNT = countIdeas(HOW_WELL_DO_YOU_KNOW_ME_IDEAS);
 const START_LABEL = "Make your quiz";
 
 export function HowWellDoYouKnowMeContent() {
@@ -46,9 +53,10 @@ export function HowWellDoYouKnowMeContent() {
         note="Free · No sign-up · One link, one friend"
       >
         <p>
-          A how well do you know me quiz you actually play. The {QUESTION_COUNT} questions are
-          ready; you write the answers about yourself, hide the real one among a few decoys, and
-          send it to a friend. Then find out how many they get right.
+          A how well do you know me quiz you actually play: the best friend quiz that shows who
+          really knows you. The {QUESTION_COUNT} questions are ready; you write the answers about
+          yourself, hide the real one among a few decoys, and send it to a friend. Then find out how
+          many they get right.
         </p>
       </ExperienceHero>
 
@@ -105,6 +113,21 @@ export function HowWellDoYouKnowMeContent() {
             getting to know each other questions
           </ExperienceLink>{" "}
           compare your answers instead of testing guesses.
+        </ExperienceText>
+      </ExperienceSection>
+
+      <ExperienceSection
+        id="hw-ideas"
+        heading={`${IDEA_COUNT} more how well do you know me questions`}
+      >
+        <ExperienceText>
+          Want to ask in person, on a call, or in the group chat? These questions aren&apos;t in the
+          quiz, which always uses the {QUESTION_COUNT} above, but they play the same way: ask, let
+          your friend guess, then tell the story behind the real answer.
+        </ExperienceText>
+        <ExperienceIdeaGroups groups={HOW_WELL_DO_YOU_KNOW_ME_IDEAS} />
+        <ExperienceText>
+          Want a score? Make the {QUESTION_COUNT}-question quiz and send the link.
         </ExperienceText>
       </ExperienceSection>
 
@@ -175,7 +198,7 @@ const WRITING_TIPS = [
 const WHO_TO_SEND = [
   {
     title: "Your best friend",
-    text: "The obvious one. Find out if they really know your most irrational opinion.",
+    text: "The obvious one, and the best friend quiz this was made for. Find out if they really know your most irrational opinion.",
   },
   {
     title: "A newer friend",
@@ -210,6 +233,10 @@ const FAQ: FaqItem[] = [
   {
     question: "Do we need an account?",
     answer: "No. There's nothing to sign up for, and it's free.",
+  },
+  {
+    question: "What are good how well do you know me questions?",
+    answer: `Specific ones: your go-to coffee order, what you do when you're stressed, the story you always tell. The quiz uses ${QUESTION_COUNT} ready-made questions, and this page lists ${IDEA_COUNT} more to ask in person.`,
   },
   {
     question: "Is the score a verdict on our friendship?",

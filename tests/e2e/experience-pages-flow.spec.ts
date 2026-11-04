@@ -27,7 +27,7 @@ const GAME_FLOWS = [
     catalog: "/play",
     card: /Friendship Test/,
     path: "/play/friends/friendship-test",
-    h1: "Friendship Test",
+    h1: "Friendship Quiz",
     start: /Make your friendship test/,
     gameId: "friendship-check",
   },

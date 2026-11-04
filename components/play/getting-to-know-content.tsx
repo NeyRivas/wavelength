@@ -3,12 +3,14 @@ import {
   getReadyMadeGame,
   GETTING_TO_KNOW_EACH_OTHER_QUESTIONS,
 } from "@/lib/wavelength/ready-made-games";
+import { countIdeas, GETTING_TO_KNOW_YOU_IDEAS } from "@/lib/wavelength/question-ideas";
 
 import {
   ExperienceArticle,
   ExperienceCta,
   ExperienceFaq,
   ExperienceHero,
+  ExperienceIdeaGroups,
   ExperienceLink,
   ExperiencePoints,
   ExperienceQuestionList,
@@ -30,10 +32,15 @@ import {
  * the exact array startReadyMadeGame seeds the game with — so the page can
  * never show a question, option, or order the game doesn't actually use.
  * Both Start buttons submit startReadyMadeGame with this game's id.
+ *
+ * Below the game's own questions, a separate list of questions to ask out
+ * loud (GETTING_TO_KNOW_YOU_IDEAS) covers "questions to ask when getting to
+ * know someone"; the page says plainly the game doesn't use them.
  */
 const GAME_ID = "getting-to-know-you";
 const QUESTIONS = GETTING_TO_KNOW_EACH_OTHER_QUESTIONS;
 const QUESTION_COUNT = QUESTIONS.length;
+const IDEA_COUNT = countIdeas(GETTING_TO_KNOW_YOU_IDEAS);
 const START_LABEL = "Start getting to know each other";
 
 export function GettingToKnowContent() {
@@ -98,6 +105,21 @@ export function GettingToKnowContent() {
         </ExperienceText>
       </ExperienceSection>
 
+      <ExperienceSection
+        id="gtk-ideas"
+        heading={`${IDEA_COUNT} more questions to ask when getting to know someone`}
+      >
+        <ExperienceText>
+          For a first date, a long call, or a new friend: getting to know you questions to ask out
+          loud, from easy to a little deeper. They aren&apos;t in the game, which always uses the{" "}
+          {QUESTION_COUNT} above, so pick the ones that fit and skip the rest.
+        </ExperienceText>
+        <ExperienceIdeaGroups groups={GETTING_TO_KNOW_YOU_IDEAS} />
+        <ExperienceText>
+          Want to compare answers? Play the {QUESTION_COUNT} together, then see where you match.
+        </ExperienceText>
+      </ExperienceSection>
+
       <ExperienceCta
         id="gtk-cta"
         heading="Start with the first question"
@@ -148,6 +170,10 @@ const WHEN_TO_USE = [
   {
     title: "Long-term couples",
     text: "Answers change over time. Comparing them now can turn up things you never thought to ask.",
+  },
+  {
+    title: "New friends",
+    text: "Someone you just met through work, a class, or a friend of a friend. The questions work the same without the romance.",
   },
 ];
 

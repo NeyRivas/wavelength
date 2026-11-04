@@ -37,7 +37,7 @@ const CARDS = [
   {
     name: /Friendship Test/,
     path: "/play/friends/friendship-test",
-    h1: "Friendship Test",
+    h1: "Friendship Quiz",
   },
 ] as const;
 

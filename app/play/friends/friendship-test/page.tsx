@@ -13,9 +13,12 @@ import { FriendshipTestContent } from "@/components/play/friendship-test-content
  * here (its only button); the page's Start buttons submit the unchanged
  * startReadyMadeGame action with the game's id.
  *
- * Keyword map (Oct 2026 research): primary "friendship test", with
- * "friendship quiz" variants. Kept on shared memories ("us") so it doesn't
- * compete with /play/friends/how-well-do-you-know-me ("me").
+ * Keyword map (Nov 2026 research, US/UK/CA/AU/NZ): primary "friendship
+ * quiz" (the largest search), with "bff test", "friendship test", and
+ * "friendship trivia questions" (served by the extra question list). Kept
+ * on shared memories ("us") so it doesn't compete with
+ * /play/friends/how-well-do-you-know-me ("me"), which keeps "best friend
+ * quiz". The URL keeps "friendship-test".
  */
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -33,9 +36,9 @@ const nunitoSans = Nunito_Sans({
 });
 
 const PAGE_PATH = "/play/friends/friendship-test";
-const PAGE_TITLE = "Friendship Test: How Well Do You Remember Us? — Sameeeish";
+const PAGE_TITLE = "Friendship Quiz & BFF Test for Best Friends — Sameeeish";
 const PAGE_DESCRIPTION =
-  "A friendship test about your shared memories: where you met, inside jokes, the stories you still tell. Write the answers, send the link, see what they remember.";
+  "A friendship quiz about your shared memories: where you met, inside jokes, the stories you still tell. A free BFF test you send with one link.";
 
 export const metadata: Metadata = {
   title: PAGE_TITLE,
