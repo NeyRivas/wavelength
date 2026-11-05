@@ -33,3 +33,4 @@ tests/integration/.tmp-pg/
 
 # Local Supabase CLI metadata
 supabase/.temp/
+supabase/.branches/
