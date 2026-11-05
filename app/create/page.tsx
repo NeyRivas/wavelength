@@ -458,9 +458,27 @@ export default async function CreatePage({
       .eq("participant", "A"),
   ]);
 
+  // Bug fix: CreateHeader's own top-of-page "← Back" used to be rendered
+  // with the generic, fixed `backHref` (the category landing page) on
+  // EVERY /create screen, including the builder reached via "Customize
+  // questions" — so clicking that prominent header link, rather than the
+  // smaller "← Back to the quiz" link below, always skipped past the quiz
+  // entirely and landed on /play/dating-couples (or /play/friends),
+  // regardless of which question A had been on. On the editor screen
+  // specifically, when we know exactly which question to return to
+  // (`returnTo`, forwarded from the quiz's own "Customize questions"
+  // link), the header's Back now goes there instead — the same
+  // destination as "Back to the quiz" below it, so the two controls agree.
+  // Every other /create and /w/[token]/answer screen keeps the original,
+  // unchanged `backHref`.
+  const quizReturnHref =
+    editingPreset && returnTo
+      ? `/create?game=${encodeURIComponent(resolvedGame.id)}&returnTo=${encodeURIComponent(returnTo)}`
+      : undefined;
+
   return (
     <div className={`${fraunces.variable} ${nunitoSans.variable} wl-create`}>
-      <CreateHeader backHref={backHref} />
+      <CreateHeader backHref={quizReturnHref ?? backHref} />
       <main className="create-shell">
         <CreateShellIntro
           heading={heading}

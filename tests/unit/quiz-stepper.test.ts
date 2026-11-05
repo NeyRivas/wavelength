@@ -345,6 +345,28 @@ describe("QuizStepper — review screen", () => {
     await click(buttonByText("Review your answers"));
     expect(heading()).toBe("Review your answers");
     expect(questionArticle(QUESTIONS[1]!.text)?.textContent).toContain("Not answered yet");
+    // The edit button reads "Answer" (not "Change answer") when there's
+    // nothing to change yet.
+    expect(changeAnswerButton(QUESTIONS[1]!.text)?.textContent).toContain("Answer");
+    expect(changeAnswerButton(QUESTIONS[1]!.text)?.textContent).not.toContain("Change answer");
+  });
+
+  it("labels the edit button per question, and tints it to match that question's card", async () => {
+    actions.saveAnswerA.mockResolvedValueOnce({ error: "Something went wrong." });
+    render({ initialAnswers: { q1: 1 } });
+    await click(option("Not important")); // q2 (scale) — save fails
+    await settle();
+    await click(option("Saver")); // q3
+    await settle();
+    await click(buttonByText("Review your answers"));
+
+    const answeredButton = changeAnswerButton(QUESTIONS[0]!.text)!;
+    expect(answeredButton.textContent).toContain("Change answer");
+    expect(answeredButton.className).toContain("quiz-review__edit--lavender");
+
+    const unansweredButton = changeAnswerButton(QUESTIONS[1]!.text)!;
+    expect(unansweredButton.textContent).toContain("Answer");
+    expect(unansweredButton.className).toContain("quiz-review__edit--blue");
   });
 
   it("Back on the review screen returns to the completion screen it came from", async () => {

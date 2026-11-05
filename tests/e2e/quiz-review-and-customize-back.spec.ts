@@ -1,12 +1,12 @@
 import { expect, test } from "@playwright/test";
 
 import { getReadyMadeGame } from "../../lib/wavelength/ready-made-games";
-import { answerQuizChoice, quizQuestion } from "./utils/wavelength";
+import { answerQuizChoice, questionCard, quizQuestion } from "./utils/wavelength";
 
 /**
- * Two navigation/UX fixes to the guided quiz (components/quiz/quiz-stepper.tsx)
- * and the builder it hands off to (app/create/page.tsx), exercised end to
- * end in a real browser:
+ * Three related navigation/UX fixes to the guided quiz
+ * (components/quiz/quiz-stepper.tsx) and the builder it hands off to
+ * (app/create/page.tsx), exercised end to end in a real browser:
  *
  * 1. "Review your answers" used to jump back to question 1 and make A step
  *    through every question again to see them all. It now opens one screen
@@ -19,6 +19,18 @@ import { answerQuizChoice, quizQuestion } from "./utils/wavelength";
  *    the first unanswered question. It now carries the current question's
  *    id in a `returnTo` query param, which the builder's "Back to the
  *    quiz" link forwards straight back to app/create's quiz view.
+ * 3. PRODUCTION BUG (round 2): fix #2 above only touched the small
+ *    "← Back to the quiz" link under the question list. CreateHeader's
+ *    own, more prominent "← Back" at the very top of every /create screen
+ *    was left wired to the fixed, generic `backHref` (the category
+ *    landing page, e.g. /play/dating-couples) on every /create screen
+ *    including the builder — so clicking THAT Back, not the smaller one,
+ *    reproduced exactly what was reported: always landing on
+ *    /play/dating-couples regardless of which question A had been on.
+ *    app/create/page.tsx now gives CreateHeader a `returnTo`-aware
+ *    backHref too, only on the builder screen and only when a `returnTo`
+ *    is present — every other /create and /w/[token]/answer screen keeps
+ *    the original, unchanged backHref.
  *
  * Needs the real Supabase Anonymous Auth backend (see playwright.config.ts)
  * — not runnable in a sandbox without one.
@@ -115,4 +127,79 @@ test("Customize questions from a different question remembers that one instead",
   await page.getByRole("link", { name: "Customize questions" }).click();
   await page.getByRole("link", { name: "Back to the quiz" }).click();
   await expect(quizQuestion(page, QUESTIONS[0]!.text)).toBeVisible();
+});
+
+/**
+ * Round-2 regression: the header's "← Back" (not the "Back to the quiz"
+ * link below the question list) is the control that was actually reported
+ * broken in production. Covers all three scenarios named in that report:
+ * question 1, a middle question, and after several questions are answered.
+ */
+test.describe("CreateHeader's own '← Back' link, after Customize questions", () => {
+  test("from question 1 (nothing answered yet)", async ({ page }) => {
+    await page.goto(`/create?game=${GAME_ID}`);
+    await page.getByRole("button", { name: "Start the quiz" }).click();
+    await expect(quizQuestion(page, QUESTIONS[0]!.text)).toBeVisible();
+
+    await page.getByRole("link", { name: "Customize questions" }).click();
+    await expect(page.getByRole("link", { name: "Back to the quiz" })).toBeVisible();
+
+    // The header's own Back, not the smaller link under the question list.
+    await page.getByRole("link", { name: "← Back", exact: true }).click();
+    await expect(page).not.toHaveURL(/\/play\/dating-couples$/);
+    await expect(quizQuestion(page, QUESTIONS[0]!.text)).toBeVisible();
+  });
+
+  test("from a middle question", async ({ page }) => {
+    await page.goto(`/create?game=${GAME_ID}`);
+    await page.getByRole("button", { name: "Start the quiz" }).click();
+    await answerQuizChoice(page, QUESTIONS[0]!.text, answerFor(0));
+    await expect(quizQuestion(page, QUESTIONS[1]!.text)).toBeVisible();
+
+    await page.getByRole("link", { name: "Customize questions" }).click();
+    await page.getByRole("link", { name: "← Back", exact: true }).click();
+
+    await expect(page).not.toHaveURL(/\/play\/dating-couples$/);
+    await expect(quizQuestion(page, QUESTIONS[1]!.text)).toBeVisible();
+  });
+
+  test("after answering several questions", async ({ page }) => {
+    await page.goto(`/create?game=${GAME_ID}`);
+    await page.getByRole("button", { name: "Start the quiz" }).click();
+    for (let i = 0; i < 3; i++) {
+      await answerQuizChoice(page, QUESTIONS[i]!.text, answerFor(i));
+    }
+    await expect(quizQuestion(page, QUESTIONS[3]!.text)).toBeVisible();
+
+    await page.getByRole("link", { name: "Customize questions" }).click();
+    await page.getByRole("link", { name: "← Back", exact: true }).click();
+
+    await expect(page).not.toHaveURL(/\/play\/dating-couples$/);
+    await expect(quizQuestion(page, QUESTIONS[3]!.text)).toBeVisible();
+    // Nothing answered so far was lost by the round trip.
+    for (let i = 0; i < 3; i++) {
+      await expect(page.getByText(`${i + 1} of ${QUESTIONS.length} answered`)).toHaveCount(0);
+    }
+    await expect(page.getByText(`3 of ${QUESTIONS.length} answered`)).toBeVisible();
+  });
+});
+
+test("Back still resumes the right question after editing its text in the builder", async ({
+  page,
+}) => {
+  await page.goto(`/create?game=${GAME_ID}`);
+  await page.getByRole("button", { name: "Start the quiz" }).click();
+  await answerQuizChoice(page, QUESTIONS[0]!.text, answerFor(0));
+  await expect(quizQuestion(page, QUESTIONS[1]!.text)).toBeVisible();
+
+  await page.getByRole("link", { name: "Customize questions" }).click();
+  const card = questionCard(page, QUESTIONS[1]!.text);
+  const editedText = `${QUESTIONS[1]!.text} (edited)`;
+  await card.getByLabel("Question text").fill(editedText);
+  await card.getByLabel("Question text").press("Tab"); // blur-triggered auto-save
+
+  await page.getByRole("link", { name: "Back to the quiz" }).click();
+  // Same question (same id, same position) — now showing the edited text,
+  // not reset to question 1 and not stuck on the old, now-stale text.
+  await expect(quizQuestion(page, editedText)).toBeVisible();
 });

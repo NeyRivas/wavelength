@@ -519,18 +519,38 @@ function QuizReview({
                 </header>
                 <div className="create-card__body">
                   <p className="share-answer__question">{question.text}</p>
-                  {value !== undefined ? (
-                    <span className="share-answer-pill share-answer-pill--locked">
-                      {formatAnswer({ type: question.type, options: displayOptions }, value)}
-                    </span>
-                  ) : (
-                    <span className="share-answer-pill share-answer-pill--empty">
-                      Not answered yet
-                    </span>
-                  )}
-                  <button type="button" className="quiz-review__edit" onClick={() => onEdit(index)}>
-                    Change answer
-                  </button>
+                  <div className="quiz-review__answer-row">
+                    {value !== undefined ? (
+                      <span className="share-answer-pill share-answer-pill--locked">
+                        {formatAnswer({ type: question.type, options: displayOptions }, value)}
+                      </span>
+                    ) : (
+                      <span className="share-answer-pill share-answer-pill--empty">
+                        Not answered yet
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      className={`quiz-review__edit quiz-review__edit--${tint}`}
+                      onClick={() => onEdit(index)}
+                    >
+                      <svg
+                        className="quiz-review__edit-icon"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5Z"
+                          stroke="currentColor"
+                          strokeWidth="1.8"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                      {value !== undefined ? "Change answer" : "Answer"}
+                    </button>
+                  </div>
                 </div>
               </article>
             </li>

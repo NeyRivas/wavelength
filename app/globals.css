@@ -9093,23 +9093,90 @@ dialog::backdrop {
   color: var(--wl-muted);
 }
 
+/* Answer pill + "Change answer" side by side, wrapping to its own line on
+   narrow cards rather than ever overlapping — the pill (bold, solid ink)
+   stays the visually dominant element on the row; the edit action next to
+   it is deliberately quieter. */
+.quiz-review__answer-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+/* A real pill-shaped button (not plain underlined text) — soft pastel
+   fill + border, no solid ink fill, so it reads as a secondary action
+   next to the answer pill's bold solid-ink fill. Padding is sized for a
+   comfortable mobile tap target (~44px tall with its border) rather than
+   the minimum needed to fit the label. */
 .quiz-review__edit {
-  display: inline-block;
-  margin-top: 1rem;
-  padding: 0;
-  border: none;
-  background: none;
-  font-size: 0.875rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex-shrink: 0;
+  padding: 0.75rem 1.125rem;
+  border: 1.5px solid var(--color-border);
+  border-radius: 999px;
+  background: #ffffff;
+  font-family: var(--font-nunito), system-ui, sans-serif;
+  font-size: 0.8125rem;
   font-weight: 700;
   color: var(--wl-ink);
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
   cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    transform 0.1s ease;
+}
+
+.quiz-review__edit-icon {
+  width: 0.875rem;
+  height: 0.875rem;
+  flex-shrink: 0;
+}
+
+@media (hover: hover) {
+  .quiz-review__edit:hover {
+    border-color: var(--wl-ink);
+  }
+}
+
+.quiz-review__edit:active {
+  transform: scale(0.97);
 }
 
 .quiz-review__edit:focus-visible {
   outline: 2px solid var(--wl-ink);
   outline-offset: 2px;
+}
+
+/* Soft pastel fill matching this card's own header tint (the same 5-tint
+   cycle .create-card__head and .create-pill already use) — ties the edit
+   action to its own card instead of five identical gray buttons down
+   the list. */
+.quiz-review__edit--lavender {
+  background: color-mix(in srgb, var(--wl-lavender) 22%, white);
+  border-color: color-mix(in srgb, var(--wl-lavender) 60%, white);
+}
+
+.quiz-review__edit--blue {
+  background: color-mix(in srgb, var(--wl-blue) 22%, white);
+  border-color: color-mix(in srgb, var(--wl-blue) 60%, white);
+}
+
+.quiz-review__edit--mint {
+  background: color-mix(in srgb, var(--wl-mint) 22%, white);
+  border-color: color-mix(in srgb, var(--wl-mint) 60%, white);
+}
+
+.quiz-review__edit--pink {
+  background: color-mix(in srgb, var(--wl-pink) 22%, white);
+  border-color: color-mix(in srgb, var(--wl-pink) 60%, white);
+}
+
+.quiz-review__edit--peach {
+  background: color-mix(in srgb, var(--wl-peach) 22%, white);
+  border-color: color-mix(in srgb, var(--wl-peach) 60%, white);
 }
 
 @media (max-width: 30rem) {
