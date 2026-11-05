@@ -9064,6 +9064,54 @@ dialog::backdrop {
   text-align: left;
 }
 
+/* ── "Review your answers" (QA fix) ──────────────────────────────────────
+   One screen, every question — reuses .create-card-list/.create-card/
+   .share-answer-pill as-is (same primitives ReadOnlyAnswers already uses
+   for a finalized questionnaire, components/questionnaire/
+   read-only-answers.tsx) so this reads as the same visual object, just
+   with a "Change answer" button on each card since nothing here is
+   locked yet. */
+.quiz-review {
+  margin: 0 0 1.5rem;
+}
+
+.quiz-review__head {
+  margin-bottom: 1rem;
+}
+
+.quiz-review__heading {
+  margin: 0 0 0.5rem;
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(1.5rem, 4vw, 1.875rem);
+}
+
+.quiz-review__text {
+  margin: 0 0 1.5rem;
+  font-size: 0.9375rem;
+  color: var(--wl-muted);
+}
+
+.quiz-review__edit {
+  display: inline-block;
+  margin-top: 1rem;
+  padding: 0;
+  border: none;
+  background: none;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--wl-ink);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  cursor: pointer;
+}
+
+.quiz-review__edit:focus-visible {
+  outline: 2px solid var(--wl-ink);
+  outline-offset: 2px;
+}
+
 @media (max-width: 30rem) {
   .quiz-card__body {
     padding: 1.25rem 1.125rem;

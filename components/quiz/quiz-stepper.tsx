@@ -22,6 +22,7 @@ import {
   sameOptions,
   type QuizQuestion,
 } from "@/lib/wavelength/preset-quiz";
+import { formatAnswer } from "@/lib/wavelength/result";
 
 const SAVE_ACTIONS = { A: saveAnswerA, B: saveAnswerB } as const;
 
@@ -35,7 +36,14 @@ export interface QuizStepperQuestion extends QuizQuestion {
   category: Category;
 }
 
-type View = { kind: "question"; index: number } | { kind: "complete" };
+/** `from: "review"` marks a question opened from the review screen (the
+ * "Change answer" button below) rather than reached by the normal
+ * Next/Previous sequence — it changes where that one question's own
+ * Previous/Next/save-and-advance actions lead back to (review, not the
+ * neighbouring question), so a detour to fix one answer always has a
+ * predictable way back to where it started. */
+type View =
+  { kind: "question"; index: number; from?: "review" } | { kind: "review" } | { kind: "complete" };
 
 /**
  * The guided quiz for ready-made scored games: one question per screen,
@@ -66,6 +74,7 @@ export function QuizStepper({
   writesOwnOptions = false,
   hint,
   customizeHref,
+  initialQuestionId,
   completionHeading,
   completionText,
   completion,
@@ -80,6 +89,13 @@ export function QuizStepper({
   hint: string;
   /** A only: where "Customize questions" leads (the builder). */
   customizeHref?: string;
+  /** A only: the id of the question A was on when they left for the
+   * builder (customizeHref's `returnTo` param, read by app/create/page.tsx
+   * and passed straight through) — opens back on that exact question
+   * instead of resuming at the first unanswered one. Falls back to the
+   * normal resume behavior if the id no longer matches any question
+   * (e.g. it was deleted in the builder). */
+  initialQuestionId?: string;
   completionHeading: string;
   completionText: string;
   completion: React.ReactNode;
@@ -93,6 +109,10 @@ export function QuizStepper({
     Object.fromEntries(questions.map((question) => [question.id, realOptions(question.options)])),
   );
   const [view, setView] = useState<View>(() => {
+    if (initialQuestionId) {
+      const index = questions.findIndex((question) => question.id === initialQuestionId);
+      if (index !== -1) return { kind: "question", index };
+    }
     const first = firstUnansweredIndex(questions, initialAnswers);
     return first === -1 ? { kind: "complete" } : { kind: "question", index: first };
   });
@@ -151,6 +171,13 @@ export function QuizStepper({
     return index + 1 < total ? { kind: "question", index: index + 1 } : { kind: "complete" };
   }
 
+  /** Where a question's own Next/choose-and-advance should go once it's
+   * saved: back to review for a question opened from there, otherwise the
+   * normal next question (or completion). */
+  function destinationAfter(index: number, cameFromReview: boolean): View {
+    return cameFromReview ? { kind: "review" } : viewAfter(index);
+  }
+
   function setError(questionId: string, message: string | null) {
     setErrors((current) => {
       const next = { ...current };
@@ -203,6 +230,7 @@ export function QuizStepper({
 
   function choose(index: number, value: number) {
     const question = questions[index]!;
+    const cameFromReview = view.kind === "question" && view.from === "review";
     setSelected((current) => ({ ...current, [question.id]: value }));
     setError(question.id, null);
     // Skip the round trip only when this is already the saved answer and
@@ -214,12 +242,13 @@ export function QuizStepper({
     cancelAdvance();
     advanceTimer.current = setTimeout(() => {
       advanceTimer.current = null;
-      setView(viewAfter(index));
+      setView(destinationAfter(index, cameFromReview));
     }, ADVANCE_DELAY_MS);
   }
 
   async function submitWrittenOptions(index: number, slots: string[], correctSlot: number | null) {
     const question = questions[index]!;
+    const cameFromReview = view.kind === "question" && view.from === "review";
     const prepared = prepareWrittenOptions(slots, correctSlot);
     if (!prepared.ok) {
       setError(question.id, prepared.error);
@@ -255,9 +284,11 @@ export function QuizStepper({
 
     if (ok) {
       setSelected((current) => ({ ...current, [question.id]: prepared.answerIndex }));
-      goTo(viewAfter(index));
+      goTo(destinationAfter(index, cameFromReview));
     }
   }
+
+  const cameFromReview = view.kind === "question" && view.from === "review";
 
   let currentStep: React.ReactNode = null;
   if (view.kind === "question") {
@@ -273,7 +304,15 @@ export function QuizStepper({
       customizeHref,
       saving: (savingCounts[question.id] ?? 0) > 0,
       error: errors[question.id] ?? null,
-      onPrevious: index > 0 ? () => goTo({ kind: "question", index: index - 1 }) : undefined,
+      cameFromReview,
+      // A detour from review always leads back to review, even from
+      // question 1 — reviewing isn't resuming the sequential flow, so
+      // "Previous" here never falls through to the neighbouring question.
+      onPrevious: cameFromReview
+        ? () => goTo({ kind: "review" })
+        : index > 0
+          ? () => goTo({ kind: "question", index: index - 1 })
+          : undefined,
     };
     currentStep =
       participant === "A" && needsWrittenOptions(question, writesOwnOptions) ? (
@@ -293,7 +332,11 @@ export function QuizStepper({
           {...shared}
           value={selected[question.id]}
           onChoose={(value) => choose(index, value)}
-          onNext={selected[question.id] !== undefined ? () => goTo(viewAfter(index)) : undefined}
+          onNext={
+            selected[question.id] !== undefined
+              ? () => goTo(destinationAfter(index, cameFromReview))
+              : undefined
+          }
         />
       );
   }
@@ -388,7 +431,7 @@ export function QuizStepper({
             <button
               type="button"
               className="conv-link-button"
-              onClick={() => goTo({ kind: "question", index: 0 })}
+              onClick={() => goTo({ kind: "review" })}
             >
               Review your answers
             </button>
@@ -396,7 +439,105 @@ export function QuizStepper({
           {readyToFinish && <div className="conv-complete__action">{completion}</div>}
         </section>
       )}
+
+      {view.kind === "review" && (
+        <QuizReview
+          questions={questions}
+          saved={saved}
+          writtenOptions={writtenOptions}
+          headingRef={headingRef}
+          onBack={() => goTo({ kind: "complete" })}
+          onEdit={(index) => goTo({ kind: "question", index, from: "review" })}
+        />
+      )}
     </div>
+  );
+}
+
+/**
+ * "Review your answers" (QA fix): every question and its currently saved
+ * answer, all on one screen — no more stepping through them one by one
+ * via index 0. Read-only like ReadOnlyAnswers (components/questionnaire/
+ * read-only-answers.tsx) and reusing the exact same card/pill classes for
+ * a consistent look, but for an in-progress questionnaire rather than a
+ * finalized one: it reads live `saved`/`writtenOptions` state instead of
+ * DB rows, and each card has a "Change answer" button (ReadOnlyAnswers has
+ * none — nothing there is ever editable again). Only ever reached from,
+ * and only ever returns to, the completion screen (its one entry point),
+ * so "Back" here has exactly one predictable destination.
+ */
+function QuizReview({
+  questions,
+  saved,
+  writtenOptions,
+  headingRef,
+  onBack,
+  onEdit,
+}: {
+  questions: QuizStepperQuestion[];
+  saved: Record<string, number>;
+  writtenOptions: Record<string, string[]>;
+  headingRef: React.RefObject<HTMLHeadingElement | null>;
+  onBack: () => void;
+  onEdit: (index: number) => void;
+}) {
+  return (
+    <section className="quiz-review" aria-labelledby="quiz-review-heading">
+      <div className="quiz-review__head">
+        <button type="button" className="conv-button conv-button--secondary" onClick={onBack}>
+          <span aria-hidden="true">←</span> Back
+        </button>
+      </div>
+      <h2 id="quiz-review-heading" ref={headingRef} tabIndex={-1} className="quiz-review__heading">
+        Review your answers
+      </h2>
+      <p className="quiz-review__text">
+        Everything you&apos;ve answered so far. Tap &ldquo;Change answer&rdquo; on any question to
+        update it.
+      </p>
+
+      <ol className="create-card-list">
+        {questions.map((question, index) => {
+          const value = saved[question.id];
+          const tint = tintForIndex(index);
+          // Written-answer games (writesOwnOptions): show A's own options
+          // as typed so far, not the placeholder slots the question row
+          // started with.
+          const displayOptions = writtenOptions[question.id] ?? question.options;
+          return (
+            <li key={question.id}>
+              <article
+                className="create-card"
+                aria-label={`Question ${index + 1}: ${question.text}`}
+              >
+                <header className={`create-card__head create-card__head--${tint}`}>
+                  <div className="create-card__badge">
+                    <span className={`create-card__number create-card__number--${tint}`}>
+                      {index + 1}
+                    </span>
+                  </div>
+                </header>
+                <div className="create-card__body">
+                  <p className="share-answer__question">{question.text}</p>
+                  {value !== undefined ? (
+                    <span className="share-answer-pill share-answer-pill--locked">
+                      {formatAnswer({ type: question.type, options: displayOptions }, value)}
+                    </span>
+                  ) : (
+                    <span className="share-answer-pill share-answer-pill--empty">
+                      Not answered yet
+                    </span>
+                  )}
+                  <button type="button" className="quiz-review__edit" onClick={() => onEdit(index)}>
+                    Change answer
+                  </button>
+                </div>
+              </article>
+            </li>
+          );
+        })}
+      </ol>
+    </section>
   );
 }
 
@@ -410,6 +551,9 @@ interface StepProps {
   customizeHref?: string;
   saving: boolean;
   error: string | null;
+  /** This question was opened from the review screen rather than reached
+   * in sequence — see the `View` type's own doc comment. */
+  cameFromReview: boolean;
   onPrevious?: () => void;
 }
 
@@ -432,6 +576,12 @@ function StepCard({
   children: React.ReactNode;
 }) {
   const headingId = `quiz-question-${question.id}`;
+  // Carries the exact question A is leaving from, so the builder's own
+  // "Back to the quiz" link (app/create/page.tsx) can return to this same
+  // question instead of always resuming at the first unanswered one.
+  const customizeHrefWithReturn = customizeHref
+    ? `${customizeHref}${customizeHref.includes("?") ? "&" : "?"}returnTo=${encodeURIComponent(question.id)}`
+    : undefined;
   return (
     <section className={`quiz-card quiz-card--${tint}`} aria-labelledby={headingId}>
       <header className="quiz-card__head">
@@ -455,8 +605,8 @@ function StepCard({
         <div className="conv-actions">{actions}</div>
         <div className="quiz-card__footer">
           <p className="quiz-card__hint">{hint}</p>
-          {customizeHref && (
-            <Link href={customizeHref} className="quiz-card__customize">
+          {customizeHrefWithReturn && (
+            <Link href={customizeHrefWithReturn} className="quiz-card__customize">
               Customize questions
             </Link>
           )}
@@ -476,7 +626,7 @@ function ChoiceStep({
   onChoose: (value: number) => void;
   onNext?: () => void;
 }) {
-  const { question, index, total, onPrevious, saving, error } = step;
+  const { question, index, total, onPrevious, saving, error, cameFromReview } = step;
   const choices =
     question.type === "scale"
       ? SCALE_VALUES.map((scaleValue) => ({ value: scaleValue, label: SCALE_LABELS[scaleValue] }))
@@ -496,7 +646,7 @@ function ChoiceStep({
             onClick={onPrevious}
             disabled={!onPrevious}
           >
-            <span aria-hidden="true">←</span> Previous
+            <span aria-hidden="true">←</span> {cameFromReview ? "Back to review" : "Previous"}
           </button>
           <button
             type="button"
@@ -504,7 +654,8 @@ function ChoiceStep({
             onClick={onNext}
             disabled={!onNext}
           >
-            {index === total - 1 ? "Finish" : "Next"} <span aria-hidden="true">→</span>
+            {cameFromReview ? "Save & return to review" : index === total - 1 ? "Finish" : "Next"}{" "}
+            <span aria-hidden="true">→</span>
           </button>
         </>
       }
@@ -554,7 +705,7 @@ function WrittenOptionsStep({
   /** Any change to the fields — clears a now-stale validation message. */
   onEdit: () => void;
 }) {
-  const { question, index, total, onPrevious, saving } = step;
+  const { question, index, total, onPrevious, saving, cameFromReview } = step;
   const [slots, setSlots] = useState<OptionSlot[]>(() => {
     const filled = initialOptions.map((value) => newSlot(value));
     while (filled.length < MIN_CHOICE_OPTIONS) filled.push(newSlot(""));
@@ -585,7 +736,7 @@ function WrittenOptionsStep({
             onClick={onPrevious}
             disabled={!onPrevious || saving}
           >
-            <span aria-hidden="true">←</span> Previous
+            <span aria-hidden="true">←</span> {cameFromReview ? "Back to review" : "Previous"}
           </button>
           <button
             type="button"
@@ -593,7 +744,8 @@ function WrittenOptionsStep({
             onClick={submit}
             disabled={saving}
           >
-            {index === total - 1 ? "Finish" : "Next"} <span aria-hidden="true">→</span>
+            {cameFromReview ? "Save & return to review" : index === total - 1 ? "Finish" : "Next"}{" "}
+            <span aria-hidden="true">→</span>
           </button>
         </>
       }

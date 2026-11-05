@@ -142,7 +142,12 @@ describe("QuizStepper", () => {
     expect(container.querySelectorAll(".quiz-card")).toHaveLength(1);
     expect(container.textContent).toContain("Question 1 of 3");
     expect(container.textContent).toContain("0 of 3 answered");
-    expect(container.querySelector("a")?.getAttribute("href")).toBe("/create?game=g&mode=edit");
+    // Carries the current question's id so the builder's own "Back to the
+    // quiz" link can return here instead of always resuming at the first
+    // unanswered question — see the "Customize questions" describe block.
+    expect(container.querySelector("a")?.getAttribute("href")).toBe(
+      "/create?game=g&mode=edit&returnTo=q1",
+    );
   });
 
   it("saves a tapped answer with saveAnswerA and moves on by itself", async () => {
@@ -286,6 +291,152 @@ describe("QuizStepper", () => {
     await click(option("Quality time"));
     await settle();
     expect(container.querySelector('[role="alert"]')).toBeNull();
+  });
+});
+
+describe("QuizStepper — review screen", () => {
+  function questionArticle(questionText: string): HTMLElement | undefined {
+    return [...container.querySelectorAll<HTMLElement>(".create-card")].find((article) =>
+      article.textContent?.includes(questionText),
+    );
+  }
+
+  function changeAnswerButton(questionText: string): HTMLButtonElement | undefined {
+    return (
+      questionArticle(questionText)?.querySelector<HTMLButtonElement>(".quiz-review__edit") ??
+      undefined
+    );
+  }
+
+  it("shows every question and its saved answer on one screen, no stepping required", async () => {
+    render({ initialAnswers: { q1: 1, q2: 75, q3: 0 } });
+    expect(heading()).toBe("That's every question");
+
+    await click(buttonByText("Review your answers"));
+
+    expect(heading()).toBe("Review your answers");
+    // All three questions are on screen together — not one at a time.
+    expect(container.querySelectorAll(".create-card")).toHaveLength(3);
+    for (const text of QUESTIONS.map((q) => q.text)) {
+      expect(container.textContent).toContain(text);
+    }
+    // Each one's currently saved answer is shown, human-readable.
+    expect(questionArticle(QUESTIONS[0]!.text)?.textContent).toContain("Words");
+    expect(questionArticle(QUESTIONS[1]!.text)?.textContent).toContain("Very important");
+    expect(questionArticle(QUESTIONS[2]!.text)?.textContent).toContain("Saver");
+    // No Next/Previous controls on this screen — nothing to step through.
+    expect(buttonByText("Next")).toBeUndefined();
+    expect(buttonByText("Previous")).toBeUndefined();
+  });
+
+  it("marks an unanswered question instead of showing a stale or blank value", async () => {
+    // Same technique as "holds back the completion step…" above: a failed
+    // save still advances past the question, landing on "complete" with
+    // that one genuinely unanswered — the only way to reach review with a
+    // gap in it, short of answering everything.
+    actions.saveAnswerA.mockResolvedValueOnce({ error: "Something went wrong." });
+    render({ initialAnswers: { q1: 0 } });
+    await click(option("Not important")); // q2 (scale) — save fails
+    await settle();
+    await click(option("Saver")); // q3
+    await settle();
+    expect(heading()).toBe("That's every question");
+
+    await click(buttonByText("Review your answers"));
+    expect(heading()).toBe("Review your answers");
+    expect(questionArticle(QUESTIONS[1]!.text)?.textContent).toContain("Not answered yet");
+  });
+
+  it("Back on the review screen returns to the completion screen it came from", async () => {
+    render({ initialAnswers: { q1: 1, q2: 75, q3: 0 } });
+    await click(buttonByText("Review your answers"));
+    await click(buttonByText("Back"));
+    expect(heading()).toBe("That's every question");
+  });
+
+  it("editing a specific answer from review opens that question, labeled as a detour", async () => {
+    render({ initialAnswers: { q1: 1, q2: 75, q3: 0 } });
+    await click(buttonByText("Review your answers"));
+    await click(changeAnswerButton(QUESTIONS[1]!.text));
+
+    expect(heading()).toBe(QUESTIONS[1]!.text);
+    // Not the normal "Previous"/"Next"/"Finish" labels — this is a
+    // detour from review, not a resumed sequential pass.
+    expect(buttonByText("Back to review")).toBeTruthy();
+    expect(buttonByText("Previous")).toBeUndefined();
+    expect(buttonByText("Save & return to review")).toBeTruthy();
+    expect(buttonByText("Finish")).toBeUndefined();
+  });
+
+  it("changing an answer from review saves it and returns to review, leaving other answers untouched", async () => {
+    render({ initialAnswers: { q1: 1, q2: 75, q3: 0 } });
+    await click(buttonByText("Review your answers"));
+    await click(changeAnswerButton(QUESTIONS[0]!.text));
+    await click(option("Gestures"));
+    await settle();
+
+    expect(actions.saveAnswerA).toHaveBeenCalledTimes(1);
+    expect(sentFields(actions.saveAnswerA.mock.calls[0]!)).toEqual({
+      wavelengthId: "w1",
+      questionId: "q1",
+      value: "2",
+    });
+    // Back on review, not on question 2 — editing one answer never
+    // resumes the normal sequential flow.
+    expect(heading()).toBe("Review your answers");
+    expect(questionArticle(QUESTIONS[0]!.text)?.textContent).toContain("Gestures");
+    expect(questionArticle(QUESTIONS[1]!.text)?.textContent).toContain("Very important");
+    expect(questionArticle(QUESTIONS[2]!.text)?.textContent).toContain("Saver");
+  });
+
+  it("pressing Back on a question opened from review returns to review without saving a change", async () => {
+    render({ initialAnswers: { q1: 1, q2: 75, q3: 0 } });
+    await click(buttonByText("Review your answers"));
+    await click(changeAnswerButton(QUESTIONS[0]!.text));
+    await click(buttonByText("Back to review"));
+
+    expect(actions.saveAnswerA).not.toHaveBeenCalled();
+    expect(heading()).toBe("Review your answers");
+    expect(questionArticle(QUESTIONS[0]!.text)?.textContent).toContain("Words");
+  });
+
+  it("works the same way for B as for A", async () => {
+    render({
+      participant: "B",
+      customizeHref: undefined,
+      initialAnswers: { q1: 1, q2: 75, q3: 0 },
+    });
+    await click(buttonByText("Review your answers"));
+    expect(heading()).toBe("Review your answers");
+    expect(container.querySelectorAll(".create-card")).toHaveLength(3);
+
+    await click(changeAnswerButton(QUESTIONS[2]!.text));
+    await click(option("Spender"));
+    await settle();
+
+    expect(actions.saveAnswerB).toHaveBeenCalledTimes(1);
+    expect(actions.saveAnswerA).not.toHaveBeenCalled();
+    expect(heading()).toBe("Review your answers");
+    expect(questionArticle(QUESTIONS[2]!.text)?.textContent).toContain("Spender");
+  });
+});
+
+describe("QuizStepper — resuming on a specific question (Customize questions → Back)", () => {
+  it("opens on the given question instead of the first unanswered one", () => {
+    render({ initialAnswers: { q1: 1 }, initialQuestionId: "q3" });
+    expect(heading()).toBe(QUESTIONS[2]!.text);
+  });
+
+  it("carries that question's own id in the Customize questions link, not always question 1's", () => {
+    render({ initialAnswers: {}, initialQuestionId: "q2" });
+    expect(container.querySelector("a")?.getAttribute("href")).toBe(
+      "/create?game=g&mode=edit&returnTo=q2",
+    );
+  });
+
+  it("falls back to the normal resume behavior when the id no longer matches a question", () => {
+    render({ initialAnswers: { q1: 1 }, initialQuestionId: "no-such-question" });
+    expect(heading()).toBe(QUESTIONS[1]!.text);
   });
 });
 
