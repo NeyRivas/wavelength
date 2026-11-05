@@ -60,7 +60,13 @@ export default defineConfig({
   forbidOnly: isCI,
   // No retries: a test that needs one to pass is a bug to fix, not hide.
   retries: 0,
-  reporter: [["list"], ["html", { open: "never", outputFolder: "playwright-report" }]],
+  // In CI (.github/workflows/e2e.yml), failures also show up as annotations
+  // on the PR.
+  reporter: [
+    ...(isCI ? [["github"] as const] : []),
+    ["list"],
+    ["html", { open: "never", outputFolder: "playwright-report" }],
+  ],
   use: {
     baseURL,
     trace: "retain-on-failure",
