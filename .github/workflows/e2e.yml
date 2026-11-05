@@ -1,0 +1,86 @@
+# End-to-end tests (tests/e2e/, playwright.config.ts) against a production
+# build of the app and a throwaway local Supabase stack started on the runner
+# from supabase/config.toml and supabase/migrations/. Nothing here talks to
+# the hosted Supabase project, Vercel, or Google Analytics, and no secrets
+# are needed: the URL and anon key are the local stack's own.
+name: E2E
+
+on:
+  pull_request:
+  push:
+    branches: [claude/wavelength-architecture-e2ey7u]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    name: Playwright (Chromium)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Chromium for Playwright
+        run: pnpm exec playwright install --with-deps chromium
+
+      - uses: supabase/setup-cli@v1
+        with:
+          # The version supabase/config.toml was generated with and the
+          # suite was validated against.
+          version: 2.20.12
+
+      # Only what the app uses: Postgres, Auth (anonymous sign-in), the REST
+      # API, and the gateway in front of them.
+      - name: Start local Supabase
+        run: >-
+          supabase start
+          --exclude realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+
+      - name: Point the app at local Supabase
+        run: |
+          eval "$(supabase status -o env)"
+          echo "NEXT_PUBLIC_SUPABASE_URL=$API_URL" >> "$GITHUB_ENV"
+          echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$ANON_KEY" >> "$GITHUB_ENV"
+
+      # Playwright builds the app (`next build`), starts it, runs every spec,
+      # and stops the server.
+      - name: Run E2E tests
+        run: pnpm test:e2e
+
+      - name: Upload HTML report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14
+
+      - name: Upload traces, screenshots and videos of failed tests
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-test-results
+          path: test-results/
+          retention-days: 14
+
+      - name: Stop local Supabase
+        if: ${{ always() }}
+        run: supabase stop --no-backup

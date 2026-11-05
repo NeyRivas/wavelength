@@ -3,112 +3,254 @@ import { expect, type Locator, type Page } from "@playwright/test";
 /**
  * Shared helpers for driving the real A/B flow through the actual rendered
  * UI (no shortcuts, no direct DB/RPC calls — that's what tests/integration/
- * is for). Every locator here is scoped by ARIA role/name or by the
- * question's own `aria-label` (`Question: <text>` on its `<article>`,
- * components/questionnaire/question-card.tsx) rather than by adding any
- * data-testid to production markup — none was needed or added.
+ * is for). Every locator here is scoped by ARIA role/name or by a card's
+ * own `aria-label` rather than by adding any data-testid to production
+ * markup — none was needed or added.
  *
  * Each Playwright test gets a fresh browser context by default, which
  * means a fresh Anonymous Auth session (a new "A") — no explicit DB reset
  * is needed between tests for that reason, only between steps of the same
  * test that deliberately reuse one identity.
+ *
+ * Waiting: the builder and the answer page save on their own (on change
+ * or on blur), and their "Saved" text is not proof of a save —
+ * AnswerControl shows "Saved" as soon as an answer is picked, before the
+ * request even starts, and QuestionEditForm shows it whenever it isn't
+ * saving. So every helper that triggers an auto-save waits for that save's
+ * own Server Action response (withServerAction) before returning, and
+ * then for the UI it changes. No fixed sleeps anywhere.
  */
 
-/** Starts a brand new draft as A and lands on "Build your questionnaire". */
+/** Matches the POST a Next.js Server Action makes (it carries a
+ * `Next-Action` header). */
+function isServerAction(response: import("@playwright/test").Response): boolean {
+  const request = response.request();
+  return request.method() === "POST" && request.headers()["next-action"] !== undefined;
+}
+
+/**
+ * Runs `trigger` (a click, a check, a blur…) and waits until the Server
+ * Action it fires has answered. Rejects if the action failed on the
+ * server, so a broken save surfaces where it happened instead of as a
+ * confusing assertion later.
+ */
+export async function withServerAction(page: Page, trigger: () => Promise<void>): Promise<void> {
+  const response = page.waitForResponse(isServerAction);
+  await trigger();
+  const settled = await response;
+  // Next runs the action before it starts answering, so a response means
+  // the save happened. (Not `finished()`: the client stops reading the
+  // streamed reply once it has what it needs, so Chromium reports the
+  // request as aborted and `finished()` never resolves.) Callers then wait
+  // for the UI change the save causes.
+  expect(settled.ok(), `Server Action answered ${settled.status()}`).toBe(true);
+}
+
+function escapeRegExp(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/** Starts a brand new Make Your Own draft as A and lands on its first,
+ * already-open question form. */
 export async function startDraft(page: Page): Promise<void> {
   await page.goto("/create");
-  await page.getByRole("button", { name: "Start building your Wavelength" }).click();
-  await expect(page.getByRole("heading", { name: "Build your questionnaire" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Make Your Own" })).toBeVisible();
+  await withServerAction(page, () =>
+    page.getByRole("button", { name: "+ Add your first question" }).click(),
+  );
+  await expect(addQuestionForm(page)).toBeVisible();
 }
 
-/** The "Add a question" form — the one not yet attached to any created question. */
+/** The open "add a question" form — the one whose submit button is
+ * "+ Add question" (the collapsed trigger's name also carries its count,
+ * e.g. "+ Add question (2/12)"). */
 function addQuestionForm(page: Page): Locator {
-  return page.locator("form", { has: page.getByRole("heading", { name: "Add a question" }) });
+  return page.locator("form", {
+    has: page.getByRole("button", { name: "+ Add question", exact: true }),
+  });
 }
 
-/** The card for one already-created question, scoped by its exact text
- * (matches the <article aria-label="Question: ..."> QuestionCard renders).
- * Only used on A's builder page (/create) — B's answer page renders each
- * question as a plain <li> instead, see answerRow() below. */
+/** The collapsed "+ Add question (N/12)" bar that opens the add form. */
+function addQuestionTrigger(page: Page): Locator {
+  return page.getByRole("button", { name: /^\+ Add question \(\d+\/\d+\)$/ });
+}
+
+/** Opens the add form if it's collapsed behind its trigger. It's only ever
+ * open on its own for a draft's very first question (startDraft); after
+ * every add, submitNewQuestion waits for it to collapse again, so by the
+ * time this runs one of the two is settled on screen. */
+async function openAddQuestionForm(page: Page): Promise<Locator> {
+  const form = addQuestionForm(page);
+  await expect(form.or(addQuestionTrigger(page))).toBeVisible();
+  if ((await addQuestionTrigger(page).count()) > 0) {
+    await addQuestionTrigger(page).click();
+  }
+  await expect(form).toBeVisible();
+  return form;
+}
+
+/** The card for one already-created question on A's builder, scoped by its
+ * exact text (QuestionCard's `<article aria-label="Question: …">`). */
 export function questionCard(page: Page, text: string): Locator {
-  return page.getByRole("article", { name: `Question: ${text}` });
+  return page.getByRole("article", { name: `Question: ${text}`, exact: true });
 }
 
-/** One question's row on B's answer page (app/w/[token]/answer/page.tsx),
- * which — unlike the builder's QuestionCard — is a plain <li><p>text</p>
- * <AnswerControl/></li> with no aria-label to key off of. */
+/** One question's card on B's answer page (AnswerQuestionCard's
+ * `<article aria-label="Question N: …">`). */
 export function answerRow(page: Page, text: string): Locator {
-  return page.locator("li", { has: page.getByText(text, { exact: true }) });
+  return page.getByRole("article", { name: new RegExp(`^Question \\d+: ${escapeRegExp(text)}$`) });
+}
+
+/** A labelled pill/radio option, picked the way a person does it: by
+ * clicking its visible label. The radios themselves are visually hidden
+ * inside their pills, so clicking the input directly hits whatever is
+ * drawn on top of it instead. */
+async function pickOption(group: Locator, name: string): Promise<void> {
+  // `has` is evaluated relative to each label, so it's built from the page.
+  const radio = group.page().getByRole("radio", { name, exact: true });
+  await group.locator("label", { has: radio }).click();
+  await expect(group.getByRole("radio", { name, exact: true })).toBeChecked();
+}
+
+async function fillNewQuestion(
+  form: Locator,
+  { text, type, category }: { text: string; type: "choice" | "scale"; category: string },
+): Promise<void> {
+  await pickOption(form.getByRole("radiogroup", { name: "Category" }), category);
+  await pickOption(
+    form.getByRole("radiogroup", { name: "Question type" }),
+    type === "choice" ? "Choice Pick one answer" : "Scale / Importance Choose where you land",
+  );
+  await form.getByRole("textbox", { name: "Question", exact: true }).fill(text);
+}
+
+async function submitNewQuestion(page: Page, form: Locator, text: string): Promise<void> {
+  await withServerAction(page, () =>
+    form.getByRole("button", { name: "+ Add question", exact: true }).click(),
+  );
+  await expect(questionCard(page, text)).toBeVisible();
+  // A successful add collapses the form back behind its trigger.
+  await expect(addQuestionTrigger(page)).toBeVisible();
 }
 
 export async function addChoiceQuestion(
   page: Page,
-  { text, options, category }: { text: string; options: string[]; category?: string },
+  {
+    text,
+    options,
+    category = "Relationship",
+  }: { text: string; options: string[]; category?: string },
 ): Promise<void> {
-  const form = addQuestionForm(page);
-  if (category) {
-    await form.getByLabel("Category").selectOption({ label: category });
-  }
-  await form.getByLabel("Type").selectOption("choice");
-  await form.getByLabel("Question text").fill(text);
+  const form = await openAddQuestionForm(page);
+  await fillNewQuestion(form, { text, type: "choice", category });
 
   const optionInputs = form.locator('input[name="options"]');
-  while ((await optionInputs.count()) < options.length) {
-    await form.getByRole("button", { name: "Add option" }).click();
+  await expect(optionInputs).toHaveCount(2);
+  for (let i = 2; i < options.length; i++) {
+    await form.getByRole("button", { name: "+ Add option" }).click();
+    await expect(optionInputs).toHaveCount(i + 1);
   }
   for (let i = 0; i < options.length; i++) {
     await optionInputs.nth(i).fill(options[i]!);
   }
 
-  await form.getByRole("button", { name: "Add question" }).click();
-  await expect(questionCard(page, text)).toBeVisible();
+  await submitNewQuestion(page, form, text);
 }
 
 export async function addScaleQuestion(
   page: Page,
-  { text, category }: { text: string; category?: string },
+  { text, category = "Relationship" }: { text: string; category?: string },
 ): Promise<void> {
-  const form = addQuestionForm(page);
-  if (category) {
-    await form.getByLabel("Category").selectOption({ label: category });
-  }
-  await form.getByLabel("Type").selectOption("scale");
-  await form.getByLabel("Question text").fill(text);
-  await form.getByRole("button", { name: "Add question" }).click();
-  await expect(questionCard(page, text)).toBeVisible();
+  const form = await openAddQuestionForm(page);
+  await fillNewQuestion(form, { text, type: "scale", category });
+  await submitNewQuestion(page, form, text);
 }
 
-/** The always-editable text/options form inside a specific question's card. */
+/** The always-editable category/text/options form inside a specific
+ * question's card (QuestionEditForm) — the one holding the question's own
+ * text field, as opposed to the answer form or the type control. */
 export function editForm(card: Locator): Locator {
-  // Distinguishes it from the answer <fieldset> (legend "Your answer") and
-  // the type <select> (label "Type") that also live inside the same card.
-  return card.locator("form", { has: card.getByLabel("Question text") });
+  return card.locator("form", {
+    has: card.page().getByRole("textbox", { name: "Question", exact: true }),
+  });
+}
+
+/** The question-text field inside a builder card. */
+export function questionTextField(card: Locator): Locator {
+  return card.getByRole("textbox", { name: "Question", exact: true });
+}
+
+/** A builder card's option text inputs, in order. */
+export function optionInputs(card: Locator): Locator {
+  return editForm(card).locator('input[name="options"]');
+}
+
+/** Replaces a field's value and leaves it, the way the builder expects
+ * (it saves on blur), waiting for that save to complete — its response,
+ * then the form settling: QuestionEditForm disables its fields while the
+ * save is pending, so the field is enabled again only once React has
+ * finished applying the result (when an uncontrolled field would already
+ * have been reset). */
+export async function editAndBlur(page: Page, field: Locator, value: string): Promise<void> {
+  // A question-text edit renames its card (and so the locator `field` was
+  // found through); re-find the field by its own id afterwards when it has
+  // one.
+  const id = await field.getAttribute("id");
+  await field.fill(value);
+  await withServerAction(page, () => field.press("Tab"));
+  await expect(id ? page.locator(`[id="${id}"]`) : field).toBeEnabled();
+}
+
+/** Changes a saved question's category (it saves as soon as it changes). */
+export async function changeCategory(page: Page, card: Locator, category: string): Promise<void> {
+  const group = editForm(card).getByRole("radiogroup", { name: "Category" });
+  await withServerAction(page, () => pickOption(group, category));
+}
+
+/** The radio for one category in a builder card's category group. */
+export function categoryRadio(card: Locator, category: string): Locator {
+  return editForm(card)
+    .getByRole("radiogroup", { name: "Category" })
+    .getByRole("radio", { name: category, exact: true });
 }
 
 export function answerFieldset(card: Locator): Locator {
   return card.getByRole("group", { name: "Your answer" });
 }
 
-/** AnswerControl's own <form> (the one wrapping the "Your answer" fieldset)
- * — scoped this precisely because QuestionEditForm, right above it in the
- * same card, now shows its own "Saved" text too (QA fix), so looking up
- * "Saved" anywhere in the whole card would match two elements. */
+/** AnswerControl's own <form> (the one wrapping the "Your answer"
+ * fieldset) — scoped this precisely because QuestionEditForm, right above
+ * it in the same card, shows its own "Saved" text too. */
 function answerControlForm(card: Locator): Locator {
   return answerFieldset(card).locator("xpath=ancestor::form[1]");
 }
 
-/** Selects a choice option by its visible option text and waits for the
- * auto-save "Saved" status (QA fix: no Save/Update button anywhere here). */
+/** One answer radio inside a card's "Your answer" group. */
+export function answerRadio(card: Locator, optionText: string): Locator {
+  return answerFieldset(card).getByRole("radio", { name: optionText, exact: true });
+}
+
+/** Clicks an answer option's label without waiting for anything — for
+ * forms whose click is expected to navigate away instead of saving (a
+ * stale, already-submitted answer page). */
+export async function clickAnswerOption(card: Locator, optionText: string): Promise<void> {
+  const radio = card.page().getByRole("radio", { name: optionText, exact: true });
+  await answerFieldset(card).locator("label", { has: radio }).click();
+}
+
+/** Picks an answer (a choice option by its text, or a scale level by its
+ * label) and waits for that answer's own save to finish. Works on A's
+ * builder cards and on B's answer cards. */
 export async function answerChoice(card: Locator, optionText: string): Promise<void> {
-  await answerFieldset(card).getByRole("radio", { name: optionText }).check();
+  const page = card.page();
+  await withServerAction(page, () => pickOption(answerFieldset(card), optionText));
   await expect(answerControlForm(card).getByText("Saved", { exact: true })).toBeVisible();
 }
 
 /** Selects a scale level by its exact fixed label (Not/Slightly/Moderately/
- * Very/Extremely important) and waits for auto-save. */
+ * Very/Extremely important) and waits for its save. */
 export async function answerScale(card: Locator, levelLabel: string): Promise<void> {
-  await answerFieldset(card).getByRole("radio", { name: levelLabel }).check();
-  await expect(answerControlForm(card).getByText("Saved", { exact: true })).toBeVisible();
+  await answerChoice(card, levelLabel);
 }
 
 /** The answer's own "Saved"/"" status text, scoped away from
@@ -128,33 +270,31 @@ export const SCALE_LABELS = [
 /** Finalizes A's draft (alias + the finalize button) and returns the share
  * link shown on the resulting "Your answers are in." page
  * (components/wavelength/review-intro.tsx). Every caller here builds a
- * generic, non-ready-made draft, so the finalize button always shows the
- * default copy (components/questionnaire/finalize-form.tsx /
- * lib/wavelength/experience-copy.ts's MAKE_YOUR_OWN_COPY) — a ready-made
- * game's own draft would show a different, contextual button label. */
+ * generic Make Your Own draft, so the finalize button always shows the
+ * default copy (lib/wavelength/experience-copy.ts's MAKE_YOUR_OWN_COPY) —
+ * a ready-made game's own draft shows a different, contextual label. */
 export async function finalizeDraft(page: Page, alias = "Alex"): Promise<string> {
   await page.getByLabel("Your name").fill(alias);
   await page
     .getByRole("button", { name: "Answer. Share. See how much you're on the same page." })
     .click();
   await expect(page.getByRole("heading", { name: "Your answers are in." })).toBeVisible();
-  return page.locator("#share-link").inputValue();
+  const shareLink = page.locator("#share-link");
+  await expect(shareLink).toHaveValue(/\/w\/[0-9a-f]{32}$/);
+  return shareLink.inputValue();
 }
 
-/** Waits out the "Finding your wavelength…" reveal delay and confirms the
- * result screen actually rendered (components/result/result-reveal.tsx).
- * Matches by the stable part of the heading only — bug-fix pass: it now
- * names both participants' actual aliases ("Are Alex and Bailey on the
- * same wavelength?"), which vary per test. */
+/** Confirms the result screen actually rendered (components/result/
+ * global-summary.tsx). Scoped by id rather than heading text: the heading
+ * names both participants and is worded per game. Its own 10s timeout
+ * covers the result's deliberate "Finding your wavelength…" reveal. */
 export async function expectResultVisible(page: Page): Promise<void> {
-  // Scoped by id rather than exact heading text (components/result/
-  // global-summary.tsx's heading is now contextual per ready-made game —
-  // global QA/copy pass item #2 — and every caller here builds a generic,
-  // non-ready-made draft, which renders the default "How X and Y compare"
-  // copy) — this only needs to confirm the actual result page rendered.
-  await expect(page.locator("#global-summary-heading")).toBeVisible({
-    timeout: 10_000,
-  });
+  await expect(page.locator("#global-summary-heading")).toBeVisible({ timeout: 10_000 });
+}
+
+/** B's answer page heading for a Make Your Own wavelength. */
+export function answerPageHeading(page: Page): Locator {
+  return page.getByRole("heading", { level: 1, name: "Time to answer" });
 }
 
 /** B opens the share link and claims the wavelength (JoinForm), landing on
@@ -163,7 +303,7 @@ export async function joinAsB(page: Page, shareLink: string, alias = "Bailey"): 
   await page.goto(shareLink);
   await page.getByLabel("Your name").fill(alias);
   await page.getByRole("button", { name: "Start answering" }).click();
-  await expect(page.getByRole("heading", { name: "Answer the questions" })).toBeVisible();
+  await expect(answerPageHeading(page)).toBeVisible();
 }
 
 /** B's final submission ("See our results"), only rendered once every

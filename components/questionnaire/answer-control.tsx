@@ -20,6 +20,18 @@ export function answerInputId(questionId: string, value: number): string {
 }
 
 /**
+ * The id of an answer pill's own text, which names its radio. Each radio
+ * has two `<label>`s on A's builder — its pill, and QuestionEditForm's
+ * option row (`htmlFor` the same radio, so clicking a row selects that
+ * answer) — and without this its accessible name joined both, e.g.
+ * "Stay in Remove option 1 Stay in". `aria-labelledby` takes precedence
+ * over labels for the name only; both labels still forward clicks.
+ */
+function answerLabelId(questionId: string, value: number): string {
+  return `${answerInputId(questionId, value)}-label`;
+}
+
+/**
  * Choice: radio per option, value = its 0-based index (matches the DB's
  * stored answer shape). Scale: radio per fixed 0/25/50/75/100 level. Both A
  * (before finalization) and B (before final submission) can change a saved
@@ -107,9 +119,12 @@ export function AnswerControl({
                     className="create-answer-pill-input"
                     defaultChecked={currentValue === v}
                     onChange={submitOnChange}
+                    aria-labelledby={answerLabelId(question.id, v)}
                     required
                   />
-                  <span className="create-answer-pill">{SCALE_LABELS[v]}</span>
+                  <span id={answerLabelId(question.id, v)} className="create-answer-pill">
+                    {SCALE_LABELS[v]}
+                  </span>
                 </label>
               ))
             : // Keyed by index, not option text: a brand-new ready-made
@@ -126,9 +141,12 @@ export function AnswerControl({
                     className="create-answer-pill-input"
                     defaultChecked={currentValue === index}
                     onChange={submitOnChange}
+                    aria-labelledby={answerLabelId(question.id, index)}
                     required
                   />
-                  <span className="create-answer-pill">{option}</span>
+                  <span id={answerLabelId(question.id, index)} className="create-answer-pill">
+                    {option}
+                  </span>
                 </label>
               ))}
         </div>

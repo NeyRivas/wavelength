@@ -58,9 +58,13 @@ for (const flow of GAME_FLOWS) {
     await expect(page.getByText(`Question 1 of ${questions.length}`)).toBeVisible();
     await expect(page.getByRole("article", { name: /^Question: / })).toHaveCount(0);
 
-    // The builder is one link away and holds the very same seeded draft.
+    // The builder is one link away and holds the very same seeded draft. Its
+    // URL remembers which quiz question A left from (`returnTo`, that
+    // question's id), so "Back to the quiz" can resume there.
     await page.getByRole("link", { name: "Customize questions" }).click();
-    await expect(page).toHaveURL(new RegExp(`/create\\?game=${flow.gameId}&mode=edit$`));
+    await expect(page).toHaveURL(
+      new RegExp(`/create\\?game=${flow.gameId}&mode=edit&returnTo=[0-9a-f-]{36}$`),
+    );
     for (const question of questions) {
       await expect(questionCard(page, question.text)).toBeVisible();
     }
@@ -76,7 +80,7 @@ test("Date Night: the deck still filters, shuffles, searches, and saves favorite
 
   await page.getByRole("tab", { name: "Deep" }).click();
   await expect(page.getByRole("tab", { name: "Deep" })).toHaveAttribute("aria-selected", "true");
-  await page.getByRole("button", { name: /Next/ }).click();
+  await page.getByRole("button", { name: "Next", exact: true }).click();
   await page.getByRole("button", { name: /Shuffle/ }).click();
 
   await page.getByRole("tab", { name: "All" }).click();

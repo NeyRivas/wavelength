@@ -2,6 +2,14 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  // Dev server only; `next build`/`next start` ignore it. `next dev`
+  // treats 127.0.0.1 as a different origin from `localhost` and refuses it
+  // on the /_next/hmr websocket, and without that connection the dev
+  // client stalls (client-only components such as Date Night's deck never
+  // mount). The e2e suite runs against a production build, but it opens
+  // the app at 127.0.0.1, so anyone pointing it (or a browser) at a dev
+  // server there would hit that.
+  allowedDevOrigins: ["127.0.0.1"],
   // A private or unknown URL (/create, /w/[token]/*, a 404 for a mistyped
   // share link — anything outside lib/analytics/ga-privacy-guard.ts's
   // PUBLIC_PATHS) must never reach a public page as `document.referrer`:

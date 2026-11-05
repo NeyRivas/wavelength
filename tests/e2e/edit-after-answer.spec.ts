@@ -4,19 +4,23 @@ import {
   addChoiceQuestion,
   addScaleQuestion,
   answerChoice,
+  answerRadio,
   answerSavedStatus,
   answerScale,
+  editAndBlur,
   editForm,
+  optionInputs as optionInputsOf,
   questionCard,
+  questionTextField,
   startDraft,
 } from "./utils/wavelength";
 
 /**
- * E2E #1/#2/#3 — editing a question's text, editing an option's text, or
- * adding an option after A has already answered it invalidates the
+ * E2E #1/#2/#3 — editing a question's text, or editing the text of the
+ * option A picked, after A has already answered it invalidates the
  * existing answer, and the UI must visibly reflect that (the radio really
  * unchecks, and AnswerControl's own "Saved" goes away too), not just the
- * database.
+ * database. Adding an option doesn't (see that test's own note).
  *
  * Round 2 fix: AnswerControl's radios are uncontrolled (`defaultChecked`,
  * applied once at mount); QuestionCard keys `<AnswerControl>` by
@@ -49,11 +53,12 @@ test("editing a Choice question's text invalidates A's existing answer", async (
   const card = questionCard(page, "Ideal weekend?");
   await answerChoice(card, "Stay in");
 
-  await card.getByLabel("Question text").fill("Ideal weekend plans?");
-  await card.getByLabel("Question text").press("Tab"); // triggers the blur-based auto-save
+  // Leaving the field triggers the blur-based auto-save; editAndBlur waits
+  // for that save to answer.
+  await editAndBlur(page, questionTextField(card), "Ideal weekend plans?");
 
   const editedCard = questionCard(page, "Ideal weekend plans?");
-  await expect(editedCard.getByRole("radio", { name: "Stay in" })).not.toBeChecked();
+  await expect(answerRadio(editedCard, "Stay in")).not.toBeChecked();
   await expect(answerSavedStatus(editedCard)).not.toBeVisible();
 
   // The new answer can still be selected and auto-saves normally.
@@ -69,36 +74,47 @@ test("editing a Choice question's option text invalidates A's existing answer", 
   const card = questionCard(page, "Ideal weekend?");
   await answerChoice(card, "Stay in");
 
-  const firstOption = card.locator('input[name="options"]').first();
-  await firstOption.fill("Stay home");
-  await firstOption.press("Tab");
+  await editAndBlur(page, optionInputsOf(card).first(), "Stay home");
 
-  await expect(card.getByRole("radio", { name: "Stay home" })).not.toBeChecked();
+  await expect(answerRadio(card, "Stay home")).not.toBeChecked();
   await expect(answerSavedStatus(card)).not.toBeVisible();
 
   await answerChoice(card, "Go out");
 });
 
-test("adding an option to a Choice question invalidates A's existing answer", async ({ page }) => {
+/**
+ * Product requirement (supabase/migrations/20260910120000_refine_answer_
+ * invalidation.sql): an options change only clears an answer whose
+ * selected option no longer exists. Adding a new option leaves the
+ * selected one in place, so the answer must survive — visibly, and after a
+ * reload — and the question must stay answerable with the new option.
+ */
+test("adding an option to a Choice question keeps A's existing answer", async ({ page }) => {
   await startDraft(page);
   await addChoiceQuestion(page, { text: "Ideal weekend?", options: ["Stay in", "Go out"] });
 
   const card = questionCard(page, "Ideal weekend?");
   await answerChoice(card, "Stay in");
 
-  const optionInputs = card.locator('input[name="options"]');
-  await card.getByRole("button", { name: "Add option" }).click();
+  const optionInputs = optionInputsOf(card);
+  await card.getByRole("button", { name: "+ Add option" }).click();
   await expect(optionInputs).toHaveCount(3);
   // The new, empty option field needs a value before the form (all
   // `options` inputs are `required`) can actually save — same as a real
   // user filling in what they just added.
-  await optionInputs.nth(2).fill("Stay in and go out");
-  await optionInputs.nth(2).press("Tab");
+  await editAndBlur(page, optionInputs.nth(2), "Stay in and go out");
 
-  await expect(card.getByRole("radio", { name: "Stay in" })).not.toBeChecked();
-  await expect(answerSavedStatus(card)).not.toBeVisible();
+  await expect(answerRadio(card, "Stay in and go out")).toBeAttached();
+  await expect(answerRadio(card, "Stay in")).toBeChecked();
+  await expect(answerSavedStatus(card)).toBeVisible();
 
-  await answerChoice(card, "Go out");
+  await page.reload();
+  const reloadedCard = questionCard(page, "Ideal weekend?");
+  await expect(answerRadio(reloadedCard, "Stay in")).toBeChecked();
+  await expect(optionInputsOf(reloadedCard)).toHaveCount(3);
+
+  await answerChoice(reloadedCard, "Stay in and go out");
+  await expect(answerRadio(reloadedCard, "Stay in")).not.toBeChecked();
 });
 
 test("editing a Scale question's text invalidates A's existing answer", async ({ page }) => {
@@ -108,11 +124,10 @@ test("editing a Scale question's text invalidates A's existing answer", async ({
   const card = questionCard(page, "Importance of routine");
   await answerScale(card, "Moderately important");
 
-  await card.getByLabel("Question text").fill("Importance of daily routine");
-  await card.getByLabel("Question text").press("Tab");
+  await editAndBlur(page, questionTextField(card), "Importance of daily routine");
 
   const editedCard = questionCard(page, "Importance of daily routine");
-  await expect(editedCard.getByRole("radio", { name: "Moderately important" })).not.toBeChecked();
+  await expect(answerRadio(editedCard, "Moderately important")).not.toBeChecked();
   await expect(answerSavedStatus(editedCard)).not.toBeVisible();
 
   await answerScale(editedCard, "Very important");
@@ -131,8 +146,8 @@ test("Test H: changing the answer directly (no question/option edit) never trigg
   // question text/options, which this never touches, so AnswerControl must
   // NOT remount here: the new selection just replaces the old one normally.
   await answerChoice(card, "Go out");
-  await expect(card.getByRole("radio", { name: "Go out" })).toBeChecked();
-  await expect(card.getByRole("radio", { name: "Stay in" })).not.toBeChecked();
+  await expect(answerRadio(card, "Go out")).toBeChecked();
+  await expect(answerRadio(card, "Stay in")).not.toBeChecked();
 });
 
 test("Tests I/J: a newly-added option's own blur actually auto-saves and shows Saved, and survives a reload", async ({
@@ -142,16 +157,14 @@ test("Tests I/J: a newly-added option's own blur actually auto-saves and shows S
   await addChoiceQuestion(page, { text: "Ideal weekend?", options: ["Stay in", "Go out"] });
 
   const card = questionCard(page, "Ideal weekend?");
-  const optionInputs = card.locator('input[name="options"]');
+  const optionInputs = optionInputsOf(card);
 
-  await card.getByRole("button", { name: "Add option" }).click();
+  await card.getByRole("button", { name: "+ Add option" }).click();
   await expect(optionInputs).toHaveCount(3);
-  await optionInputs.nth(2).fill("Stay in and go out");
-  await optionInputs.nth(2).press("Tab");
-
-  // QuestionEditForm's own "Saved" (distinct from AnswerControl's) confirms
-  // the blur-triggered save actually completed — not just that the typed
-  // text still looks right in an untouched, uncontrolled input.
+  // editAndBlur waits for the blur-triggered save's own response, which is
+  // what proves the save ran: QuestionEditForm's "Saved" (checked after it)
+  // reads "Saved" whenever it isn't saving, so on its own it proves nothing.
+  await editAndBlur(page, optionInputs.nth(2), "Stay in and go out");
   await expect(editForm(card).getByText("Saved", { exact: true })).toBeVisible();
 
   await page.reload();
