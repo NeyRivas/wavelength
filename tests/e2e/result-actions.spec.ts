@@ -112,7 +112,8 @@ test("Share result opens the Result Cards experience, with navigation and a Down
   await nextButton.click();
   await expect(dialog.getByText("Different rhythms")).toBeVisible();
   await nextButton.click();
-  await expect(dialog.getByText("sameeeish")).toBeVisible();
+  await expect(dialog.getByRole("img", { name: "Card 4 of 4" })).toBeVisible();
+  await expect(dialog.getByText("sameeeish", { exact: true })).toBeVisible();
 
   await dialog.getByRole("button", { name: "Close" }).click();
   await expect(dialog).not.toBeVisible();
@@ -122,7 +123,7 @@ test("Share result opens the Result Cards experience, with navigation and a Down
   await bContext.close();
 });
 
-test("leaving the result requires confirmation, and Cancel leaves the current result untouched", async ({
+test("leaving the result requires confirmation, and 'Stay here' leaves the current result untouched", async ({
   page,
   browser,
 }) => {
@@ -141,7 +142,7 @@ test("leaving the result requires confirmation, and Cancel leaves the current re
   // Clicking the trigger must not have navigated away yet.
   await expectResultVisible(bPage);
 
-  await dialog.getByRole("button", { name: "Cancel" }).click();
+  await dialog.getByRole("button", { name: "Stay here" }).click();
   await expect(dialog).not.toBeVisible();
   // Still looking at the same, untouched completed result.
   await expectResultVisible(bPage);

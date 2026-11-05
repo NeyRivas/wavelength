@@ -1,7 +1,13 @@
 import { expect, test } from "@playwright/test";
 
 import { getReadyMadeGame } from "../../lib/wavelength/ready-made-games";
-import { answerQuizChoice, questionCard, quizQuestion } from "./utils/wavelength";
+import {
+  answerQuizChoice,
+  editAndBlur,
+  questionCard,
+  questionTextField,
+  quizQuestion,
+} from "./utils/wavelength";
 
 /**
  * Three related navigation/UX fixes to the guided quiz
@@ -157,6 +163,9 @@ test.describe("CreateHeader's own '← Back' link, after Customize questions", (
     await expect(quizQuestion(page, QUESTIONS[1]!.text)).toBeVisible();
 
     await page.getByRole("link", { name: "Customize questions" }).click();
+    // Wait for the builder: the quiz screen being left has its own "← Back"
+    // (to the category page), which a click made too early would hit.
+    await expect(page.getByRole("link", { name: "Back to the quiz" })).toBeVisible();
     await page.getByRole("link", { name: "← Back", exact: true }).click();
 
     await expect(page).not.toHaveURL(/\/play\/dating-couples$/);
@@ -172,15 +181,19 @@ test.describe("CreateHeader's own '← Back' link, after Customize questions", (
     await expect(quizQuestion(page, QUESTIONS[3]!.text)).toBeVisible();
 
     await page.getByRole("link", { name: "Customize questions" }).click();
+    // Wait for the builder: the quiz screen being left has its own "← Back"
+    // (to the category page), which a click made too early would hit.
+    await expect(page.getByRole("link", { name: "Back to the quiz" })).toBeVisible();
     await page.getByRole("link", { name: "← Back", exact: true }).click();
 
     await expect(page).not.toHaveURL(/\/play\/dating-couples$/);
     await expect(quizQuestion(page, QUESTIONS[3]!.text)).toBeVisible();
-    // Nothing answered so far was lost by the round trip.
-    for (let i = 0; i < 3; i++) {
-      await expect(page.getByText(`${i + 1} of ${QUESTIONS.length} answered`)).toHaveCount(0);
-    }
+    // Nothing answered so far was lost by the round trip: the progress still
+    // counts all three, not fewer.
     await expect(page.getByText(`3 of ${QUESTIONS.length} answered`)).toBeVisible();
+    for (const fewer of [0, 1, 2]) {
+      await expect(page.getByText(`${fewer} of ${QUESTIONS.length} answered`)).toHaveCount(0);
+    }
   });
 });
 
@@ -195,8 +208,9 @@ test("Back still resumes the right question after editing its text in the builde
   await page.getByRole("link", { name: "Customize questions" }).click();
   const card = questionCard(page, QUESTIONS[1]!.text);
   const editedText = `${QUESTIONS[1]!.text} (edited)`;
-  await card.getByLabel("Question text").fill(editedText);
-  await card.getByLabel("Question text").press("Tab"); // blur-triggered auto-save
+  // Blur-triggered auto-save; editAndBlur waits for it to finish before
+  // leaving the builder, so the quiz is guaranteed to see the new text.
+  await editAndBlur(page, questionTextField(card), editedText);
 
   await page.getByRole("link", { name: "Back to the quiz" }).click();
   // Same question (same id, same position) — now showing the edited text,

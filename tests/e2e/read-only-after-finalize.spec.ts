@@ -44,7 +44,7 @@ test("A sees a read-only view of their questions and answers after finalizing, w
 
   // The new read-only summary: every question's text and its formatted
   // answer are visible.
-  await expect(page.getByRole("heading", { name: "Your questions and answers" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Your answers", exact: true })).toBeVisible();
   for (const q of QUESTIONS) {
     await expect(page.getByText(q.text, { exact: true })).toBeVisible();
   }
@@ -53,16 +53,16 @@ test("A sees a read-only view of their questions and answers after finalizing, w
   // No edit affordance survives into this view: no editable question-text
   // field, no option inputs, no answer radios, no add/remove-option
   // buttons — this is read-only by construction, not just visually.
-  await expect(page.getByLabel("Question text")).toHaveCount(0);
+  await expect(page.getByRole("textbox", { name: "Question", exact: true })).toHaveCount(0);
   await expect(page.locator('input[name="options"]')).toHaveCount(0);
   await expect(page.getByRole("radio")).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "Add option" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "+ Add option" })).toHaveCount(0);
   await expect(page.getByRole("button", { name: /^Remove option/ })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Delete" })).toHaveCount(0);
 
   // Reloading (a fresh server render, not just client state) shows the same
   // thing — this isn't a one-time client-side artifact of finalizing.
   await page.reload();
-  await expect(page.getByRole("heading", { name: "Your questions and answers" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Your answers", exact: true })).toBeVisible();
   await expect(page.getByText(QUESTIONS[0]!.text, { exact: true })).toBeVisible();
 });

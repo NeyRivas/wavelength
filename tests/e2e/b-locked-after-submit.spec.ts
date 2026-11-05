@@ -3,7 +3,9 @@ import { expect, test } from "@playwright/test";
 import {
   addChoiceQuestion,
   answerChoice,
+  answerPageHeading,
   answerRow,
+  clickAnswerOption,
   expectResultVisible,
   finalizeDraft,
   joinAsB,
@@ -28,12 +30,15 @@ const QUESTIONS = [
  * had zero test coverage at any level — this spec is what closes that gap,
  * and is expected to PASS if the fix holds.
  *
- * The scenario specifically reproduces what a plain "go back" in a real
- * browser can do that a fresh server render can't: it restores an
- * already-rendered client page (the answer form B was just on) without the
- * server ever re-running app/w/[token]/answer/page.tsx's own "already
- * completed" guard, so the very next radio click calls straight into the
- * Server Action instead.
+ * The scenario: an answer form that was rendered before B submitted and is
+ * still live in the browser — what a restored "go back" page or a second
+ * open tab leaves behind. Its radios call straight into the Server Action
+ * without the server ever re-running app/w/[token]/answer/page.tsx's own
+ * "already completed" guard. A second tab of the same browser (same B
+ * identity), opened on the answer page before submitting, reproduces that
+ * every time; relying on Back alone didn't, since whether the browser
+ * restores the stale page or re-renders it varies run to run (the sibling
+ * test below covers what Back shows today).
  */
 test("B cannot modify an answer after submitting — no going back and no raw error", async ({
   page,
@@ -53,34 +58,26 @@ test("B cannot modify an answer after submitting — no going back and no raw er
   const bPage = await bContext.newPage();
   await joinAsB(bPage, shareLink, "Bailey");
 
+  // The same B, with the answer form also open in a second tab.
+  const staleTab = await bContext.newPage();
+  await staleTab.goto(bPage.url());
+  await expect(answerPageHeading(staleTab)).toBeVisible();
+
   for (const q of QUESTIONS) {
     await answerChoice(answerRow(bPage, q.text), q.options[0]!);
   }
   await submitFinal(bPage);
   await expectResultVisible(bPage);
 
-  // B tries to go back to the answer form and change a response.
-  await bPage.goBack();
+  // The stale form still looks editable; change a response exactly as a
+  // real user would.
+  await clickAnswerOption(answerRow(staleTab, QUESTIONS[0]!.text), QUESTIONS[0]!.options[1]!);
 
-  const stillOnAnswerPage = await bPage
-    .getByRole("heading", { name: "Answer the questions" })
-    .isVisible()
-    .catch(() => false);
-
-  if (stillOnAnswerPage) {
-    // The browser restored the stale, already-rendered answer page (the
-    // scenario the fix specifically targets). Attempt to change a response
-    // exactly as a real user would.
-    await answerRow(bPage, QUESTIONS[0]!.text)
-      .getByRole("radio", { name: QUESTIONS[0]!.options[1] })
-      .check();
-  }
-
-  // Whichever path got us here, the end state must be: B is looking at the
-  // result (not stuck on an editable form), and never saw the generic,
-  // unhelpful error.
-  await expectResultVisible(bPage);
-  await expect(bPage.getByText("Something went wrong. Please try again.")).not.toBeVisible();
+  // The end state must be: B is looking at the result (not stuck on an
+  // editable form), and never saw the generic, unhelpful error.
+  await expectResultVisible(staleTab);
+  await expect(answerPageHeading(staleTab)).not.toBeVisible();
+  await expect(staleTab.getByText("Something went wrong. Please try again.")).not.toBeVisible();
 
   await bContext.close();
 });
@@ -121,7 +118,7 @@ test("B resubmitting from the stale answer form lands on the locked state, not a
   await bPage.goBack();
 
   // The fix: Back must not restore the live, submittable form at all.
-  await expect(bPage.getByRole("heading", { name: "Answer the questions" })).not.toBeVisible();
+  await expect(answerPageHeading(bPage)).not.toBeVisible();
   await expect(bPage.getByRole("heading", { name: "Nice try! 😄" })).toBeVisible();
   await expect(bPage.getByRole("link", { name: "See your result" })).toBeVisible();
   // Product decision (confirmation-before-navigating): "Create your own
