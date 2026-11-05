@@ -1367,6 +1367,7 @@ dialog::backdrop {
   font-size: 1.25rem;
   color: var(--wl-ink);
   text-decoration: none;
+  transition: color 0.3s ease;
 }
 
 .landing-logo__mark {
@@ -1412,6 +1413,7 @@ dialog::backdrop {
   gap: 2rem;
   font-size: 0.9375rem;
   color: var(--wl-muted);
+  transition: color 0.3s ease;
 }
 
 .landing-nav a {
@@ -1480,7 +1482,9 @@ dialog::backdrop {
   display: inline-flex;
   align-items: center;
   padding: 0.5rem 1rem;
-  transition: transform 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    color 0.3s ease;
 }
 
 /* Zoom pass (corrected brief): the ONLY hover effect on these three
@@ -1537,7 +1541,10 @@ dialog::backdrop {
   border-radius: 999px;
   text-decoration: none;
   white-space: nowrap;
-  transition: transform 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
 @media (hover: hover) and (prefers-reduced-motion: no-preference) {
@@ -1557,6 +1564,42 @@ dialog::backdrop {
   outline: 2px solid #ffffff;
   outline-offset: 2px;
   box-shadow: 0 0 0 4px rgba(24, 24, 32, 0.85);
+}
+
+/* Header tone over dark sections. `data-tone="on-dark"` is set by
+   landing-header.tsx (use-over-dark-surface.ts) only while a see-through
+   header floats over a `data-surface="dark"` section — in practice the
+   home page's fixed header passing over the closing CTA panel, where the
+   ink wordmark, the logo mark's ink dot, the muted nav links and the ink
+   "Start playing" pill all used to vanish into the same ink background.
+   Each element switches to its own light version and nothing else: white
+   wordmark (the mark's dot follows through currentColor; its lavender →
+   blue ring already reads on dark), translucent-white nav text, and the
+   CTA pill inverted to white with ink text. No background, border or blur
+   is added to the header itself, and opaque headers (every internal page)
+   never get this attribute. The color transitions above make the switch a
+   short crossfade instead of a flash as the panel's edge passes under. */
+.landing-header[data-tone="on-dark"] .landing-logo {
+  color: #ffffff;
+}
+
+.landing-header[data-tone="on-dark"] .landing-nav {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.landing-header[data-tone="on-dark"] .landing-nav__link--active {
+  color: #ffffff;
+}
+
+@media (hover: hover) {
+  .landing-header[data-tone="on-dark"] .landing-nav a:hover {
+    color: #ffffff;
+  }
+}
+
+.landing-header[data-tone="on-dark"] .landing-header__cta {
+  background: #ffffff;
+  color: var(--wl-ink);
 }
 
 /* ── hero ──────────────────────────────────────────────────────────── */

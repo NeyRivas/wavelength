@@ -10,7 +10,7 @@
  */
 export function ForCouplesAlike() {
   return (
-    <section className="fc-alike">
+    <section className="fc-alike" data-surface="dark">
       <div className="fc-alike__shapes" aria-hidden="true">
         <svg viewBox="0 0 200 200" fill="none" className="fc-alike__rings">
           <circle
