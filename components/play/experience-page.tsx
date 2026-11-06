@@ -86,7 +86,7 @@ export function ExperienceSection({
   children: ReactNode;
 }) {
   return (
-    <section className="xp-section" aria-labelledby={id}>
+    <section className="xp-section" aria-labelledby={id} data-reveal="stagger">
       <h2 id={id} className="xp-section__heading">
         {heading}
       </h2>
@@ -229,7 +229,7 @@ export function ExperienceCta({
   children?: ReactNode;
 }) {
   return (
-    <section className="xp-cta" aria-labelledby={id}>
+    <section className="xp-cta" aria-labelledby={id} data-reveal>
       <h2 id={id} className="xp-cta__heading">
         {heading}
       </h2>
@@ -275,7 +275,7 @@ export function ExperienceRelated({
       <h2 id="xp-related" className="xp-section__heading">
         {heading}
       </h2>
-      <ul className={`xp-related__list xp-related__list--${items.length}`}>
+      <ul className={`xp-related__list xp-related__list--${items.length}`} data-reveal="stagger">
         {items.map((item) => (
           <li key={item.href}>
             <Link href={item.href} className={`xp-related__card xp-related__card--${item.tone}`}>

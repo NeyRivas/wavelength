@@ -33,14 +33,14 @@ const CARDS: { kicker: string; title: string; description: string; blobClass: st
  */
 export function ForCouplesSummary() {
   return (
-    <section className="landing-section fc-summary">
+    <section className="landing-section fc-summary" data-reveal="stagger">
       <p className="landing-eyebrow landing-eyebrow--plain">The recap</p>
       <h2 className="landing-section__heading">See where you&apos;re on the same page</h2>
       <p className="landing-section__text">
         Every round ends with the same three things to look at together.
       </p>
 
-      <div className="landing-card-grid fc-summary__grid">
+      <div className="landing-card-grid fc-summary__grid" data-reveal="stagger">
         {CARDS.map((card) => (
           <div className="landing-card" key={card.title}>
             <div className={`landing-card__blob ${card.blobClass}`} aria-hidden="true" />

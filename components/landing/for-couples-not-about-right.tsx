@@ -10,7 +10,7 @@
 export function ForCouplesNotAboutRight() {
   return (
     <section className="fc-reassure">
-      <div className="fc-reassure__inner">
+      <div className="fc-reassure__inner" data-reveal="stagger">
         <h2 className="fc-reassure__heading">
           It&apos;s not about the &ldquo;right&rdquo; answer.
         </h2>

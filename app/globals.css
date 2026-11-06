@@ -16,6 +16,13 @@
   --color-bg: #ffffff;
   --color-surface: #f6f7f9;
   --color-border: #e1e4e8;
+
+  /* The two curves every entrance/hover in this file already uses, named
+     once so the interaction polish pass (end of file) can share them:
+     the hero entrance's soft ease-out, and the hero dots' gentle
+     overshoot for small "settle into place" feedback. */
+  --motion-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --motion-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 *,
@@ -78,6 +85,20 @@ button {
 input,
 select {
   font: inherit;
+}
+
+/* ── scroll reveal (components/motion/scroll-reveal.tsx) ──────────────
+   Only elements still below the fold when a page mounts are ever marked
+   "pending", so this never hides anything a visitor could already see.
+   Gated on no-preference so a visitor who switches reduced motion on
+   mid-visit sees anything still pending straight away, and never hidden
+   in print. The entrance itself is a Web Animation (see the component),
+   not a transition, so it never clobbers an element's own transitions. */
+@media screen and (prefers-reduced-motion: no-preference) {
+  [data-reveal-state="pending"]:not([data-reveal="stagger"]),
+  [data-reveal="stagger"][data-reveal-state="pending"] > * {
+    opacity: 0;
+  }
 }
 
 /* ── confirm dialog (components/ui/confirm-dialog.tsx) ───────────────── */
@@ -1367,6 +1388,7 @@ dialog::backdrop {
   font-size: 1.25rem;
   color: var(--wl-ink);
   text-decoration: none;
+  transition: color 0.3s ease;
 }
 
 .landing-logo__mark {
@@ -1412,6 +1434,7 @@ dialog::backdrop {
   gap: 2rem;
   font-size: 0.9375rem;
   color: var(--wl-muted);
+  transition: color 0.3s ease;
 }
 
 .landing-nav a {
@@ -1480,7 +1503,9 @@ dialog::backdrop {
   display: inline-flex;
   align-items: center;
   padding: 0.5rem 1rem;
-  transition: transform 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    color 0.3s ease;
 }
 
 /* Zoom pass (corrected brief): the ONLY hover effect on these three
@@ -1537,7 +1562,10 @@ dialog::backdrop {
   border-radius: 999px;
   text-decoration: none;
   white-space: nowrap;
-  transition: transform 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
 @media (hover: hover) and (prefers-reduced-motion: no-preference) {
@@ -1557,6 +1585,42 @@ dialog::backdrop {
   outline: 2px solid #ffffff;
   outline-offset: 2px;
   box-shadow: 0 0 0 4px rgba(24, 24, 32, 0.85);
+}
+
+/* Header tone over dark sections. `data-tone="on-dark"` is set by
+   landing-header.tsx (use-over-dark-surface.ts) only while a see-through
+   header floats over a `data-surface="dark"` section — in practice the
+   home page's fixed header passing over the closing CTA panel, where the
+   ink wordmark, the logo mark's ink dot, the muted nav links and the ink
+   "Start playing" pill all used to vanish into the same ink background.
+   Each element switches to its own light version and nothing else: white
+   wordmark (the mark's dot follows through currentColor; its lavender →
+   blue ring already reads on dark), translucent-white nav text, and the
+   CTA pill inverted to white with ink text. No background, border or blur
+   is added to the header itself, and opaque headers (every internal page)
+   never get this attribute. The color transitions above make the switch a
+   short crossfade instead of a flash as the panel's edge passes under. */
+.landing-header[data-tone="on-dark"] .landing-logo {
+  color: #ffffff;
+}
+
+.landing-header[data-tone="on-dark"] .landing-nav {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.landing-header[data-tone="on-dark"] .landing-nav__link--active {
+  color: #ffffff;
+}
+
+@media (hover: hover) {
+  .landing-header[data-tone="on-dark"] .landing-nav a:hover {
+    color: #ffffff;
+  }
+}
+
+.landing-header[data-tone="on-dark"] .landing-header__cta {
+  background: #ffffff;
+  color: var(--wl-ink);
 }
 
 /* ── hero ──────────────────────────────────────────────────────────── */
@@ -3756,7 +3820,9 @@ dialog::backdrop {
   gap: 1.25rem 2.5rem;
   max-width: 80rem;
   margin: 0 auto;
-  padding: clamp(2rem, 5vw, 3rem) clamp(1.5rem, 4vw, 4rem) 0;
+  /* Bottom padding matches the top: the row used to sit ~12px above the
+     dark closing CTA panel, visibly cramped against its edge. */
+  padding: clamp(2rem, 5vw, 3rem) clamp(1.5rem, 4vw, 4rem);
 }
 
 .hiw-badge {
@@ -9646,4 +9712,495 @@ dialog::backdrop {
   z-index: 1;
   border-top: 1px solid var(--color-border);
   background: #ffffff;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Interaction polish pass — feedback for controls that had none, and
+   short entrances for content that used to appear abruptly. Nothing here
+   changes a layout, a color token, a typeface or any copy; every value
+   reuses this file's existing motion vocabulary (the hero entrance's
+   --motion-ease-out, the 1px lift of the header CTA, the scale(0.98)
+   press of the primary buttons, the 3px arrow lean of the hero CTA, the
+   lavender wash of the internal nav hover). Movement is always gated on
+   prefers-reduced-motion: no-preference; color/background feedback stays
+   on for everyone. The result screens' own animations are untouched.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@keyframes polish-rise-in {
+  from {
+    opacity: 0;
+    translate: 0 10px;
+  }
+}
+
+@keyframes polish-drop-in {
+  from {
+    opacity: 0;
+    translate: 0 -4px;
+  }
+}
+
+@keyframes polish-card-in {
+  from {
+    opacity: 0;
+    translate: 0 12px;
+    scale: 0.985;
+  }
+}
+
+@keyframes polish-pop {
+  40% {
+    scale: 1.2;
+  }
+}
+
+/* ── brand mark ───────────────────────────────────────────────────────
+   The ring-and-dot settles a touch larger under the pointer — the one
+   place the wordmark answers a hover, in the header, footer and the
+   product header alike. Same two-ring focus halo as the nav links. */
+.landing-logo__mark,
+.create-header__logo-mark {
+  transition: transform 0.45s var(--motion-ease-spring);
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .landing-logo:hover .landing-logo__mark,
+  .create-header__logo:hover .create-header__logo-mark {
+    transform: scale(1.12);
+  }
+}
+
+.landing-logo:focus-visible,
+.create-header__logo:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(24, 24, 32, 0.85);
+  border-radius: 999px;
+}
+
+/* ── quiet "back" links: lean toward where they lead ─────────────────── */
+.landing-back-link,
+.create-header__back {
+  transition:
+    color 0.2s ease,
+    translate 0.25s var(--motion-ease-out);
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .landing-back-link:hover,
+  .create-header__back:hover {
+    translate: -2px 0;
+  }
+}
+
+.landing-back-link:focus-visible,
+.create-header__back:focus-visible {
+  outline: 2px solid var(--wl-ink);
+  outline-offset: 3px;
+  border-radius: 0.25rem;
+}
+
+/* ── secondary (outline) buttons + /contact's mailto button ─────────────
+   Navigation-weight buttons, deliberately kept off the big "play" hover
+   (see .landing-button--play above), so they get the quieter navigation
+   recipe instead: the internal nav's lavender wash plus the header CTA's
+   1px lift, and the shared press. */
+.landing-button--outline,
+.landing-legal__cta .landing-button--primary {
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+}
+
+@media (hover: hover) {
+  .landing-button--outline:hover {
+    background-color: color-mix(in srgb, var(--wl-lavender) 22%, transparent);
+  }
+
+  .landing-legal__cta .landing-button--primary:hover {
+    background-color: color-mix(in srgb, var(--wl-lavender) 16%, var(--wl-ink));
+  }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .landing-button--outline:hover,
+  .landing-legal__cta .landing-button--primary:hover {
+    transform: translateY(-1px);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .landing-button--outline:active,
+  .landing-legal__cta .landing-button--primary:active {
+    transform: scale(0.98);
+  }
+}
+
+.landing-button--outline:focus-visible,
+.landing-legal__cta .landing-button--primary:focus-visible {
+  outline: 2px solid var(--wl-ink);
+  outline-offset: 3px;
+}
+
+/* ── pill tabs: FAQ categories + Date Night moods ───────────────────────
+   Unselected pills firm up their border and text under the pointer (the
+   selected pill already has its tint) and give slightly when pressed. */
+.faq-category,
+.dn-mood-filter {
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.15s ease;
+}
+
+@media (hover: hover) {
+  .faq-category:not(.faq-category--active):hover,
+  .dn-mood-filter:not(.dn-mood-filter--active):hover {
+    border-color: color-mix(in srgb, var(--wl-ink) 35%, white);
+    color: var(--wl-ink);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .faq-category:active,
+  .dn-mood-filter:active {
+    transform: scale(0.96);
+  }
+}
+
+/* ── FAQ accordion (also every experience page's FAQ) ───────────────────
+   The "+" badge warms up while its row is hovered, an opened answer eases
+   down into place instead of snapping in, and a newly chosen category's
+   questions rise in (only after a real tab switch — see faq-section.tsx). */
+@media (hover: hover) {
+  .faq-item__row:hover .faq-item__toggle:not(.faq-item__toggle--open) {
+    background: color-mix(in srgb, var(--wl-ink) 9%, white);
+    color: var(--wl-ink);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .faq-item__answer:not([hidden]) {
+    animation: polish-drop-in 0.3s var(--motion-ease-out);
+  }
+
+  .faq-section[data-switched] .faq-section__group:not([hidden]) {
+    animation: polish-rise-in 0.4s var(--motion-ease-out);
+  }
+}
+
+/* ── <details> toggles on the experience pages ──────────────────────────
+   "See the 5 answer choices" / "See all 12 questions": an underline
+   draws in under the pointer (they had no hover at all), and the opened
+   list eases down instead of appearing in one frame. */
+.xp-question__summary,
+.tsq-stage__summary {
+  text-decoration-line: underline;
+  text-decoration-color: transparent;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 0.25em;
+  transition:
+    color 0.2s ease,
+    text-decoration-color 0.2s ease;
+}
+
+@media (hover: hover) {
+  .xp-question__summary:hover,
+  .tsq-stage__summary:hover {
+    color: var(--wl-ink);
+    text-decoration-color: currentColor;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  details[open] .xp-question__options,
+  details[open] .tsq-stage__list {
+    animation: polish-drop-in 0.3s var(--motion-ease-out);
+  }
+}
+
+/* ── in-text links on the experience pages ──────────────────────────────
+   The ink underline thickens into a lavender highlight on hover. */
+.xp-inline-link {
+  text-decoration-thickness: 1px;
+  transition:
+    text-decoration-color 0.2s ease,
+    text-decoration-thickness 0.2s ease;
+}
+
+@media (hover: hover) {
+  .xp-inline-link:hover {
+    text-decoration-color: var(--wl-lavender);
+    text-decoration-thickness: 0.18em;
+  }
+}
+
+/* ── Date Night deck ─────────────────────────────────────────────────── */
+
+.dn-search__input {
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+@media (hover: hover) {
+  .dn-search__input:hover {
+    border-color: color-mix(in srgb, var(--wl-ink) 30%, white);
+  }
+}
+
+.dn-search__input:focus-visible {
+  border-color: var(--wl-lavender);
+}
+
+/* Next is the deck's page-level action, so it takes the site's standard
+   play-button hover (.landing-button--play above) verbatim; Shuffle is
+   its outline sibling and takes the outline recipe. */
+.dn-btn {
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.dn-btn > span[aria-hidden="true"] {
+  display: inline-block;
+  transition: transform 0.45s var(--motion-ease-out);
+}
+
+@media (hover: hover) {
+  .dn-btn--primary:not(:disabled):hover {
+    background-color: color-mix(in srgb, var(--wl-lavender) 16%, var(--wl-ink));
+    box-shadow: 0 18px 36px -16px rgba(24, 24, 32, 0.5);
+  }
+
+  .dn-btn--secondary:not(:disabled):hover {
+    background-color: color-mix(in srgb, var(--wl-lavender) 22%, transparent);
+  }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .dn-btn--primary:not(:disabled):hover {
+    transform: scale(1.04);
+  }
+
+  .dn-btn--secondary:not(:disabled):hover {
+    transform: translateY(-1px);
+  }
+
+  /* Next's arrow leans forward; Shuffle's ↻ makes one half-turn. */
+  .dn-btn--primary:not(:disabled):hover > span[aria-hidden="true"] {
+    transform: translateX(3px);
+  }
+
+  .dn-btn--secondary:not(:disabled):hover > span[aria-hidden="true"] {
+    transform: rotate(180deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .dn-btn:not(:disabled):active {
+    transform: scale(0.97);
+  }
+
+  /* Every new question (Next, Shuffle, a mood, a pick from the list)
+     deals a fresh card — date-night-experience.tsx keys it by question —
+     so the deck reads as cards being drawn, not text being replaced. */
+  .dn-card {
+    animation: polish-card-in 0.45s var(--motion-ease-out) backwards;
+  }
+
+  /* Saving a question: the heart gives a small pop, and the question
+     slides into "Your favorites" instead of appearing there in one frame. */
+  .dn-card__favorite[aria-pressed="true"],
+  .dn-browse-item__heart--active {
+    animation: polish-pop 0.4s var(--motion-ease-out);
+  }
+
+  .dn-favorite-item {
+    animation: polish-rise-in 0.35s var(--motion-ease-out) backwards;
+  }
+}
+
+/* Contrast: a saved heart is drawn in the brand pink, which against the
+   white button / list row is only ~1.5:1 — in "Your favorites" it was the
+   sole visible cue for the "Remove from favorites" control. The pink fill
+   stays; a thin edge in a deeper shade of that same pink (mixed toward
+   ink, ~4.5:1 on white) gives the shape a readable outline.
+   paint-order keeps the stroke under the fill, so the glyph doesn't thin. */
+.dn-card__favorite[aria-pressed="true"],
+.dn-favorite-item__heart,
+.dn-browse-item__heart--active {
+  -webkit-text-stroke: 1.25px color-mix(in oklch, var(--wl-pink), var(--wl-ink) 45%);
+  paint-order: stroke fill;
+}
+
+/* Library rows: a soft lavender wash under the pointer tells each row is
+   a button (it loads that question into the card). The negative margin
+   exactly offsets the new padding, so no text moves. */
+.dn-browse-item__main {
+  margin: -0.375rem -0.5rem;
+  padding: 0.375rem 0.5rem;
+  border-radius: 0.625rem;
+  transition: background-color 0.2s ease;
+}
+
+.dn-favorite-item__main {
+  border-radius: 0.625rem;
+  transition: background-color 0.2s ease;
+}
+
+.dn-browse-item__heart,
+.dn-favorite-item__heart {
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+@media (hover: hover) {
+  .dn-browse-item__main:hover,
+  .dn-favorite-item__main:hover {
+    background-color: color-mix(in srgb, var(--wl-lavender) 18%, white);
+  }
+}
+
+/* ── guided quiz + conversation steppers ─────────────────────────────────
+   Both steppers key each step by question (quiz-stepper.tsx,
+   conversation-stepper.tsx), so every question, stage intro, review and
+   completion screen mounts fresh: it now rises in, which is what makes
+   "advance" read as moving to the next card. An answer option gives a
+   little under the finger, and its radio mark fills smoothly. */
+@media (prefers-reduced-motion: no-preference) {
+  .quiz-card,
+  .conv-card,
+  .conv-stage-intro,
+  .conv-complete,
+  .quiz-review {
+    animation: polish-rise-in 0.4s var(--motion-ease-out) backwards;
+  }
+
+  .quiz-option {
+    transition:
+      background-color 0.15s ease,
+      border-color 0.15s ease,
+      color 0.15s ease,
+      transform 0.15s ease;
+  }
+
+  .quiz-option:active {
+    transform: scale(0.985);
+  }
+
+  .quiz-option__mark {
+    transition:
+      border-color 0.15s ease,
+      box-shadow 0.25s var(--motion-ease-out);
+  }
+}
+
+/* ── builder (/create, "Customize questions") ───────────────────────────
+   Extends the answer pills' own "Motion pass" (above) to the rest of the
+   card's controls, which looked static until clicked: unselected category
+   pills and question-type cards firm up their border under the pointer,
+   the round reorder / remove buttons and the dashed "+ Add option" button
+   do the same and give slightly when pressed, the editable question text
+   shows a faint lavender rule under the pointer (its focus rule is the
+   full lavender), and plain text fields firm up their border. The round
+   buttons also had no focus ring at all — they now get the builder's
+   standard 2px ink outline. Disabled controls never react. */
+.create-pill,
+.create-type-option,
+.create-card__icon-btn,
+.create-option-remove,
+.create-add-option,
+.create-input {
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    transform 0.15s ease;
+}
+
+.create-input--question {
+  transition: border-bottom-color 0.2s ease;
+}
+
+@media (hover: hover) {
+  .create-pill-input:not(:checked):not(:disabled) + .create-pill:hover,
+  .create-answer-pill-input:not(:checked):not(:disabled) + .create-answer-pill:hover,
+  .create-card__icon-btn:not(:disabled):hover,
+  .create-option-remove:not(:disabled):hover,
+  .create-add-option:not(:disabled):hover {
+    border-color: color-mix(in srgb, var(--wl-ink) 35%, white);
+    color: var(--wl-ink);
+  }
+
+  .create-type-option:not(:has(.create-type-input:checked)):not(:has(:disabled)):hover {
+    border-color: color-mix(in srgb, var(--wl-ink) 25%, white);
+  }
+
+  .create-input:not(.create-input--question):not(:disabled):not(:read-only):hover {
+    border-color: color-mix(in srgb, var(--wl-ink) 30%, white);
+  }
+
+  .create-input--question:not(:disabled):not(:read-only):not(:focus-visible):hover {
+    border-bottom-color: color-mix(in srgb, var(--wl-lavender) 55%, white);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .create-pill-input:not(:disabled) + .create-pill:active,
+  .create-add-option:not(:disabled):active {
+    transform: scale(0.97);
+  }
+
+  .create-card__icon-btn:not(:disabled):active,
+  .create-option-remove:not(:disabled):active {
+    transform: scale(0.92);
+  }
+}
+
+.create-card__icon-btn:focus-visible,
+.create-option-remove:focus-visible,
+.create-add-option:focus-visible {
+  outline: 2px solid var(--wl-ink);
+  outline-offset: 2px;
+}
+
+/* "Customize questions" and "← Back to the quiz": the quiz card's two
+   quiet links take the same hover as the experience pages' inline links
+   and back links. */
+.quiz-card__customize {
+  text-decoration-thickness: 1px;
+  transition:
+    text-decoration-color 0.2s ease,
+    text-decoration-thickness 0.2s ease;
+}
+
+.quiz-back-to-play a {
+  display: inline-block;
+  transition: translate 0.25s var(--motion-ease-out);
+}
+
+@media (hover: hover) {
+  .quiz-card__customize:hover {
+    text-decoration-color: var(--wl-lavender);
+    text-decoration-thickness: 0.18em;
+  }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .quiz-back-to-play a:hover {
+    translate: -2px 0;
+  }
+}
+
+/* Conversation stage tabs a visitor has already reached (not the current
+   one, which already wears its stage tint) firm up under the pointer. */
+@media (hover: hover) {
+  .conv-stages__item:not(:disabled):not(.conv-stages__item--current):hover {
+    border-color: color-mix(in srgb, var(--wl-ink) 35%, white);
+  }
 }

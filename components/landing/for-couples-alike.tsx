@@ -10,7 +10,7 @@
  */
 export function ForCouplesAlike() {
   return (
-    <section className="fc-alike">
+    <section className="fc-alike" data-surface="dark">
       <div className="fc-alike__shapes" aria-hidden="true">
         <svg viewBox="0 0 200 200" fill="none" className="fc-alike__rings">
           <circle
@@ -44,7 +44,7 @@ export function ForCouplesAlike() {
         </svg>
       </div>
 
-      <div className="fc-alike__content">
+      <div className="fc-alike__content" data-reveal="stagger">
         <h2 className="fc-alike__heading">You know each other. But do you think alike?</h2>
         <p className="fc-alike__text">
           Knowing someone and knowing how they see the world aren&apos;t always the same thing. This

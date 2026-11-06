@@ -17,7 +17,7 @@ const PILLS: { label: string; className: string }[] = [
 export function LandingExperience() {
   return (
     <section className="landing-section landing-experience landing-experience--home">
-      <div className="landing-experience__content">
+      <div className="landing-experience__content" data-reveal="stagger">
         <p className="landing-eyebrow landing-eyebrow--plain">The experience</p>
         <h2 className="landing-section__heading">Questions that actually start conversations</h2>
         <p className="landing-section__text">
@@ -43,7 +43,7 @@ export function LandingExperience() {
         </div>
       </div>
 
-      <div className="landing-experience__demo">
+      <div className="landing-experience__demo" data-reveal>
         <div className="landing-experience__halo" aria-hidden="true" />
         <ExperienceDemoCard />
       </div>

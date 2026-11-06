@@ -30,10 +30,19 @@ const DEFAULT_CATEGORY = FAQ_CATEGORIES[0]!;
  */
 export function FaqSection() {
   const [activeId, setActiveId] = useState(DEFAULT_CATEGORY.id);
+  // Set on the first tab switch only, so the newly shown group can ease in
+  // (globals.css `.faq-section[data-switched]`) while the server-rendered
+  // first paint stays perfectly still.
+  const [switched, setSwitched] = useState(false);
+
+  function select(id: string) {
+    setActiveId(id);
+    setSwitched(true);
+  }
 
   return (
-    <section className="landing-section faq-section">
-      <FaqCategories categories={FAQ_CATEGORIES} activeId={activeId} onSelect={setActiveId} />
+    <section className="landing-section faq-section" data-switched={switched || undefined}>
+      <FaqCategories categories={FAQ_CATEGORIES} activeId={activeId} onSelect={select} />
 
       {FAQ_CATEGORIES.map((category) => (
         <div className="faq-section__group" key={category.id} hidden={category.id !== activeId}>

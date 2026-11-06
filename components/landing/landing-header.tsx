@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useRef } from "react";
 
 import { LogoMark } from "./logo-mark";
+import { useOverDarkSurface } from "./use-over-dark-surface";
 
 const NAV_LINKS = [
   { href: "/how-it-works", label: "How it works" },
@@ -35,17 +37,23 @@ const NAV_LINKS = [
  * in globals.css) while internal pages keep their existing dark-glass
  * treatment untouched.
  *
- * "use client" + usePathname() only to compute which nav item is active —
- * everything else here is exactly as static as before. This is a route
- * comparison, not scroll/interaction state, so it's correct on first
+ * "use client" + usePathname() to compute which nav item is active. That
+ * is a route comparison, not scroll/interaction state, so it's correct on first
  * load, on a direct navigation, and on a refresh alike (no client-only
  * default that could ever flash the wrong item active).
+ *
+ * `data-tone="on-dark"` flips the wordmark, nav and CTA to their light
+ * versions while a see-through header floats over a dark section (the
+ * home page's fixed header over the closing CTA) — see
+ * use-over-dark-surface.ts. Opaque headers never get it.
  */
 export function LandingHeader() {
   const pathname = usePathname();
+  const headerRef = useRef<HTMLElement>(null);
+  const overDark = useOverDarkSurface(headerRef);
 
   return (
-    <header className="landing-header">
+    <header ref={headerRef} className="landing-header" data-tone={overDark ? "on-dark" : undefined}>
       <div className="landing-header__inner">
         <Link href="/" className="landing-logo">
           <LogoMark className="landing-logo__mark" />

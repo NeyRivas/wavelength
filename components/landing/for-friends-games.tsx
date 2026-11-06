@@ -27,14 +27,14 @@ export function ForFriendsGames() {
   const friendsGames = READY_MADE_GAMES.filter((game) => game.group === "friends");
 
   return (
-    <section className="landing-section landing-how ff-games">
+    <section className="landing-section landing-how ff-games" data-reveal="stagger">
       <p className="landing-eyebrow landing-eyebrow--plain">The two games</p>
       <h2 className="landing-section__heading">Pick a way to test each other</h2>
       <p className="landing-section__text">
         Both work the same way: one of you answers first, then the other guesses.
       </p>
 
-      <div className="landing-card-grid ff-games__grid">
+      <div className="landing-card-grid ff-games__grid" data-reveal="stagger">
         {friendsGames.map((game) => (
           <Link
             href={game.href ?? "/play/friends"}
