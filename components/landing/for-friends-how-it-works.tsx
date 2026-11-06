@@ -21,7 +21,7 @@
 export function ForFriendsHowItWorks() {
   return (
     <section className="ff-how">
-      <div className="ff-how__inner">
+      <div className="ff-how__inner" data-reveal="stagger">
         <h2 className="ff-how__heading">A friendship trivia game, not a popularity contest.</h2>
         <p className="ff-how__text">
           There&apos;s no compatibility score, and nothing about your friendship gets judged.

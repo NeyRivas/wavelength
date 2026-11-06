@@ -77,7 +77,7 @@ const TAKEAWAYS = [
 
 export function ForCouplesTakeaways() {
   return (
-    <section className="landing-section fc-takeaways">
+    <section className="landing-section fc-takeaways" data-reveal="stagger">
       <p className="landing-eyebrow landing-eyebrow--plain fc-takeaways__eyebrow">
         What you&apos;ll get
       </p>
@@ -85,7 +85,7 @@ export function ForCouplesTakeaways() {
         Three things every couple takes away
       </h2>
 
-      <div className="fc-takeaway-list">
+      <div className="fc-takeaway-list" data-reveal="stagger">
         {TAKEAWAYS.map((item) => (
           <div className="fc-takeaway" key={item.title}>
             <div className={`fc-takeaway__panel fc-takeaway__panel--${item.panel}`}>

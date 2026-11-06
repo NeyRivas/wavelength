@@ -20,7 +20,7 @@ export function LandingCtaSection() {
         <div className="dark-shape dark-shape--3" />
       </div>
 
-      <div className="landing-dark-cta__content">
+      <div className="landing-dark-cta__content" data-reveal="stagger">
         <h2 className="landing-dark-cta__heading">See how much you&apos;re on the same page.</h2>
         <p className="landing-dark-cta__description">
           It only takes a few minutes. You might learn something new about someone you&apos;ve known

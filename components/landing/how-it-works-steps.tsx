@@ -106,7 +106,11 @@ export function HowItWorksSteps() {
     <section className="landing-section hiw-steps-section">
       <div className="hiw-steps">
         {STEPS.map((step, i) => (
-          <div className={`hiw-step${i % 2 === 1 ? " hiw-step--reverse" : ""}`} key={step.title}>
+          <div
+            className={`hiw-step${i % 2 === 1 ? " hiw-step--reverse" : ""}`}
+            key={step.title}
+            data-reveal="stagger"
+          >
             <div className={`hiw-step__panel hiw-step__panel--${step.panel}`}>{step.icon}</div>
             <div className="hiw-step__content">
               <p className="landing-eyebrow landing-eyebrow--plain hiw-step__eyebrow">

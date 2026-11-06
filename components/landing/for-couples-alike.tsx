@@ -44,7 +44,7 @@ export function ForCouplesAlike() {
         </svg>
       </div>
 
-      <div className="fc-alike__content">
+      <div className="fc-alike__content" data-reveal="stagger">
         <h2 className="fc-alike__heading">You know each other. But do you think alike?</h2>
         <p className="fc-alike__text">
           Knowing someone and knowing how they see the world aren&apos;t always the same thing. This

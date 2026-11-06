@@ -21,7 +21,7 @@ const CATEGORIES: { label: string; className: string }[] = [
 export function ForCouplesQuestions() {
   return (
     <section className="landing-section landing-experience">
-      <div className="landing-experience__content">
+      <div className="landing-experience__content" data-reveal="stagger">
         <p className="landing-eyebrow">
           <span className="landing-eyebrow__dot landing-eyebrow__dot--pink" aria-hidden="true" />
           <span className="landing-eyebrow__dot landing-eyebrow__dot--blue" aria-hidden="true" />
@@ -43,7 +43,7 @@ export function ForCouplesQuestions() {
         </div>
       </div>
 
-      <div className="landing-experience__demo">
+      <div className="landing-experience__demo" data-reveal>
         <div className="landing-experience__halo" aria-hidden="true" />
         <ExperienceDemoCard />
       </div>

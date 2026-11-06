@@ -10,7 +10,7 @@ const BADGES: { label: string; dotClass: string }[] = [
  * the landing pages, not a new badge/pill style. */
 export function HowItWorksBadges() {
   return (
-    <div className="hiw-badges">
+    <div className="hiw-badges" data-reveal="stagger">
       {BADGES.map((badge) => (
         <span className="hiw-badge" key={badge.label}>
           <span className={`hiw-badge__dot ${badge.dotClass}`} aria-hidden="true" />

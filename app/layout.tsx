@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 
 import { GoogleAnalytics } from "@/components/analytics/google-analytics";
+import { ScrollReveal } from "@/components/motion/scroll-reveal";
 import { gaPrivacyGuardScript } from "@/lib/analytics/ga-privacy-guard";
 
 import { SessionBootstrap } from "./session-bootstrap";
@@ -93,6 +94,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <SessionBootstrap />
         {children}
+        <ScrollReveal />
         <GoogleAnalytics />
       </body>
     </html>

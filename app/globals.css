@@ -80,6 +80,20 @@ select {
   font: inherit;
 }
 
+/* ── scroll reveal (components/motion/scroll-reveal.tsx) ──────────────
+   Only elements still below the fold when a page mounts are ever marked
+   "pending", so this never hides anything a visitor could already see.
+   Gated on no-preference so a visitor who switches reduced motion on
+   mid-visit sees anything still pending straight away, and never hidden
+   in print. The entrance itself is a Web Animation (see the component),
+   not a transition, so it never clobbers an element's own transitions. */
+@media screen and (prefers-reduced-motion: no-preference) {
+  [data-reveal-state="pending"]:not([data-reveal="stagger"]),
+  [data-reveal="stagger"][data-reveal-state="pending"] > * {
+    opacity: 0;
+  }
+}
+
 /* ── confirm dialog (components/ui/confirm-dialog.tsx) ───────────────── */
 
 dialog {

@@ -60,13 +60,13 @@ export function CatalogSectionBlock({
   const headingId = `catalog-${section.group}`;
   return (
     <section className="catalog-section" aria-labelledby={headingId}>
-      <div className="catalog-section__header">
+      <div className="catalog-section__header" data-reveal="stagger">
         <Heading id={headingId} className="catalog-section__heading">
           {section.heading}
         </Heading>
         <p className="catalog-section__intro">{section.intro}</p>
       </div>
-      <ul className="catalog-grid">
+      <ul className="catalog-grid" data-reveal="stagger">
         {section.cards.map((card) => (
           <li key={card.gameId} className="catalog-grid__item">
             <CatalogCardLink card={card} />
@@ -79,8 +79,12 @@ export function CatalogSectionBlock({
 
 export function MakeYourOwnSection() {
   return (
-    <section className="catalog-section" aria-labelledby="catalog-make-your-own">
-      <div className="catalog-section__header">
+    <section
+      className="catalog-section"
+      aria-labelledby="catalog-make-your-own"
+      data-reveal="stagger"
+    >
+      <div className="catalog-section__header" data-reveal="stagger">
         <h2 id="catalog-make-your-own" className="catalog-section__heading">
           {MAKE_YOUR_OWN.heading}
         </h2>

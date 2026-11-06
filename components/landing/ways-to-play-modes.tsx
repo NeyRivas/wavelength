@@ -81,7 +81,7 @@ const WAYS_TO_PLAY: WayToPlay[] = [
 export function WaysToPlayModes() {
   return (
     <section className="landing-section landing-how wtp-modes">
-      <div className="landing-card-grid wtp-modes__grid">
+      <div className="landing-card-grid wtp-modes__grid" data-reveal="stagger">
         {WAYS_TO_PLAY.map((mode) => (
           <div className="landing-card wtp-mode-card" key={mode.id}>
             <div className={`landing-card__blob ${mode.blobClass}`} aria-hidden="true" />

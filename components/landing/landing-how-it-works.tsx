@@ -44,11 +44,11 @@ const STEPS: {
  * entirely unchanged. */
 export function LandingHowItWorks() {
   return (
-    <section id="how-it-works" className="landing-section landing-how">
+    <section id="how-it-works" className="landing-section landing-how" data-reveal="stagger">
       <p className="landing-eyebrow landing-eyebrow--plain">The game</p>
       <h2 className="landing-section__heading">How it works</h2>
 
-      <div className="landing-card-grid">
+      <div className="landing-card-grid" data-reveal="stagger">
         {STEPS.map((step) => (
           <div
             className={`landing-card game-card game-card--inert game-card--vivid ${step.vividClass}`}
