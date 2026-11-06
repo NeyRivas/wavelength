@@ -218,6 +218,10 @@ export function DateNightExperience() {
       <div className="dn-card-stage">
         {displayedQuestion ? (
           <DateNightCard
+            // A fresh card per question, so Next / Shuffle / a mood or list
+            // pick each play the card's short entrance (globals.css
+            // `polish-card-in`) instead of swapping the text in place.
+            key={displayedQuestion.id}
             question={displayedQuestion}
             isFavorite={favoriteIds.includes(displayedQuestion.id)}
             onToggleFavorite={() => toggleFavorite(displayedQuestion.id)}
