@@ -96,10 +96,12 @@
   padding-top: 0;
 }
 
-/* The quiz card lifted off the hero's pastel with the same soft elevation
-   the demo's other panels carry (the result summary's glass card), so it
-   doesn't read flat. Demo-only: the real quiz page is unchanged. */
-.quizCard {
+/* The quiz card and the invitation card lifted off the hero's pastel with
+   the same soft elevation the demo's other panels carry (the result
+   summary's glass card and the category cards), so they don't read flat.
+   Demo-only: the real quiz and share pages are unchanged. */
+.quizCard,
+.shareCard {
   box-shadow:
     0 30px 60px -28px rgba(24, 24, 32, 0.22),
     0 2px 8px rgba(24, 24, 32, 0.04);
