@@ -392,7 +392,7 @@ function QuestionsScene({ frame, className }: { frame: DemoFrame; className: str
 
         <section
           key={index}
-          className={`quiz-card quiz-card--${tintForIndex(index)} ${showScale ? styles.slideIn : ""}`}
+          className={`quiz-card quiz-card--${tintForIndex(index)} ${styles.quizCard} ${showScale ? styles.slideIn : ""}`}
         >
           <header className="quiz-card__head">
             <span>
