@@ -2601,6 +2601,91 @@ dialog::backdrop {
   filter: blur(2px);
 }
 
+/* Live pass (home page How it works cards only, via .landing-card--live):
+   the same vivid gradient and corner circle, slowly in motion. The
+   gradient runs both tones then the first again over a 200%-sized
+   background, so its resting frame (top-left quarter) is the original
+   135° tone-to-tone fill; it drifts to the mirrored fill and back. The
+   circle floats a few rem and breathes. Each card has its own tempo and
+   starting point so the three never move in step, and none of it runs
+   under prefers-reduced-motion. */
+.landing-card--live.game-card--vivid-a {
+  background: linear-gradient(
+      135deg,
+      var(--wl-lavender) 0%,
+      var(--wl-blue) 50%,
+      var(--wl-lavender) 100%
+    )
+    0% 0% / 200% 200%;
+}
+
+.landing-card--live.game-card--vivid-b {
+  background: linear-gradient(135deg, var(--wl-pink) 0%, var(--wl-peach) 50%, var(--wl-pink) 100%)
+    0% 0% / 200% 200%;
+}
+
+.landing-card--live.game-card--vivid-c {
+  background: linear-gradient(
+      135deg,
+      var(--wl-mint) 0%,
+      var(--wl-lavender) 50%,
+      var(--wl-mint) 100%
+    )
+    0% 0% / 200% 200%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .landing-card--live {
+    animation: how-card-flow 11s ease-in-out infinite alternate;
+  }
+
+  .landing-card--live .landing-card__blob {
+    animation: how-card-circle-float 9s ease-in-out infinite;
+  }
+
+  .landing-card--live:nth-child(2) {
+    animation-duration: 13s;
+    animation-delay: -5s;
+  }
+
+  .landing-card--live:nth-child(2) .landing-card__blob {
+    animation-duration: 11s;
+    animation-delay: -3s;
+  }
+
+  .landing-card--live:nth-child(3) {
+    animation-duration: 12s;
+    animation-delay: -8s;
+  }
+
+  .landing-card--live:nth-child(3) .landing-card__blob {
+    animation-duration: 10s;
+    animation-delay: -6s;
+  }
+}
+
+@keyframes how-card-flow {
+  from {
+    background-position: 0% 0%;
+  }
+  to {
+    background-position: 100% 100%;
+  }
+}
+
+@keyframes how-card-circle-float {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(-1rem, 0.75rem) scale(1.08);
+  }
+  66% {
+    transform: translate(0.5rem, 1.25rem) scale(0.94);
+  }
+}
+
 .game-card--vivid .game-card__title,
 .game-card--vivid .game-card__subtitle,
 .game-card--vivid .category-card__text {

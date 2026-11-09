@@ -41,7 +41,11 @@ const STEPS: {
  * cursor a plain default, since these three are presentational steps, not
  * links or buttons — no `aria-disabled`, since they were never actionable
  * to begin with. Number/title/description text, order, and content are
- * entirely unchanged. */
+ * entirely unchanged.
+ *
+ * Live pass: `landing-card--live` (app/globals.css) slowly drifts each
+ * card's gradient and floats its corner circle — same design, now in
+ * motion, and still under prefers-reduced-motion. */
 export function LandingHowItWorks() {
   return (
     <section id="how-it-works" className="landing-section landing-how">
@@ -51,7 +55,7 @@ export function LandingHowItWorks() {
       <div className="landing-card-grid">
         {STEPS.map((step) => (
           <div
-            className={`landing-card game-card game-card--inert game-card--vivid ${step.vividClass}`}
+            className={`landing-card landing-card--live game-card game-card--inert game-card--vivid ${step.vividClass}`}
             key={step.number}
           >
             <div className={`landing-card__blob ${step.blobClass}`} aria-hidden="true" />
