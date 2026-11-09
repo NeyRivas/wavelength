@@ -1563,6 +1563,47 @@ dialog::backdrop {
   box-shadow: 0 0 0 4px rgba(24, 24, 32, 0.85);
 }
 
+/* Header tone over dark sections. `data-tone="on-dark"` is set by
+   landing-header.tsx (use-over-dark-surface.ts) only while a see-through
+   header floats over a `data-surface="dark"` section — in practice the
+   home page's fixed header passing over the closing CTA panel, where the
+   ink wordmark, the logo mark's ink dot, the muted nav links and the ink
+   "Start playing" pill used to vanish into the ink background. Each
+   switches to its light version (the mark's dot follows through
+   currentColor; its lavender → blue ring already reads on dark), with a
+   short crossfade. Opaque headers (every internal page) never get it. */
+.landing-header .landing-logo,
+.landing-header .landing-nav,
+.landing-header .landing-nav a,
+.landing-header .landing-header__cta {
+  transition:
+    color 0.3s ease,
+    background-color 0.3s ease;
+}
+
+.landing-header[data-tone="on-dark"] .landing-logo {
+  color: #ffffff;
+}
+
+.landing-header[data-tone="on-dark"] .landing-nav {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.landing-header[data-tone="on-dark"] .landing-nav__link--active {
+  color: #ffffff;
+}
+
+@media (hover: hover) {
+  .landing-header[data-tone="on-dark"] .landing-nav a:hover {
+    color: #ffffff;
+  }
+}
+
+.landing-header[data-tone="on-dark"] .landing-header__cta {
+  background: #ffffff;
+  color: var(--wl-ink);
+}
+
 /* ── hero ──────────────────────────────────────────────────────────── */
 
 /* Showpiece pass: .landing-hero (this rule) is now just the page's outer

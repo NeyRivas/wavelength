@@ -13,7 +13,7 @@ const DOT_CLASSES = [
  * destination as every other CTA on this page. */
 export function LandingCtaSection() {
   return (
-    <section className="landing-dark-cta">
+    <section className="landing-dark-cta" data-surface="dark">
       <div className="landing-dark-cta__shapes" aria-hidden="true">
         <div className="dark-shape dark-shape--1" />
         <div className="dark-shape dark-shape--2" />
