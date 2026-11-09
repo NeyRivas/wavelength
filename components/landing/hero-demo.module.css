@@ -1,0 +1,388 @@
+/* The hero's motion graphic (hero-demo.tsx). Everything that is *product
+   UI* inside it is styled by the app's own classes (globals.css and
+   components/result/cards/result-cards.module.css); this module only
+   holds the demo's own frame: the scaled stage, scene transitions, the
+   pointer, the captions and the scene controls. */
+
+.demo {
+  width: 100%;
+  max-width: 28rem;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ── The stage: a fixed 640×740 canvas scaled to the column ───────────── */
+
+.box {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 640 / 740;
+}
+
+.inner {
+  /* JS sets the exact value from the box's width (hero-demo.tsx); these
+     defaults only cover the first paint before hydration. */
+  --demo-scale: 0.7;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 640px;
+  height: 740px;
+  transform: scale(var(--demo-scale));
+  transform-origin: 0 0;
+}
+
+@media (max-width: 34rem) {
+  .inner {
+    --demo-scale: 0.54;
+  }
+}
+
+.stage {
+  position: relative;
+  width: 640px;
+  height: 740px;
+  text-align: left;
+}
+
+/* ── Scenes ────────────────────────────────────────────────────────────── */
+
+.scene {
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  padding: 20px;
+  animation: scene-in 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+  transition:
+    opacity 0.35s ease,
+    transform 0.35s ease;
+}
+
+.leaving {
+  opacity: 0;
+  transform: translateY(-12px) scale(0.98);
+}
+
+.sceneInvite {
+  display: flex;
+  align-items: center;
+}
+
+.sceneResult {
+  padding: 0;
+  -webkit-mask-image: linear-gradient(
+    180deg,
+    transparent 0,
+    #000 24px,
+    #000 calc(100% - 48px),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    180deg,
+    transparent 0,
+    #000 24px,
+    #000 calc(100% - 48px),
+    transparent 100%
+  );
+}
+
+.sceneShare {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  padding-top: 0;
+}
+
+.slideIn {
+  animation: slide-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+}
+
+/* Invite: the card is the screen's only content here. */
+.shareCard {
+  width: 100%;
+  margin: 0;
+}
+
+.shareLink {
+  display: flex;
+  align-items: center;
+}
+
+/* Result: "Finding your result…" fills the stage instead of 60vh. */
+.loading {
+  min-height: 0;
+  height: 100%;
+}
+
+.resultContent {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  right: 20px;
+  transition: transform 1.2s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.reveal {
+  display: block;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+span.reveal {
+  display: inline-block;
+}
+
+.reveal[data-visible="true"] {
+  opacity: 1;
+}
+
+/* The app's own grid at a phone-sized column: two cards per row. */
+.categoryGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* Share: the 380×676 phone frame at 84%. */
+.phoneSlot {
+  flex-shrink: 0;
+  width: calc(380px * 0.84);
+  height: calc(676px * 0.84);
+}
+
+.phone {
+  flex-shrink: 0;
+  transform: scale(0.84);
+  transform-origin: 0 0;
+}
+
+.presetLayer {
+  transition: opacity 0.6s ease;
+}
+
+.cardContent {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  animation: card-in 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+}
+
+/* ── The pointer ───────────────────────────────────────────────────────── */
+
+.cursor {
+  position: absolute;
+  z-index: 5;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    left 0.8s cubic-bezier(0.45, 0, 0.2, 1),
+    top 0.8s cubic-bezier(0.45, 0, 0.2, 1),
+    opacity 0.3s ease;
+}
+
+.cursorVisible {
+  opacity: 1;
+}
+
+.pointer {
+  position: absolute;
+  left: -5px;
+  top: -3px;
+  transform-origin: 5px 3px;
+  filter: drop-shadow(0 3px 5px rgba(24, 24, 32, 0.3));
+  transition: transform 0.12s ease;
+}
+
+.pointerPressed {
+  transform: scale(0.82);
+}
+
+.ripple {
+  position: absolute;
+  left: -22px;
+  top: -22px;
+  width: 44px;
+  height: 44px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  border: 3px solid #8e82e3;
+  background: rgba(201, 195, 244, 0.35);
+  animation: ripple 0.6s ease-out both;
+}
+
+/* ── Captions and scene controls ───────────────────────────────────────── */
+
+.captions {
+  position: relative;
+  width: 100%;
+  height: 1.75rem;
+  margin-top: 0.875rem;
+}
+
+.caption {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.9375rem;
+  font-weight: 800;
+  color: var(--wl-ink);
+  text-align: center;
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity 0.35s ease,
+    transform 0.35s ease;
+}
+
+.caption[data-state="current"] {
+  opacity: 1;
+  transform: none;
+}
+
+.caption[data-state="past"] {
+  transform: translateY(-8px);
+}
+
+.captionTag {
+  padding: 0.1875rem 0.625rem;
+  border-radius: 999px;
+  border: 1px solid rgba(24, 24, 32, 0.1);
+  background: rgba(255, 255, 255, 0.8);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  margin-top: 0.75rem;
+}
+
+.tab {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.375rem;
+  min-width: 5.25rem;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.75rem 0.625rem;
+  border: 0;
+  border-radius: 0.75rem;
+  background: transparent;
+  color: var(--wl-ink);
+  font-family: var(--font-nunito), system-ui, sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.tab[aria-pressed="true"] {
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.tabTrack {
+  display: block;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(24, 24, 32, 0.12);
+  overflow: hidden;
+}
+
+.tabFill {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--wl-ink);
+  transition: width 0.1s linear;
+}
+
+.playToggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin-left: 0.25rem;
+  border-radius: 50%;
+  border: 1.5px solid rgba(24, 24, 32, 0.12);
+  background: rgba(255, 255, 255, 0.75);
+  color: var(--wl-ink);
+  cursor: pointer;
+}
+
+@media (max-width: 30rem) {
+  .tab {
+    min-width: 4.25rem;
+    padding-inline: 0.5rem;
+  }
+}
+
+.tab:focus-visible,
+.playToggle:focus-visible {
+  outline: 2px solid var(--wl-ink);
+  outline-offset: 2px;
+}
+
+@keyframes scene-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(28px);
+  }
+}
+
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+@keyframes ripple {
+  from {
+    transform: scale(0.3);
+    opacity: 0.9;
+  }
+  to {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scene,
+  .slideIn,
+  .cardContent,
+  .ripple {
+    animation: none;
+  }
+
+  .scene,
+  .cursor,
+  .pointer,
+  .resultContent,
+  .reveal,
+  .caption,
+  .presetLayer,
+  .tabFill {
+    transition: none;
+  }
+}

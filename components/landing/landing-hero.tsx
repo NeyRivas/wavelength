@@ -1,101 +1,90 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
 
-import { HeroWaves } from "./hero-waves";
+import { HeroDemo } from "./hero-demo";
 
-const AVATARS: { label: string; className: string }[] = [
-  { label: "A", className: "landing-avatar--pink" },
-  { label: "B", className: "landing-avatar--lavender" },
-  { label: "C", className: "landing-avatar--blue" },
-  { label: "D", className: "landing-avatar--mint" },
+interface HeroService {
+  href: string;
+  title: string;
+  description: string;
+  modifier: "couples" | "friends" | "date-night" | "custom";
+  icon: ReactNode;
+}
+
+const ICON_PROPS = {
+  width: 20,
+  height: 20,
+  viewBox: "0 0 24 24",
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 2,
+  strokeLinecap: "round" as const,
+  strokeLinejoin: "round" as const,
+  "aria-hidden": true,
+};
+
+const SERVICES: HeroService[] = [
+  {
+    href: "/play/dating-couples/couples-compatibility-test",
+    title: "Couples quiz",
+    description: "How in sync are you two?",
+    modifier: "couples",
+    icon: (
+      <svg {...ICON_PROPS}>
+        <path d="M12 20s-7-4.35-7-10a4 4 0 0 1 7-2.65A4 4 0 0 1 19 10c0 5.65-7 10-7 10z" />
+      </svg>
+    ),
+  },
+  {
+    href: "/play/friends/friendship-test",
+    title: "Friends quiz",
+    description: "Who really knows who?",
+    modifier: "friends",
+    icon: (
+      <svg {...ICON_PROPS}>
+        <circle cx="9" cy="8" r="3" />
+        <circle cx="16.5" cy="9" r="2.5" />
+        <path d="M3.5 19a5.5 5.5 0 0 1 11 0" />
+        <path d="M14.5 14.2A4.5 4.5 0 0 1 21 18" />
+      </svg>
+    ),
+  },
+  {
+    href: "/play/dating-couples/date-night",
+    title: "Date night",
+    description: "Conversation starters for a night in",
+    modifier: "date-night",
+    icon: (
+      <svg {...ICON_PROPS}>
+        <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" />
+      </svg>
+    ),
+  },
+  {
+    href: "/create",
+    title: "Make your own",
+    description: "Write your own questions",
+    modifier: "custom",
+    icon: (
+      <svg {...ICON_PROPS}>
+        <path d="M4 20h4L19 9l-4-4L4 16v4z" />
+        <path d="M13.5 6.5l4 4" />
+      </svg>
+    ),
+  },
 ];
 
 /**
- * Hero (Figma reference, screenshot 1): eyebrow, headline, description,
- * primary CTA + note, the two-wave illustration, and the social proof
- * row — all one centered vertical composition (redesign pass) rather
- * than a left text column beside a right-side illustration. The content
- * wrapper (.landing-hero__content) and the visual wrapper
- * (.landing-hero__visual, illustration + social proof) are stacked and
- * centered on a single axis at every breakpoint; see app/globals.css for
- * the layout rules (.landing-hero is a centered flex column now, not a
- * two-column grid).
+ * Hero: the rounded pastel frame (unchanged — its ambient wash and glow
+ * still float exactly as before) holding two columns. On the left, a
+ * motion graphic of how Sameeeish works, drawn with the app's own UI
+ * (components/landing/hero-demo.tsx). On the right, the eyebrow, the
+ * headline and one link to each of the four main ways to play, styled
+ * like How it works' vivid cards with a slowly flowing gradient (see
+ * `.hero-service` in app/globals.css).
  *
- * Visual-signature pass ("two people → two wavelengths → different
- * rhythms → trying to align"): the illustration's focal content is now
- * two independently-animated wave paths (Wave A, Wave B), each carrying
- * its own "participant dot" (the same lavender/blue ringed-dot language
- * ReviewIntro/InviteIntro/the Result page's own wave already use), so
- * they visibly drift toward and away from phase over time — never
- * mechanically synced, never permanently apart. A soft central glow
- * pulses on its own slower cycle, standing in for a
- * recurring "moment of alignment" without literally scripting one. The
- * previous orbit/arcs/bullseye motif is retired in favor of this more
- * legible, more central two-wave visual (the arcs read as more generic
- * "target" iconography, competing with — rather than reinforcing — the
- * two-wavelength concept this pass is meant to make obvious).
- *
- * Background-removal pass: the section's old background (two large,
- * soft, animated .landing-hero__ambient-blob radial gradients) was
- * removed entirely, ahead of proposing a new background from a reference
- * image.
- *
- * New-background pass: a new `.landing-hero__ambient` wrapper replaces
- * it, built from the approved mockup — a soft diagonal pastel wash
- * (.landing-hero__ambient-wash) plus one gentle white glow
- * (.landing-hero__ambient-glow). Originally full-bleed (see git history);
- * the "showpiece" pass below changes how it's contained, not its own
- * gradient/opacity/blur recipe, which is still exactly the approved
- * mockup's.
- *
- * Showpiece pass: the whole hero is now wrapped in `.landing-hero__frame`
- * — a rounded-rectangle card, structurally the same idea as the page's
- * own closing `.landing-dark-cta` band (position: relative; overflow:
- * hidden; border-radius; its own internal padding), just carrying the
- * hero's own gradient instead of that section's solid ink fill. The
- * ambient wash/glow are now sized and positioned exactly as before but
- * live *inside* this frame instead of bleeding to the viewport's edges —
- * `overflow: hidden` on the frame clips them at its own rounded border,
- * which is also what makes the old bottom `mask-image` fade (used to
- * dissolve the gradient into "How it works" below) unnecessary: there's
- * no page-background-colored seam left to hide once the gradient simply
- * ends at the frame's own edge. `.landing-hero` itself (the section)
- * keeps the page's standard 60rem hero width and now holds only outer
- * spacing — the frame is what actually carries the background, border-
- * radius, and content padding.
- *
- * Floating-animation pass: each of those two layers now drifts on its
- * own independent CSS animation (slow translate + gentle scale,
- * ease-in-out, infinite, different durations — see
- * hero-ambient-wash-float/hero-ambient-glow-float in app/globals.css),
- * adapting only the MOTION CHARACTER of a supplied FloatingGradient
- * reference component (horizontal/vertical float, scale breathing,
- * ease-in-out, per-layer duration) — not its own colors, its React/
- * Framer Motion implementation (this project doesn't have Framer
- * Motion installed, and none was added for this), its card container,
- * or its magnitude/speed (the reference's 8-12s/100px moves are
- * explicitly "obvious moving circles"; these run 3-4x slower and move a
- * few rem at most, matching this file's existing wave-drift/blob-drift
- * conventions elsewhere). The wave illustration below is unaffected —
- * its own paths, dots, drift animation, and sync-glow are completely
- * unchanged.
- *
- * All motion here is CSS-only (no JS, no new state), continuous and
- * slow, and disabled entirely under prefers-reduced-motion (see
- * app/globals.css) — purely decorative, still `aria-hidden`, and never
- * competes with the headline/CTA for attention.
- *
- * Motion pass: same composition and artwork, better movement. The
- * illustration is now its own small Client Component
- * (components/landing/hero-waves.tsx — this file stays a Server
- * Component) that makes the waves ripple instead of sliding, lets the
- * dots ride them, ties the center glow to the waves' real alignment,
- * eases both waves into one rhythm while "Let's play" is hovered or
- * focused, and adds a few pixels of pointer parallax across the existing
- * layers. A one-time CSS entrance (app/globals.css, "hero entrance")
- * settles the supporting copy in around the (still) headline and draws
- * the waves on load. Under
- * prefers-reduced-motion none of this runs and the hero is the original
- * static artwork.
+ * On narrow screens the columns stack with the headline and links first,
+ * so the page still opens on its message and its actions.
  */
 export function LandingHero() {
   return (
@@ -107,10 +96,14 @@ export function LandingHero() {
         </div>
 
         <div className="landing-hero__inner">
+          <div className="landing-hero__demo">
+            <HeroDemo />
+          </div>
+
           <div className="landing-hero__content">
             <p className="landing-eyebrow landing-hero__eyebrow">
               <span
-                className="landing-eyebrow__dot landing-eyebrow__dot--pink"
+                className="landing-eyebrow__dot landing-eyebrow__dot--lavender"
                 aria-hidden="true"
               />
               <span
@@ -122,42 +115,27 @@ export function LandingHero() {
 
             <h1 className="landing-hero__heading">Are you really on the same page?</h1>
 
-            <p className="landing-hero__description">Find out together.</p>
+            <ul className="landing-hero__services" aria-label="Ways to play">
+              {SERVICES.map((service) => (
+                <li key={service.href}>
+                  <Link
+                    href={service.href}
+                    className={`hero-service hero-service--${service.modifier}`}
+                  >
+                    <span className="hero-service__icon">{service.icon}</span>
+                    <span className="hero-service__text">
+                      <span className="hero-service__title">{service.title}</span>
+                      <span className="hero-service__description">{service.description}</span>
+                    </span>
+                    <svg className="hero-service__arrow" {...ICON_PROPS} strokeWidth={2.2}>
+                      <path d="M5 12h14M13 6l6 6-6 6" />
+                    </svg>
+                  </Link>
+                </li>
+              ))}
+            </ul>
 
-            <div className="landing-hero__actions">
-              <Link
-                href="/play"
-                className="landing-button landing-button--primary landing-button--hero"
-              >
-                Let&apos;s play <span aria-hidden="true">→</span>
-              </Link>
-              <span className="landing-hero__note">Free · No sign-up needed</span>
-            </div>
-          </div>
-
-          {/* Centered composition (redesign pass): the two-wave illustration and
-              the social-proof row now sit together, in that reading order, as
-              one visual unit below the CTA — instead of the illustration
-              floating beside the text column with social-proof stacked above
-              it. Nothing about either child changes: the illustration is still
-              its own aria-hidden decorative block, and the social-proof row is
-              still real, accessible content — only their position in the flow
-              moved. */}
-          <div className="landing-hero__visual">
-            <div className="landing-hero__illustration" aria-hidden="true">
-              <HeroWaves />
-            </div>
-
-            <div className="landing-social-proof">
-              <div className="landing-avatars">
-                {AVATARS.map((a) => (
-                  <span key={a.label} className={`landing-avatar ${a.className}`}>
-                    {a.label}
-                  </span>
-                ))}
-              </div>
-              <span>12,400+ conversations started</span>
-            </div>
+            <p className="landing-hero__note">Free · No sign-up needed</p>
           </div>
         </div>
       </div>

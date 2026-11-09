@@ -14,6 +14,9 @@ on:
 permissions:
   contents: read
 
+env:
+  SUPABASE_CLI_VERSION: 2.20.12
+
 concurrency:
   group: e2e-${{ github.ref }}
   cancel-in-progress: true
@@ -41,15 +44,44 @@ jobs:
       - name: Install Chromium for Playwright
         run: pnpm exec playwright install --with-deps chromium
 
-      - uses: supabase/setup-cli@v1
+      # Supabase CLI, pinned to the version supabase/config.toml was generated
+      # with and the suite was validated against. It comes from the Actions
+      # cache whenever this version has been fetched before, so a run only
+      # downloads it from GitHub Releases once per version (supabase/setup-cli
+      # downloaded it on every run and gave up after ~40s of 504s from the
+      # release CDN, failing the job before any test ran). A download is
+      # checked against the release's own SHA-256 checksums.
+      - name: Restore Supabase CLI from cache
+        id: supabase-cli-cache
+        uses: actions/cache@v4
         with:
-          # The version supabase/config.toml was generated with and the
-          # suite was validated against.
-          version: 2.20.12
+          path: ~/.supabase-cli
+          key: supabase-cli-${{ runner.os }}-${{ runner.arch }}-${{ env.SUPABASE_CLI_VERSION }}
+
+      - name: Download Supabase CLI
+        if: ${{ steps.supabase-cli-cache.outputs.cache-hit != 'true' }}
+        run: |
+          base="https://github.com/supabase/cli/releases/download/v${SUPABASE_CLI_VERSION}"
+          archive="supabase_linux_amd64.tar.gz"
+          fetch() { curl -fsSL --retry 5 --retry-all-errors --retry-delay 15 --retry-max-time 300 -o "$1" "$2"; }
+          fetch "$RUNNER_TEMP/$archive" "$base/$archive"
+          fetch "$RUNNER_TEMP/checksums.txt" "$base/supabase_${SUPABASE_CLI_VERSION}_checksums.txt"
+          (cd "$RUNNER_TEMP" && grep " ${archive}\$" checksums.txt | sha256sum --check --strict)
+          mkdir -p ~/.supabase-cli
+          tar -xzf "$RUNNER_TEMP/$archive" -C ~/.supabase-cli supabase
+
+      - name: Put Supabase CLI on PATH
+        run: |
+          echo "$HOME/.supabase-cli" >> "$GITHUB_PATH"
+          # What supabase/setup-cli set for CLI versions before 2.108.0: pull
+          # the stack's images from GHCR.
+          echo "SUPABASE_INTERNAL_IMAGE_REGISTRY=ghcr.io" >> "$GITHUB_ENV"
+          ~/.supabase-cli/supabase --version
 
       # Only what the app uses: Postgres, Auth (anonymous sign-in), the REST
       # API, and the gateway in front of them.
       - name: Start local Supabase
+        id: supabase-start
         run: >-
           supabase start
           --exclude realtime,storage-api,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
@@ -81,6 +113,8 @@ jobs:
           path: test-results/
           retention-days: 14
 
+      # Only when the stack was started, so a failure before that (e.g. the
+      # CLI download) is reported as itself, not as `supabase: command not found`.
       - name: Stop local Supabase
-        if: ${{ always() }}
+        if: ${{ always() && steps.supabase-start.outcome != 'skipped' }}
         run: supabase stop --no-backup
