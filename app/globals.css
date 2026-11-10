@@ -2027,13 +2027,32 @@ dialog::backdrop {
 
 @media (prefers-reduced-motion: no-preference) {
   /* Entrance (shared with the rest of the hero, see "Hero entrance"
-     below) plus the gradient's slow drift. `hero-enter` moves `translate`,
-     not `transform`, so it never fights the hover lift above. */
+     below). `hero-enter` moves `translate`, not `transform`, so it never
+     fights the hover lift above. */
   .hero-service {
-    animation:
-      hero-enter 0.8s cubic-bezier(0.22, 1, 0.36, 1) var(--hero-service-enter) backwards,
-      hero-service-flow var(--hero-service-flow) ease-in-out var(--hero-service-offset) infinite
-        alternate;
+    animation: hero-enter 0.8s cubic-bezier(0.22, 1, 0.36, 1) var(--hero-service-enter) backwards;
+  }
+
+  /* The gradient's slow drift, on its own layer: the card's same gradient
+     at the same 250% size, slid by transform instead of animating
+     background-position, which repainted all four cards every frame.
+     The layer is 2.5× the card, so -60% of its width is the card's
+     0%→100% background travel and -30% of its height its 50% row. It
+     sits under the glow (::before) and covers the card's own background,
+     which still shows on its own under reduced motion. */
+  .hero-service::after {
+    content: "";
+    position: absolute;
+    z-index: -2;
+    top: 0;
+    left: 0;
+    width: 250%;
+    height: 250%;
+    background-image: inherit;
+    background-size: 100% 100%;
+    pointer-events: none;
+    animation: hero-service-flow var(--hero-service-flow) ease-in-out var(--hero-service-offset)
+      infinite alternate;
   }
 
   .hero-service:active {
@@ -2043,10 +2062,10 @@ dialog::backdrop {
 
 @keyframes hero-service-flow {
   from {
-    background-position: 0% 50%;
+    transform: translate(0, -30%);
   }
   to {
-    background-position: 100% 50%;
+    transform: translate(-60%, -30%);
   }
 }
 
@@ -2676,7 +2695,27 @@ dialog::backdrop {
 }
 
 @media (prefers-reduced-motion: no-preference) {
+  /* The drift runs on a layer holding the card's same 200%-sized gradient,
+     slid by transform (-50% of the layer is the card's 0%→100% background
+     travel) instead of animating background-position, which repainted
+     the cards every frame. It covers the card's own background (still
+     shown under reduced motion) and stays under everything else;
+     isolation keeps it above that background. */
   .landing-card--live {
+    isolation: isolate;
+  }
+
+  .landing-card--live::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    top: 0;
+    left: 0;
+    width: 200%;
+    height: 200%;
+    background-image: inherit;
+    background-size: 100% 100%;
+    pointer-events: none;
     animation: how-card-flow 11s ease-in-out infinite alternate;
   }
 
@@ -2684,7 +2723,7 @@ dialog::backdrop {
     animation: how-card-circle-float 9s ease-in-out infinite;
   }
 
-  .landing-card--live:nth-child(2) {
+  .landing-card--live:nth-child(2)::after {
     animation-duration: 13s;
     animation-delay: -5s;
   }
@@ -2694,7 +2733,7 @@ dialog::backdrop {
     animation-delay: -3s;
   }
 
-  .landing-card--live:nth-child(3) {
+  .landing-card--live:nth-child(3)::after {
     animation-duration: 12s;
     animation-delay: -8s;
   }
@@ -2707,10 +2746,10 @@ dialog::backdrop {
 
 @keyframes how-card-flow {
   from {
-    background-position: 0% 0%;
+    transform: translate(0, 0);
   }
   to {
-    background-position: 100% 100%;
+    transform: translate(-50%, -50%);
   }
 }
 

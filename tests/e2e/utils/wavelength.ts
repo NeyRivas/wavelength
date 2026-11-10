@@ -201,10 +201,17 @@ export async function editAndBlur(page: Page, field: Locator, value: string): Pr
   await expect(id ? page.locator(`[id="${id}"]`) : field).toBeEnabled();
 }
 
-/** Changes a saved question's category (it saves as soon as it changes). */
+/** Changes a saved question's category (it saves as soon as it changes),
+ * waiting for the save and for the form to settle: once the save's
+ * response is in, React still resets the form's uncontrolled fields, and
+ * typing into the question field before that lands mid-reset (the old
+ * text comes back with the new text inserted in front of it).
+ * QuestionEditForm disables its fields while saving, so enabled again
+ * means settled. */
 export async function changeCategory(page: Page, card: Locator, category: string): Promise<void> {
   const group = editForm(card).getByRole("radiogroup", { name: "Category" });
   await withServerAction(page, () => pickOption(group, category));
+  await expect(questionTextField(card)).toBeEnabled();
 }
 
 /** The radio for one category in a builder card's category group. */
