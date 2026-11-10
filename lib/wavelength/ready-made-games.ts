@@ -71,8 +71,8 @@ export interface ReadyMadeGame {
    * the same card — same `{ label, href }` shape as WayToPlay's own
    * `secondary` (components/landing/ways-to-play-modes.tsx), same reason:
    * a genuine second destination that isn't the primary CTA's game
-   * itself. Omitted for every game but "getting-to-know-you", which links
-   * to its own dedicated SEO preview page. */
+   * itself. Omitted for every game but "getting-to-know-you" and
+   * "funny-questions", which link to their own dedicated landing pages. */
   secondary?: { label: string; href: string };
 }
 
@@ -585,6 +585,143 @@ const FRIENDSHIP_CHECK_QUESTIONS: ReadyMadeQuestion[] = [
   },
 ];
 
+/**
+ * The "Funny questions" set (Dating & Couples) — the same ten questions as
+ * Sameeeish's best-performing Pinterest pin, "10 Funny Questions for
+ * Couples (Try Not to Laugh)", so a visitor who arrives from that pin can
+ * play exactly the questions they just read. Question wording is taken
+ * verbatim from lib/date-night/questions.ts's "funny"-mood questions; only
+ * the answer options are new, written to stay light and silly. Plain
+ * compare mechanics like "Getting to know each other": no special
+ * resultMode, same choice scoring as every other questionnaire.
+ *
+ * Exported so the public landing page
+ * (app/play/dating-couples/funny-questions) renders this same array
+ * rather than a separately maintained copy.
+ */
+export const FUNNY_QUESTIONS: ReadyMadeQuestion[] = [
+  {
+    type: "choice",
+    category: "relationship",
+    text: "If I got arrested, what would you assume I had done?",
+    options: [
+      "Something chaotic but totally harmless",
+      "Arguing with someone who was clearly wrong",
+      "A ridiculous pile of unpaid parking tickets",
+      "Sneaking snacks somewhere I shouldn't",
+      "Honestly, I'd be completely shocked",
+    ],
+  },
+  {
+    type: "choice",
+    category: "values_priorities",
+    text: "If your personality came with a warning label, what would it say?",
+    options: [
+      "May overshare without warning",
+      "Gets hangry. Feed regularly",
+      "Turns everything into a competition",
+      "Needs a nap to function",
+      "Too honest for their own good",
+    ],
+  },
+  {
+    type: "choice",
+    category: "lifestyle",
+    text: "What's the worst text you've ever sent to the wrong person?",
+    options: [
+      "A screenshot of a chat, sent to the person in it",
+      "A message for my best friend, sent to my boss",
+      "Something very personal, sent to the family group chat",
+      "A voice note I never should have recorded",
+      "Luckily, I've never done that (I think)",
+    ],
+  },
+  {
+    type: "choice",
+    category: "relationship",
+    text: "If we had to compete on a reality show together, which one would we absolutely fail at?",
+    options: [
+      "A cooking competition",
+      "A survival show in the wilderness",
+      "An escape room challenge",
+      "A home renovation show",
+      "A dance competition",
+    ],
+  },
+  {
+    type: "choice",
+    category: "values_priorities",
+    text: "What's the weirdest thing you believed as a kid?",
+    options: [
+      "That swallowing a seed would grow a plant inside me",
+      "That my toys came alive when I wasn't looking",
+      "That the moon was following our car",
+      "That adults knew everything",
+      "Something too weird to even explain",
+    ],
+  },
+  {
+    type: "choice",
+    category: "money",
+    text: "If I gave you $1,000 to spend on something completely useless tonight, what would you buy?",
+    options: [
+      "A giant inflatable pool float",
+      "Way too much takeout",
+      "A mountain of snacks",
+      "A gadget I'd use exactly once",
+      "Last-minute concert tickets",
+    ],
+  },
+  {
+    type: "choice",
+    category: "lifestyle",
+    text: "What's something you do that your 18-year-old self would be embarrassed about?",
+    options: [
+      "Going to bed early on purpose",
+      "Getting excited about kitchen appliances",
+      'Saying "that\'s a good price" out loud',
+      "Loving a quiet night in",
+      "Stretching before doing anything",
+    ],
+  },
+  {
+    type: "choice",
+    category: "lifestyle",
+    text: "What's a completely normal thing that people do that irrationally annoys you?",
+    options: [
+      "Chewing loudly",
+      "Walking slowly in front of me",
+      'Replying "k"',
+      "Sending voice notes instead of texts",
+      "Standing too close in line",
+    ],
+  },
+  {
+    type: "choice",
+    category: "lifestyle",
+    text: 'What\'s your most embarrassing "I thought nobody saw that" moment?',
+    options: [
+      "Tripping over absolutely nothing",
+      "Singing loudly in the car at a red light",
+      "Waving at someone who wasn't waving at me",
+      "Talking to myself in public",
+      "Pushing a door that clearly said pull",
+    ],
+  },
+  {
+    type: "choice",
+    category: "relationship",
+    text: "What's the most ridiculous thing you've ever done because you were trying to impress someone?",
+    options: [
+      "Pretended to love a band I'd never heard of",
+      "Tried a sport I was clearly bad at",
+      "Ordered something way too spicy",
+      "Faked knowing how to cook",
+      "Wore something wildly uncomfortable",
+    ],
+  },
+];
+
 export const READY_MADE_GAMES: ReadyMadeGame[] = [
   {
     id: "how-well-do-you-know-each-other",
@@ -604,6 +741,18 @@ export const READY_MADE_GAMES: ReadyMadeGame[] = [
     secondary: {
       label: "More",
       href: "/play/dating-couples/getting-to-know-each-other-questions",
+    },
+  },
+  {
+    id: "funny-questions",
+    title: "Funny questions",
+    subtitle: "Try Not to Laugh",
+    builderSubtitle: "Ten silly questions for the two of you.",
+    group: "dating-couples",
+    questions: FUNNY_QUESTIONS,
+    secondary: {
+      label: "See the questions",
+      href: "/play/dating-couples/funny-questions",
     },
   },
   {

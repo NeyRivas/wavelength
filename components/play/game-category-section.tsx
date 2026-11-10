@@ -6,6 +6,7 @@ const BLOBS_BY_GROUP: Record<ReadyMadeGameGroup, string[]> = {
     "landing-card__blob--pink",
     "landing-card__blob--blue",
     "landing-card__blob--mint",
+    "landing-card__blob--peach",
   ],
   friends: ["landing-card__blob--lavender", "landing-card__blob--peach"],
 };
@@ -18,6 +19,7 @@ const BLOBS_BY_GROUP: Record<ReadyMadeGameGroup, string[]> = {
 const VIVID_GRADIENT_BY_GAME_ID: Partial<Record<string, string>> = {
   "how-well-do-you-know-each-other": "game-card--vivid-a",
   "getting-to-know-you": "game-card--vivid-b",
+  "funny-questions": "game-card--vivid-a",
   "date-night": "game-card--vivid-c",
   "how-well-do-you-know-me": "game-card--vivid-a",
   "friendship-check": "game-card--vivid-b",
@@ -55,7 +57,9 @@ export function GameCategorySection({
   const gridClassName =
     games.length === 2
       ? "landing-card-grid game-card-grid game-card-grid--two"
-      : "landing-card-grid game-card-grid";
+      : games.length === 4
+        ? "landing-card-grid game-card-grid game-card-grid--four"
+        : "landing-card-grid game-card-grid";
 
   return (
     <section className={`landing-section landing-how play-category play-category--${group}`}>

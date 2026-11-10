@@ -21,6 +21,10 @@ const COPY_BY_GAME_ID: Record<
     eyebrow: "Your discovery result",
     heading: (aliasA, aliasB) => `What ${aliasA} and ${aliasB} discovered about each other`,
   },
+  "funny-questions": {
+    eyebrow: "Your funny questions result",
+    heading: (aliasA, aliasB) => `How ${aliasA} and ${aliasB} answered (try not to laugh)`,
+  },
 };
 
 const DEFAULT_COPY = {

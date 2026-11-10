@@ -88,6 +88,18 @@ const EXPERIENCE_COPY: Record<string, ExperienceCopy> = {
     finalText: "Ready to see what you discovered about each other?",
     finalizeButtonLabel: "Answer. Share. Discover each other.",
   },
+  "funny-questions": {
+    builderIntro:
+      "Ten silly questions for the two of you. Pick your answers, then share the link and compare how you both answered.",
+    inviteHeading: "Ready to laugh?",
+    inviteText: (aAlias) =>
+      `${aAlias} picked ten funny questions and already answered them. Answer the same ones, then compare your answers and try not to laugh.`,
+    answerHeading: "Try not to laugh",
+    answerText: (aAlias) =>
+      `Go with your first instinct — these are the same silly questions ${aAlias} already answered. You'll compare answers at the end.`,
+    finalText: "Ready to compare your answers?",
+    finalizeButtonLabel: "Answer. Share. Compare your answers.",
+  },
   "how-well-do-you-know-me": {
     builderIntro:
       "Each question is already written — you just write your own real answers, mark which one's true, then see how well they can guess.",

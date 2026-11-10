@@ -2342,6 +2342,16 @@ dialog::backdrop {
   max-width: 40rem;
 }
 
+/* Dating & Couples now has 4 games — a 2×2 grid instead of a 3-column
+   row with one card orphaned on its own line. The mobile breakpoint's
+   `.landing-card-grid { grid-template-columns: 1fr }` comes later in this
+   file and still collapses it to a single column. */
+.game-card-grid--four {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  max-width: 48rem;
+  margin-inline: auto;
+}
+
 /* The submit button IS the card (game-card.tsx) — display: contents keeps
    this <form> out of layout entirely, so the <button> below is the actual
    grid item (or, on the one card with a stacked `secondary` Link below
