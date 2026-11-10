@@ -285,7 +285,7 @@ export function HeroDemo() {
 
             <div
               className={`${styles.cursor} ${frame.cursor.visible ? styles.cursorVisible : ""}`}
-              style={{ left: clock.cursor.x, top: clock.cursor.y }}
+              style={{ transform: `translate(${clock.cursor.x}px, ${clock.cursor.y}px)` }}
             >
               {frame.cursor.clicking && <span className={styles.ripple} />}
               <svg
@@ -335,7 +335,10 @@ export function HeroDemo() {
             >
               <span>{scene.label}</span>
               <span className={styles.tabTrack} aria-hidden="true">
-                <span className={styles.tabFill} style={{ width: `${fill * 100}%` }} />
+                <span
+                  className={styles.tabFill}
+                  style={{ transform: `translateX(${(fill - 1) * 100}%)` }}
+                />
               </span>
             </button>
           );

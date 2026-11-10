@@ -182,16 +182,19 @@ span.reveal {
 
 /* ── The pointer ───────────────────────────────────────────────────────── */
 
+/* Positioned with transform (hero-demo.tsx sets translate), not left/top,
+   so moving it never triggers layout: the demo animates continuously. */
 .cursor {
   position: absolute;
   z-index: 5;
+  left: 0;
+  top: 0;
   width: 0;
   height: 0;
   opacity: 0;
   pointer-events: none;
   transition:
-    left 0.8s cubic-bezier(0.45, 0, 0.2, 1),
-    top 0.8s cubic-bezier(0.45, 0, 0.2, 1),
+    transform 0.8s cubic-bezier(0.45, 0, 0.2, 1),
     opacity 0.3s ease;
 }
 
@@ -311,12 +314,16 @@ span.reveal {
   overflow: hidden;
 }
 
+/* Always full width, slid in from the left by transform (hero-demo.tsx)
+   rather than resized: it updates every tick, and a width change would
+   re-run layout each time. The track clips it, so it looks the same. */
 .tabFill {
   display: block;
+  width: 100%;
   height: 100%;
   border-radius: 2px;
   background: var(--wl-ink);
-  transition: width 0.1s linear;
+  transition: transform 0.1s linear;
 }
 
 .playToggle {
