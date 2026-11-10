@@ -71,8 +71,8 @@ export interface ReadyMadeGame {
    * the same card — same `{ label, href }` shape as WayToPlay's own
    * `secondary` (components/landing/ways-to-play-modes.tsx), same reason:
    * a genuine second destination that isn't the primary CTA's game
-   * itself. Omitted for every game but "getting-to-know-you" and
-   * "funny-questions", which link to their own dedicated landing pages. */
+   * itself. Omitted for every game but "getting-to-know-you", which links
+   * to its own dedicated SEO preview page. */
   secondary?: { label: string; href: string };
 }
 
@@ -594,12 +594,8 @@ const FRIENDSHIP_CHECK_QUESTIONS: ReadyMadeQuestion[] = [
  * the answer options are new, written to stay light and silly. Plain
  * compare mechanics like "Getting to know each other": no special
  * resultMode, same choice scoring as every other questionnaire.
- *
- * Exported so the public landing page
- * (app/play/dating-couples/funny-questions) renders this same array
- * rather than a separately maintained copy.
  */
-export const FUNNY_QUESTIONS: ReadyMadeQuestion[] = [
+const FUNNY_QUESTIONS: ReadyMadeQuestion[] = [
   {
     type: "choice",
     category: "relationship",
@@ -750,10 +746,6 @@ export const READY_MADE_GAMES: ReadyMadeGame[] = [
     builderSubtitle: "Ten silly questions for the two of you.",
     group: "dating-couples",
     questions: FUNNY_QUESTIONS,
-    secondary: {
-      label: "See the questions",
-      href: "/play/dating-couples/funny-questions",
-    },
   },
   {
     id: "date-night",

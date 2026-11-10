@@ -36,7 +36,6 @@ const LAST_MODIFIED = {
   playFriends: new Date("2026-09-26"),
   dateNight: new Date("2026-10-11"), // server-rendered question preview added (this pass)
   gettingToKnowEachOther: new Date("2026-10-12"), // new dedicated landing page (this pass)
-  funnyQuestions: new Date("2026-11-10"), // new dedicated landing page for the funny-questions game
 } as const;
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -105,12 +104,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       // page — same priority tier as its sibling, Date Night.
       url: `${BASE_URL}/play/dating-couples/getting-to-know-each-other-questions`,
       lastModified: LAST_MODIFIED.gettingToKnowEachOther,
-      changeFrequency: "monthly",
-      priority: 0.6,
-    },
-    {
-      url: `${BASE_URL}/play/dating-couples/funny-questions`,
-      lastModified: LAST_MODIFIED.funnyQuestions,
       changeFrequency: "monthly",
       priority: 0.6,
     },

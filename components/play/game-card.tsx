@@ -8,14 +8,14 @@ import { startReadyMadeGame } from "@/app/actions/ready-made-games";
  * - `href` set (e.g. Date Night) → plain navigation (a Link) to a
  *   standalone experience, not a questionnaire draft — takes priority
  *   over `playable`.
- * - `playable` with no `secondary` (every game but "getting-to-know-you" and "funny-questions")
+ * - `playable` with no `secondary` (every game but "getting-to-know-you")
  *   → submits `startReadyMadeGame` (app/actions/ready-made-games.ts) via a
  *   form whose submit button IS the card (`display: contents` on the form
  *   itself keeps the button as the actual grid item — see .game-card-form
  *   in globals.css), so the whole card is clickable, not just the "Play"
  *   label.
- * - `playable` with `secondary` set ("getting-to-know-you" and "funny-questions",
- *   via their READY_MADE_GAMES entries) → same startReadyMadeGame submit
+ * - `playable` with `secondary` set (currently only "getting-to-know-you",
+ *   via its READY_MADE_GAMES entry) → same startReadyMadeGame submit
  *   behavior, unchanged, but the card is now a real wrapper <div> holding
  *   two separate, stacked actions: the submit button (reset to a plain,
  *   unstyled clickable surface via .game-card__surface, since the card's
