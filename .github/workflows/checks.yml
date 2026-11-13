@@ -1,0 +1,54 @@
+# Fast checks on every pull request and on pushes to the default branch:
+# lint, typecheck, formatting and the unit tests (tests/unit/). No services
+# or secrets needed. Integration tests (tests/integration/, which need
+# Postgres) and E2E (.github/workflows/e2e.yml) run separately.
+name: Checks
+
+on:
+  pull_request:
+  push:
+    branches: [claude/wavelength-architecture-e2ey7u]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Lint, types, format, unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history: tests/unit/sitemap-dates.test.ts compares each
+          # page's last commit with its date in app/sitemap.ts.
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Formatting
+        run: pnpm format
+
+      - name: Unit tests
+        run: pnpm test:unit

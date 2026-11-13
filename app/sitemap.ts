@@ -19,27 +19,31 @@ const BASE_URL = "https://sameeeish.com";
  * the routes touched in a given SEO pass). These are necessarily
  * hand-maintained: bump a route's date here when its content next
  * actually changes, not on every deploy.
+ *
+ * tests/unit/sitemap-dates.test.ts enforces that: it fails when a route's
+ * own files (its page.tsx and what only it imports, not the header/footer
+ * and other parts most pages share) have a commit newer than its date.
  */
 const LAST_MODIFIED = {
-  home: new Date("2026-10-11"), // app/page.tsx: added home metadata (this pass)
+  home: new Date("2026-11-10"), // hero redesigned around a live demo (Nov 9), its animation reworked (Nov 10)
   howItWorks: new Date("2026-09-26"),
   waysToPlay: new Date("2026-10-12"), // Friends card's secondary button, removed redundant paragraph (this pass)
-  forCouples: new Date("2026-10-11"), // title/description reworked (this pass)
+  forCouples: new Date("2026-10-12"), // title/description reworked, linked from the home page
   forFriends: new Date("2026-10-26"), // game cards now link to each game's page
-  faq: new Date("2026-09-26"),
+  faq: new Date("2026-10-12"), // answers server-rendered, so crawlers see them
   about: new Date("2026-10-09"),
-  privacy: new Date("2026-10-09"),
+  privacy: new Date("2026-10-16"), // analytics, hosting and cookie disclosures
   terms: new Date("2026-10-09"),
   contact: new Date("2026-10-09"),
   play: new Date("2026-10-26"), // unified game catalog: every experience on one page
   playDatingCouples: new Date("2026-10-26"), // retitled "Couples Games & Questions"; cards link to experience pages
   playFriends: new Date("2026-10-26"), // retitled "Friendship Quizzes & Games"; cards link to experience pages
   dateNight: new Date("2026-10-26"), // H1/title, editorial guide below the deck
-  gettingToKnowEachOther: new Date("2026-10-26"), // rebuilt as the integrated experience page
-  thirtySixQuestions: new Date("2026-10-25"), // new conversation experience landing page
+  gettingToKnowEachOther: new Date("2026-11-04"), // retitled; 50 more questions to ask
+  thirtySixQuestions: new Date("2026-10-26"), // shown to B too; related cards redesigned
   couplesCompatibilityTest: new Date("2026-10-26"), // new experience page
-  howWellDoYouKnowMe: new Date("2026-10-26"), // new experience page
-  friendshipTest: new Date("2026-10-26"), // new experience page
+  howWellDoYouKnowMe: new Date("2026-11-04"), // retitled; 40 more questions to ask
+  friendshipTest: new Date("2026-11-04"), // retitled "Friendship Quiz"; 30 trivia questions
 } as const;
 
 export default function sitemap(): MetadataRoute.Sitemap {
