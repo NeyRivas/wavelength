@@ -25,25 +25,25 @@ const BASE_URL = "https://sameeeish.com";
  * and other parts most pages share) have a commit newer than its date.
  */
 const LAST_MODIFIED = {
-  home: new Date("2026-11-10"), // hero redesigned around a live demo (Nov 9), its animation reworked (Nov 10)
+  home: new Date("2026-11-17"), // Organization/WebSite structured data, trimmed meta description
   howItWorks: new Date("2026-09-26"),
   waysToPlay: new Date("2026-10-12"), // Friends card's secondary button, removed redundant paragraph (this pass)
   forCouples: new Date("2026-10-12"), // title/description reworked, linked from the home page
-  forFriends: new Date("2026-10-26"), // game cards now link to each game's page
-  faq: new Date("2026-10-12"), // answers server-rendered, so crawlers see them
-  about: new Date("2026-10-09"),
-  privacy: new Date("2026-10-16"), // analytics, hosting and cookie disclosures
-  terms: new Date("2026-10-09"),
-  contact: new Date("2026-10-09"),
-  play: new Date("2026-10-26"), // unified game catalog: every experience on one page
-  playDatingCouples: new Date("2026-10-26"), // retitled "Couples Games & Questions"; cards link to experience pages
-  playFriends: new Date("2026-10-26"), // retitled "Friendship Quizzes & Games"; cards link to experience pages
-  dateNight: new Date("2026-10-26"), // H1/title, editorial guide below the deck
-  gettingToKnowEachOther: new Date("2026-11-04"), // retitled; 50 more questions to ask
-  thirtySixQuestions: new Date("2026-10-26"), // shown to B too; related cards redesigned
-  couplesCompatibilityTest: new Date("2026-10-26"), // new experience page
-  howWellDoYouKnowMe: new Date("2026-11-04"), // retitled; 40 more questions to ask
-  friendshipTest: new Date("2026-11-04"), // retitled "Friendship Quiz"; 30 trivia questions
+  forFriends: new Date("2026-11-17"), // trimmed meta description
+  faq: new Date("2026-11-17"), // FAQPage structured data, "Page — Sameeeish" title, longer description
+  about: new Date("2026-11-17"), // "Page — Sameeeish" title, longer description
+  privacy: new Date("2026-11-17"), // longer meta description
+  terms: new Date("2026-11-17"), // longer meta description
+  contact: new Date("2026-11-17"), // "Page — Sameeeish" title
+  play: new Date("2026-11-17"), // breadcrumb trail + BreadcrumbList structured data
+  playDatingCouples: new Date("2026-11-17"), // breadcrumb trail + BreadcrumbList structured data
+  playFriends: new Date("2026-11-17"), // breadcrumb trail + BreadcrumbList structured data
+  dateNight: new Date("2026-11-17"), // breadcrumb trail + BreadcrumbList/FAQPage structured data
+  gettingToKnowEachOther: new Date("2026-11-17"), // breadcrumb trail + BreadcrumbList/FAQPage structured data
+  thirtySixQuestions: new Date("2026-11-17"), // breadcrumb trail + BreadcrumbList/FAQPage structured data, trimmed description
+  couplesCompatibilityTest: new Date("2026-11-17"), // breadcrumb trail + BreadcrumbList/FAQPage structured data, shorter title
+  howWellDoYouKnowMe: new Date("2026-11-17"), // breadcrumb trail + BreadcrumbList/FAQPage structured data
+  friendshipTest: new Date("2026-11-17"), // breadcrumb trail + BreadcrumbList/FAQPage structured data
 } as const;
 
 export default function sitemap(): MetadataRoute.Sitemap {

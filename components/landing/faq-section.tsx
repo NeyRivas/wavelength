@@ -2,9 +2,19 @@
 
 import { useState } from "react";
 
+import { JsonLd } from "@/components/seo/json-ld";
+import { faqPageJsonLd } from "@/lib/seo/structured-data";
+
 import { FaqAccordion } from "./faq-accordion";
 import { FaqCategories } from "./faq-categories";
 import { FAQ_CATEGORIES } from "./faq-data";
+
+/** Every question across every category, flattened — FAQPage schema has
+ * no notion of FaqCategories' own category grouping, just a flat list of
+ * Question/Answer pairs, and (per the SEO pass doc comment below) every
+ * one of them is already in the initial server-rendered HTML regardless
+ * of which category tab is active. */
+const ALL_QUESTIONS = FAQ_CATEGORIES.flatMap((category) => category.questions);
 
 const DEFAULT_CATEGORY = FAQ_CATEGORIES[0]!;
 
@@ -33,6 +43,7 @@ export function FaqSection() {
 
   return (
     <section className="landing-section faq-section">
+      <JsonLd data={faqPageJsonLd(ALL_QUESTIONS)} />
       <FaqCategories categories={FAQ_CATEGORIES} activeId={activeId} onSelect={setActiveId} />
 
       {FAQ_CATEGORIES.map((category) => (

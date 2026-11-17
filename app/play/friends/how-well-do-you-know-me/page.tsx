@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { Fraunces, Nunito_Sans } from "next/font/google";
 
-import { BackLink } from "@/components/landing/back-link";
+import { Breadcrumbs } from "@/components/landing/breadcrumbs";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { LandingHeader } from "@/components/landing/landing-header";
 import { HowWellDoYouKnowMeContent } from "@/components/play/how-well-do-you-know-me-content";
+import { playExperienceBreadcrumb } from "@/lib/seo/breadcrumbs";
 
 /**
  * /play/friends/how-well-do-you-know-me — the integrated experience page
@@ -64,7 +65,7 @@ export default function HowWellDoYouKnowMePage() {
     <div className={`${fraunces.variable} ${nunitoSans.variable} landing landing--internal`}>
       <LandingHeader />
       <main>
-        <BackLink href="/play/friends" />
+        <Breadcrumbs trail={playExperienceBreadcrumb("friends", "how-well-do-you-know-me")} />
         <HowWellDoYouKnowMeContent />
       </main>
       <LandingFooter />

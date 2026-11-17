@@ -37,8 +37,10 @@ const nunitoSans = Nunito_Sans({
   display: "swap",
 });
 
+// SEO pass: trimmed from 185 to 151 characters — past 160, a meta
+// description risks being cut off in search results.
 const PAGE_DESCRIPTION =
-  "Two friendship trivia games for the two of you — answer first, then see how many your friend guesses right. No score on your friendship, just a fun way to find out who really knows who.";
+  "Two friendship trivia games for the two of you — answer first, then see how many your friend guesses right. A fun way to find out who really knows who.";
 
 export const metadata: Metadata = {
   title: "Questions for Friends — Sameeeish",

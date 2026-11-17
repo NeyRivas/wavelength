@@ -25,16 +25,23 @@ const nunitoSans = Nunito_Sans({
   display: "swap",
 });
 
-const PAGE_DESCRIPTION = "What Sameeeish is, and what it isn't.";
+// SEO pass: title now follows the same "Page — Sameeeish" suffix pattern
+// every other marketing page uses (it previously read "About Sameeeish",
+// brand-first with no separator). Description expanded from 37 to 149
+// characters — far short of the ~150-160 a search snippet actually has
+// room for — using only what the page body itself already says.
+const PAGE_TITLE = "About — Sameeeish";
+const PAGE_DESCRIPTION =
+  "What Sameeeish is, and what it isn't: a free way to compare answers with someone and start a real conversation — no account, no score to win or lose.";
 
 export const metadata: Metadata = {
-  title: "About Sameeeish",
+  title: PAGE_TITLE,
   description: PAGE_DESCRIPTION,
   alternates: {
     canonical: "/about",
   },
   openGraph: {
-    title: "About Sameeeish",
+    title: PAGE_TITLE,
     description: PAGE_DESCRIPTION,
     url: "/about",
     siteName: "Sameeeish",
@@ -42,7 +49,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary",
-    title: "About Sameeeish",
+    title: PAGE_TITLE,
     description: PAGE_DESCRIPTION,
   },
 };

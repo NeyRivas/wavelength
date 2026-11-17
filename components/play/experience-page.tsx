@@ -4,6 +4,8 @@ import type { ReactNode } from "react";
 import { startReadyMadeGame } from "@/app/actions/ready-made-games";
 import { FaqAccordion } from "@/components/landing/faq-accordion";
 import type { FaqItem, FaqTint } from "@/components/landing/faq-data";
+import { JsonLd } from "@/components/seo/json-ld";
+import { faqPageJsonLd } from "@/lib/seo/structured-data";
 import { CATEGORY_LABELS, type Category } from "@/lib/wavelength/categories";
 import type { QuestionIdeaGroup } from "@/lib/wavelength/question-ideas";
 
@@ -250,6 +252,12 @@ export function ExperienceFaq({
 }) {
   return (
     <ExperienceSection id={`xp-faq-${categoryId}`} heading="Questions people ask">
+      {/* Mirrors exactly what FaqAccordion renders below — same `items`,
+          same questions and answers, already in the server-rendered HTML
+          (FaqAccordion collapses each answer with `hidden`, not by
+          unmounting it) — so this never claims content a crawler can't
+          already see. */}
+      <JsonLd data={faqPageJsonLd(items)} />
       <FaqAccordion categoryId={categoryId} items={items} tint={tint} />
     </ExperienceSection>
   );

@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { Fraunces, Nunito_Sans } from "next/font/google";
 
-import { BackLink } from "@/components/landing/back-link";
 import { DateNightExperienceLoader } from "@/components/date-night/date-night-experience-loader";
 import { DateNightGuide } from "@/components/date-night/date-night-guide";
 import { DateNightPreview } from "@/components/date-night/date-night-preview";
+import { Breadcrumbs } from "@/components/landing/breadcrumbs";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { LandingHeader } from "@/components/landing/landing-header";
+import { playExperienceBreadcrumb } from "@/lib/seo/breadcrumbs";
 
 // /play/dating-couples/date-night — a standalone conversation-starter
 // library, not a questionnaire: no Supabase, no account, no scoring, no
@@ -79,7 +80,7 @@ export default function DateNightPage() {
     <div className={`${fraunces.variable} ${nunitoSans.variable} landing landing--internal`}>
       <LandingHeader />
       <main>
-        <BackLink href="/play/dating-couples" />
+        <Breadcrumbs trail={playExperienceBreadcrumb("dating-couples", "date-night")} />
         <section className="landing-section landing-how dn-page">
           <div className="dn-hero">
             <h1 className="dn-hero__title">Date Night Questions</h1>

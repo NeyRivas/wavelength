@@ -33,7 +33,12 @@ const nunitoSans = Nunito_Sans({
   display: "swap",
 });
 
-const PAGE_DESCRIPTION = "What Sameeeish actually stores, and who can see it.";
+// SEO pass: expanded from 51 to 146 characters — well short of the
+// ~150-160 a search snippet has room for — using only facts the page
+// body itself already states (no accounts, no ad scripts, only the two
+// participants can see a Wavelength).
+const PAGE_DESCRIPTION =
+  "What Sameeeish actually stores, who can see it, and how analytics works — no accounts, no ads, and only the two people in a Wavelength can see it.";
 
 export const metadata: Metadata = {
   title: "Privacy Policy — Sameeeish",

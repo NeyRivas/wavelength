@@ -34,16 +34,23 @@ const nunitoSans = Nunito_Sans({
   display: "swap",
 });
 
-const PAGE_DESCRIPTION = "Everything you need to know before you get started.";
+// SEO pass: title now follows the "Page — Sameeeish" suffix pattern
+// every other marketing page uses (it previously read "Sameeeish FAQ",
+// brand-first with no separator). Description expanded from 51 to 143
+// characters, naming the same four categories FAQ_CATEGORIES (components/
+// landing/faq-data.ts) actually covers, rather than a generic line.
+const PAGE_TITLE = "FAQ — Sameeeish";
+const PAGE_DESCRIPTION =
+  "Everything you need to know before you get started — how Sameeeish works, what your results mean, and how your answers and privacy are handled.";
 
 export const metadata: Metadata = {
-  title: "Sameeeish FAQ",
+  title: PAGE_TITLE,
   description: PAGE_DESCRIPTION,
   alternates: {
     canonical: "/faq",
   },
   openGraph: {
-    title: "Sameeeish FAQ",
+    title: PAGE_TITLE,
     description: PAGE_DESCRIPTION,
     url: "/faq",
     siteName: "Sameeeish",
@@ -51,7 +58,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary",
-    title: "Sameeeish FAQ",
+    title: PAGE_TITLE,
     description: PAGE_DESCRIPTION,
   },
 };

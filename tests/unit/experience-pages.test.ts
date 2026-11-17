@@ -90,7 +90,7 @@ const GAME_PAGES = [
     path: "/play/dating-couples/couples-compatibility-test",
     load: () => import("../../app/play/dating-couples/couples-compatibility-test/page"),
     gameId: "how-well-do-you-know-each-other",
-    title: "Couples Compatibility Test: Answer Apart, Compare Together — Sameeeish",
+    title: "Couples Compatibility Test — Answer Apart — Sameeeish",
     h1: "Couples Compatibility Test",
     keyword: /couples compatibility test/i,
     backTo: "/play/dating-couples",

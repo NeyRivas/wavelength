@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { Fraunces, Nunito_Sans } from "next/font/google";
 
-import { BackLink } from "@/components/landing/back-link";
+import { Breadcrumbs } from "@/components/landing/breadcrumbs";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { LandingHeader } from "@/components/landing/landing-header";
 import { CompatibilityTestContent } from "@/components/play/compatibility-test-content";
+import { playExperienceBreadcrumb } from "@/lib/seo/breadcrumbs";
 
 /**
  * /play/dating-couples/couples-compatibility-test — the integrated
@@ -37,7 +38,14 @@ const nunitoSans = Nunito_Sans({
 });
 
 const PAGE_PATH = "/play/dating-couples/couples-compatibility-test";
-const PAGE_TITLE = "Couples Compatibility Test: Answer Apart, Compare Together — Sameeeish";
+// SEO pass: shortened from "Couples Compatibility Test: Answer Apart,
+// Compare Together — Sameeeish" (70 characters) — past the ~60-character
+// point where Google tends to truncate a <title> in search results.
+// "Answer Apart" is kept (the disambiguation from zodiac/name
+// compatibility tests the keyword-map note above calls out); "Compare
+// Together" is dropped since the page's own content and description
+// already make that part clear.
+const PAGE_TITLE = "Couples Compatibility Test — Answer Apart — Sameeeish";
 const PAGE_DESCRIPTION =
   "A free couples compatibility test: 12 questions on love, conflict, money, kids, and the future. Answer separately, then see where you're aligned. No sign-up.";
 
@@ -66,7 +74,9 @@ export default function CouplesCompatibilityTestPage() {
     <div className={`${fraunces.variable} ${nunitoSans.variable} landing landing--internal`}>
       <LandingHeader />
       <main>
-        <BackLink href="/play/dating-couples" />
+        <Breadcrumbs
+          trail={playExperienceBreadcrumb("dating-couples", "how-well-do-you-know-each-other")}
+        />
         <CompatibilityTestContent />
       </main>
       <LandingFooter />

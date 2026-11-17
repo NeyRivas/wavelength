@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { Fraunces, Nunito_Sans } from "next/font/google";
 
-import { BackLink } from "@/components/landing/back-link";
+import { Breadcrumbs } from "@/components/landing/breadcrumbs";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { LandingHeader } from "@/components/landing/landing-header";
 import { FriendshipTestContent } from "@/components/play/friendship-test-content";
+import { playExperienceBreadcrumb } from "@/lib/seo/breadcrumbs";
 
 /**
  * /play/friends/friendship-test — the integrated experience page for the
@@ -65,7 +66,7 @@ export default function FriendshipTestPage() {
     <div className={`${fraunces.variable} ${nunitoSans.variable} landing landing--internal`}>
       <LandingHeader />
       <main>
-        <BackLink href="/play/friends" />
+        <Breadcrumbs trail={playExperienceBreadcrumb("friends", "friendship-check")} />
         <FriendshipTestContent />
       </main>
       <LandingFooter />

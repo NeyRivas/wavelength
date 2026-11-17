@@ -26,7 +26,10 @@ const nunitoSans = Nunito_Sans({
   display: "swap",
 });
 
-const PAGE_DESCRIPTION = "The terms for using Sameeeish.";
+// SEO pass: expanded from 30 to 137 characters, using only facts the
+// page body itself already states (free, no account or payment).
+const PAGE_DESCRIPTION =
+  "The terms for using Sameeeish, a free web app for creating a shared questionnaire with one other person — no account or payment required.";
 
 export const metadata: Metadata = {
   title: "Terms of Service — Sameeeish",

@@ -26,16 +26,21 @@ const nunitoSans = Nunito_Sans({
   display: "swap",
 });
 
+// SEO pass: title now follows the "Page — Sameeeish" suffix pattern every
+// other marketing page uses (it previously read "Contact Sameeeish",
+// brand-first with no separator). Description already a healthy length —
+// left unchanged.
+const PAGE_TITLE = "Contact — Sameeeish";
 const PAGE_DESCRIPTION = "Questions, feedback, or just want to say hi? We'd love to hear from you.";
 
 export const metadata: Metadata = {
-  title: "Contact Sameeeish",
+  title: PAGE_TITLE,
   description: PAGE_DESCRIPTION,
   alternates: {
     canonical: "/contact",
   },
   openGraph: {
-    title: "Contact Sameeeish",
+    title: PAGE_TITLE,
     description: PAGE_DESCRIPTION,
     url: "/contact",
     siteName: "Sameeeish",
@@ -43,7 +48,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary",
-    title: "Contact Sameeeish",
+    title: PAGE_TITLE,
     description: PAGE_DESCRIPTION,
   },
 };

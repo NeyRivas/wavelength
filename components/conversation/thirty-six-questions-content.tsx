@@ -3,6 +3,8 @@ import Link from "next/link";
 import { startReadyMadeGame } from "@/app/actions/ready-made-games";
 import { FaqAccordion } from "@/components/landing/faq-accordion";
 import type { FaqItem } from "@/components/landing/faq-data";
+import { JsonLd } from "@/components/seo/json-ld";
+import { faqPageJsonLd } from "@/lib/seo/structured-data";
 import { THIRTY_SIX_QUESTIONS } from "@/lib/wavelength/conversation-experiences";
 import { getReadyMadeGame } from "@/lib/wavelength/ready-made-games";
 
@@ -173,6 +175,9 @@ export function ThirtySixQuestionsContent({ context }: { context: "landing" | "i
         <h2 id="tsq-faq" className="tsq-section__heading">
           Questions people ask
         </h2>
+        {/* Same `items` FaqAccordion renders below — already in the
+            server-rendered HTML (collapsed with `hidden`, not unmounted). */}
+        <JsonLd data={faqPageJsonLd(THIRTY_SIX_QUESTIONS_FAQ)} />
         <FaqAccordion categoryId="tsq" items={THIRTY_SIX_QUESTIONS_FAQ} tint="lavender" />
       </section>
 

@@ -1168,6 +1168,38 @@ dialog::backdrop {
   color: var(--wl-ink);
 }
 
+/* Breadcrumb trail (breadcrumbs.tsx) — replaces .landing-back-link-row's
+   single "← Back" with a full Home > Play > … row on the /play tree,
+   reusing the exact same row/column and .landing-back-link link style so
+   it lines up exactly where the plain back link used to sit. */
+.landing-breadcrumbs__list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.landing-breadcrumbs__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.landing-breadcrumbs__current {
+  font-family: var(--font-nunito), system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--wl-ink);
+}
+
+.landing-breadcrumbs__sep {
+  font-size: 0.875rem;
+  color: var(--wl-muted);
+}
+
 /* ── shared eyebrow / heading / body / button / pill primitives ──────── */
 
 .landing-eyebrow {

@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { Fraunces, Nunito_Sans } from "next/font/google";
 
-import { BackLink } from "@/components/landing/back-link";
+import { Breadcrumbs } from "@/components/landing/breadcrumbs";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { LandingHeader } from "@/components/landing/landing-header";
 import { CatalogSectionBlock } from "@/components/play/catalog";
 import { catalogSection } from "@/lib/wavelength/catalog";
+import { playCategoryBreadcrumb } from "@/lib/seo/breadcrumbs";
 
 // /play/friends — the Friends section of the unified catalog
 // (app/play/page.tsx) as its own indexable page, rendered by the same
@@ -60,7 +61,7 @@ export default function FriendsPlayPage() {
     <div className={`${fraunces.variable} ${nunitoSans.variable} landing landing--internal`}>
       <LandingHeader />
       <main>
-        <BackLink href="/play" />
+        <Breadcrumbs trail={playCategoryBreadcrumb("friends")} />
         <div className="landing-section catalog catalog--single">
           <CatalogSectionBlock section={catalogSection("friends")} headingLevel="h1" />
         </div>

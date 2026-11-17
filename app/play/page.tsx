@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { Fraunces, Nunito_Sans } from "next/font/google";
 
-import { BackLink } from "@/components/landing/back-link";
+import { Breadcrumbs } from "@/components/landing/breadcrumbs";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { LandingHeader } from "@/components/landing/landing-header";
 import { CatalogSectionBlock, MakeYourOwnSection } from "@/components/play/catalog";
 import { CATALOG_SECTIONS } from "@/lib/wavelength/catalog";
+import { playRootBreadcrumb } from "@/lib/seo/breadcrumbs";
 
 // /play — the unified game catalog and the destination of every "Let's
 // play"/"Start playing" CTA on the site. One page, three sections in a
@@ -61,7 +62,7 @@ export default function PlayCatalogPage() {
     <div className={`${fraunces.variable} ${nunitoSans.variable} landing landing--internal`}>
       <LandingHeader />
       <main>
-        <BackLink href="/" />
+        <Breadcrumbs trail={playRootBreadcrumb()} />
         <div className="landing-section catalog">
           <header className="catalog__header">
             <h1 className="catalog__heading">What are you playing?</h1>

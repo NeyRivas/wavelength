@@ -7,6 +7,8 @@ import { LandingFooter } from "@/components/landing/landing-footer";
 import { LandingHeader } from "@/components/landing/landing-header";
 import { LandingHero } from "@/components/landing/landing-hero";
 import { LandingHowItWorks } from "@/components/landing/landing-how-it-works";
+import { JsonLd } from "@/components/seo/json-ld";
+import { organizationJsonLd, websiteJsonLd } from "@/lib/seo/structured-data";
 
 // Landing page only (app/page.tsx / route "/"). Everything below is
 // presentation for this one route — no new functionality, no routing,
@@ -37,8 +39,10 @@ import { LandingHowItWorks } from "@/components/landing/landing-how-it-works";
 // the Dating & Couples and Friends categories alike, matching what /play
 // actually offers; the H1 and visual design are unchanged.
 const SITE_TITLE = "Sameeeish — A Game for Two: See If You're on the Same Page";
+// SEO pass: trimmed from 168 to 156 characters — past 160, a meta
+// description risks being cut off in search results.
 const SITE_DESCRIPTION =
-  "A playful question game for two — couples, friends, or anyone curious. Answer honestly, compare notes, and discover how aligned you really are. Free, no sign-up needed.";
+  "A playful question game for two — couples, friends, or anyone curious. Answer honestly, compare notes, and see how aligned you really are. Free, no sign-up.";
 
 export const metadata: Metadata = {
   title: SITE_TITLE,
@@ -77,6 +81,8 @@ const nunitoSans = Nunito_Sans({
 export default function HomePage() {
   return (
     <div className={`${fraunces.variable} ${nunitoSans.variable} landing landing--home`}>
+      <JsonLd data={organizationJsonLd()} />
+      <JsonLd data={websiteJsonLd()} />
       <LandingHeader />
       <main>
         <LandingHero />

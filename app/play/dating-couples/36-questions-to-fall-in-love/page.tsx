@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import { Fraunces, Nunito_Sans } from "next/font/google";
 
 import { ThirtySixQuestionsContent } from "@/components/conversation/thirty-six-questions-content";
-import { BackLink } from "@/components/landing/back-link";
+import { Breadcrumbs } from "@/components/landing/breadcrumbs";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { LandingHeader } from "@/components/landing/landing-header";
+import { playExperienceBreadcrumb } from "@/lib/seo/breadcrumbs";
 
 /**
  * /play/dating-couples/36-questions-to-fall-in-love — the public, indexable
@@ -49,8 +50,10 @@ const nunitoSans = Nunito_Sans({
 
 const PAGE_PATH = "/play/dating-couples/36-questions-to-fall-in-love";
 const PAGE_TITLE = "36 Questions to Fall in Love — Sameeeish";
+// SEO pass: trimmed from 161 to 146 characters — past 160, a meta
+// description risks being cut off in search results.
 const PAGE_DESCRIPTION =
-  "Play 36 questions to fall in love as a guided conversation in three stages. Each of you answers privately, then read both answers side by side. Free, no sign-up.";
+  "Play 36 questions to fall in love, a guided conversation in three stages. Answer privately, then read both answers side by side. Free, no sign-up.";
 
 export const metadata: Metadata = {
   title: PAGE_TITLE,
@@ -77,7 +80,9 @@ export default function ThirtySixQuestionsPage() {
     <div className={`${fraunces.variable} ${nunitoSans.variable} landing landing--internal`}>
       <LandingHeader />
       <main>
-        <BackLink href="/play/dating-couples" />
+        <Breadcrumbs
+          trail={playExperienceBreadcrumb("dating-couples", "36-questions-to-fall-in-love")}
+        />
         <ThirtySixQuestionsContent context="landing" />
       </main>
       <LandingFooter />
