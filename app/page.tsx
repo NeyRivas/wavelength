@@ -56,9 +56,11 @@ export const metadata: Metadata = {
     url: "/",
     siteName: "Sameeeish",
     type: "website",
+    images: ["/opengraph-image"],
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
+    images: ["/twitter-image"],
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
   },

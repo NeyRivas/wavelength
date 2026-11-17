@@ -52,9 +52,11 @@ export const metadata: Metadata = {
     url: "/privacy",
     siteName: "Sameeeish",
     type: "website",
+    images: ["/opengraph-image"],
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
+    images: ["/twitter-image"],
     title: "Privacy Policy — Sameeeish",
     description: PAGE_DESCRIPTION,
   },

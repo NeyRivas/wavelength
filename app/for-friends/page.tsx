@@ -54,9 +54,11 @@ export const metadata: Metadata = {
     url: "/for-friends",
     siteName: "Sameeeish",
     type: "website",
+    images: ["/opengraph-image"],
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
+    images: ["/twitter-image"],
     title: "Questions for Friends — Sameeeish",
     description: PAGE_DESCRIPTION,
   },

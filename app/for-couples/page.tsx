@@ -60,9 +60,11 @@ export const metadata: Metadata = {
     url: "/for-couples",
     siteName: "Sameeeish",
     type: "website",
+    images: ["/opengraph-image"],
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
+    images: ["/twitter-image"],
     title: "Questions for Couples — Sameeeish",
     description: PAGE_DESCRIPTION,
   },

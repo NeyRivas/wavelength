@@ -14,6 +14,9 @@ exports[`36 Questions: frozen as approved > landing page metadata 1`] = `
   "description": "Play 36 questions to fall in love, a guided conversation in three stages. Answer privately, then read both answers side by side. Free, no sign-up.",
   "openGraph": {
     "description": "Play 36 questions to fall in love, a guided conversation in three stages. Answer privately, then read both answers side by side. Free, no sign-up.",
+    "images": [
+      "/opengraph-image",
+    ],
     "siteName": "Sameeeish",
     "title": "36 Questions to Fall in Love — Sameeeish",
     "type": "website",
@@ -21,8 +24,11 @@ exports[`36 Questions: frozen as approved > landing page metadata 1`] = `
   },
   "title": "36 Questions to Fall in Love — Sameeeish",
   "twitter": {
-    "card": "summary",
+    "card": "summary_large_image",
     "description": "Play 36 questions to fall in love, a guided conversation in three stages. Answer privately, then read both answers side by side. Free, no sign-up.",
+    "images": [
+      "/twitter-image",
+    ],
     "title": "36 Questions to Fall in Love — Sameeeish",
   },
 }

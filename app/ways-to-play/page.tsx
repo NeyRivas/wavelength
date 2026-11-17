@@ -47,9 +47,11 @@ export const metadata: Metadata = {
     url: "/ways-to-play",
     siteName: "Sameeeish",
     type: "website",
+    images: ["/opengraph-image"],
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
+    images: ["/twitter-image"],
     title: "Ways to Play — Sameeeish",
     description: PAGE_DESCRIPTION,
   },
