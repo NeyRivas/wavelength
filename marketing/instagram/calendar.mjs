@@ -800,4 +800,38 @@ ${PLAY}`,
     tags: "#thanksgiving #thanksgivingdinner #conversationstarters #familytime",
     notes: "Publicar el lunes para que lo guarden antes del jueves 26.",
   },
+  {
+    n: 31,
+    date: "2026-11-20",
+    format: "reel",
+    kind: "animated",
+    motion: "rapid",
+    pillar: "Fechas",
+    mood: "GTA VI",
+    title: "GTA VI: who's more likely to…",
+    cover: "Who's more likely to… *GTA VI couples edition*",
+    hookTitle: "GTA VI is out. *Who's more likely to…*",
+    hookSub: "Couples edition. Point at them.",
+    items: [
+      ["…disappear into the game all weekend?", "Me", "You"],
+      ["…say “one more mission” at 3am?", "Me", "You"],
+      ["…get five stars in five minutes?", "Me", "You"],
+      ["…just drive around with the radio on?", "Me", "You"],
+      ["…steal the controller?", "Me", "You"],
+      ["…skip every cutscene?", "Me", "You"],
+      ["…get way too attached to a car?", "Me", "You"],
+      ["…blame the game for being late?", "Me", "You"],
+    ],
+    endTitle: "Did you *agree?*",
+    endLine: "Send this to your player 2 🎮",
+    caption: `GTA VI is finally here. So is the real relationship test. 🎮
+
+Who's more likely to…? Point at each other, then send this to your player 2 and compare.
+
+${PLAY}`,
+    tags: "#gtavi #gta6 #gamercouple #couplesquestions #whosmorelikelyto",
+    audio: "Audio en tendencia de GTA VI / gaming (usa uno del momento en Instagram)",
+    notes:
+      "Extra de temporada por el lanzamiento de GTA VI (19 nov 2026). Solo menciona el nombre del juego: sin logos, tipografías ni arte de Rockstar.",
+  },
 ];
