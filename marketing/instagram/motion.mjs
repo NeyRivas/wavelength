@@ -703,7 +703,7 @@ const GTA_CSS = `
 .signed{position:absolute;right:50px;bottom:70px;font-family:Fraunces;font-style:italic;font-weight:600;font-size:120px;color:#6c5fd0;
   opacity:0;transform:scale(2.6) rotate(-14deg);animation:stampin2 .35s cubic-bezier(.3,1.6,.5,1) forwards}
 @keyframes stampin2{to{opacity:1;transform:rotate(-10deg)}}
-.map{position:relative;width:900px;height:760px;margin-top:-20px;zoom:.8;flex:none}
+.map{position:relative;width:900px;height:760px;margin-top:10px;flex:none}
 .map svg{position:absolute;inset:0}
 .pin{position:absolute;display:flex;align-items:center;gap:12px;font-weight:800;font-size:32px;white-space:nowrap;opacity:0;animation:pop .3s forwards}
 .pin::before{content:"";width:22px;height:22px;border-radius:50%;background:${PINK};box-shadow:0 0 0 8px rgba(243,199,221,.18)}
@@ -739,32 +739,70 @@ const GTA_CSS = `
 .credit{position:absolute;right:20px;bottom:16px;font-weight:700;font-size:18px;color:rgba(255,255,255,.85);text-shadow:0 1px 6px rgba(0,0,0,.6)}
 .medal.face{background-size:cover;background-position:center;box-shadow:0 0 0 6px rgba(201,195,244,.35)}`;
 
+// Sunset palette of the GTA VI key art: violet sky to pink to peach.
+const PEACH = "#f6a978";
+const GTA_THEME = `
+html,body{background:linear-gradient(180deg,#221a45 0%,#3a2b70 36%,#7d5299 62%,#d9839f 84%,#f3a77c 100%)}
+em{color:#ffb6d0}
+.kk{color:${PEACH}}
+.bar{z-index:40}.brand{z-index:40}
+.palms{position:absolute;left:0;right:0;bottom:0;width:1080px;height:520px;opacity:.9}
+.full{position:absolute;inset:0;overflow:hidden;opacity:0;z-index:20}
+.full img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform-origin:var(--fx) var(--fy)}
+@keyframes zoomin{from{transform:scale(1.04)}to{transform:scale(1.32)}}
+@keyframes cin{from{opacity:0;transform:scale(1.04)}to{opacity:1;transform:none}}
+.shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(34,26,69,.7) 0%,rgba(34,26,69,0) 26%,rgba(34,26,69,0) 50%,rgba(34,26,69,.92) 82%)}
+.over{position:absolute;left:90px;right:90px;display:flex;flex-direction:column;gap:22px;z-index:2}
+.who{align-self:flex-start;font-family:Fraunces;font-style:italic;font-weight:600;font-size:120px;line-height:1;color:#ffb6d0;text-shadow:0 8px 30px rgba(0,0,0,.45)}
+.say{align-self:flex-start;max-width:900px;font-weight:800;font-size:60px;line-height:1.2;padding:30px 44px;border-radius:48px;border-bottom-left-radius:12px;
+  background:${SNOW};color:${INK};--caret:${INK};box-shadow:0 20px 50px rgba(0,0,0,.35)}
+.half{position:absolute;top:0;bottom:0;width:50%;overflow:hidden;border-right:4px solid ${SNOW}}
+.half img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform-origin:var(--fx) var(--fy)}
+.hn{position:absolute;left:30px;bottom:440px;font-family:Fraunces;font-style:italic;font-weight:600;font-size:76px;color:#ffb6d0;z-index:2;text-shadow:0 6px 24px rgba(0,0,0,.5)}
+.pcard{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.25);backdrop-filter:blur(6px)}
+.medal.face{box-shadow:0 0 0 6px rgba(255,182,208,.55)}
+.stat i b{background:linear-gradient(90deg,#ffb6d0,${PEACH})}
+.ask{color:#ffb6d0}
+.pin::before{background:${PEACH};box-shadow:0 0 0 8px rgba(246,169,120,.25)}
+.mk{position:absolute;width:110px;height:110px;margin:-55px 0 0 -55px;border-radius:50%;background-size:cover;background-position:center;
+  border:5px solid ${SNOW};box-shadow:0 12px 30px rgba(0,0,0,.45);opacity:0;z-index:3}
+.meet{position:absolute;left:600px;top:280px;font-family:Fraunces;font-style:italic;font-weight:600;font-size:64px;color:#ffb6d0;opacity:0;animation:pop .35s forwards;white-space:nowrap}
+.bigstamp{color:${SNOW};text-shadow:0 20px 60px rgba(0,0,0,.6),0 0 40px rgba(255,182,208,.6)}
+.label{color:#ffb6d0}
+.opt.b{background:#f7b9d3}
+.or{background:#2a2054}
+.art{box-shadow:0 40px 100px -30px rgba(0,0,0,.6)}`;
+
 function gta(p, fonts) {
   const d = (x) => `${x.toFixed(2)}s`;
   const at = (x) => `style="animation-delay:${d(x)}"`;
   const leave = (x) => `animation:leave .3s ease-in ${d(x - 0.3)} forwards`;
-  const T = { a: 0, b: 2.6, c: 7.4, dd: 13.4, e: 19.6, end: 24.9 };
-  const duration = 28.4;
+  // A hook · B player select · C contract · D map · L/J close-ups · S split · E rapid · end
+  const T = { b: 3.0, c: 7.8, dd: 13.8, l: 17.4, j: 19.9, s: 22.4, e: 24.2, end: 29.2 };
+  const duration = 32.6;
 
-  // A · hook: the 13-year wait
-  const A = `<div class="scene" style="top:400px;${leave(T.b)}">
-  <span class="kk" ${at(0)}>We waited</span>
-  <span class="st" id="count" style="font-size:200px;color:${LAV}">0</span>
-  <div class="st" style="font-size:110px">${typed("years. *It's finally here.*", 1.15, T.b, 0.04).html}</div>
-  <div class="art" style="height:500px;margin-top:20px;animation-delay:0.5s"><img src="${gtaArt("car.jpg")}" style="animation:kb ${T.b}s linear forwards" alt="">
-    <span class="tag">Lucia &amp; Jason</span><span class="credit">Artwork: Rockstar Games</span></div>
+  // A · hook: full-bleed poster, the 13-year wait
+  const A = `<div class="full" style="opacity:1;${leave(T.b)}">
+  <img src="${gtaArt("poster.jpg")}" style="object-position:50% 30%;--fx:50%;--fy:40%;animation:zoomin ${T.b}s linear forwards" alt="">
+  <div class="shade"></div>
+  <div class="shade" style="background:linear-gradient(180deg,rgba(34,26,69,0) 40%,rgba(34,26,69,.95) 72%)"></div>
+  <div class="over" style="top:1130px">
+    <span class="kk" ${at(0)}>We waited</span>
+    <span class="st" id="count" style="font-size:200px;color:${PEACH}">0</span>
+    <div class="st" style="font-size:110px">${typed("years. *It's finally here.*", 1.15, T.b, 0.04).html}</div>
+  </div>
 </div>`;
 
   // B · pick your player
   const card = (
-    letter,
+    face,
     name,
     role,
     stats,
     t,
     r,
   ) => `<div class="pcard" style="--r:${r}deg;animation:cardin .45s cubic-bezier(.2,1.3,.4,1) ${d(t)} forwards">
-  <span class="medal face" style="background-image:url(${gtaArt(letter === "L" ? "lucia.jpg" : "jason.jpg")})"></span><span class="pname">${name}</span><span class="prole">${role}</span>
+  <span class="medal face" style="background-image:url(${gtaArt(face)})"></span><span class="pname">${name}</span><span class="prole">${role}</span>
   ${stats.map(([k, v], i) => `<span class="stat">${k}<i><b style="--v:${v};animation:fill .6s ease-out ${d(t + 0.5 + i * 0.18)} forwards"></b></i></span>`).join("")}
 </div>`;
   const B = `<div class="scene" style="${leave(T.c)}">
@@ -772,7 +810,7 @@ function gta(p, fonts) {
   <div class="st">${typed("Pick your *player.*", T.b + 0.1, T.c, 0.04).html}</div>
   <div class="cards">
     ${card(
-      "L",
+      "lucia.jpg",
       "Lucia",
       "The planner",
       [
@@ -784,7 +822,7 @@ function gta(p, fonts) {
       -2,
     )}
     ${card(
-      "J",
+      "jason.jpg",
       "Jason",
       "The driver",
       [
@@ -826,7 +864,7 @@ function gta(p, fonts) {
   <span class="ask" ${at(ct + 1.5)}>Would you sign it?</span>
 </div>`;
 
-  // D · where we'd meet in Leonida (abstract, hand-drawn map)
+  // D · Leonida map: Lucia and Jason travel and meet in Vice City
   const pins = [
     ["Mount Kalaga", 300, 40],
     ["Port Gellhorn", 80, 170],
@@ -835,26 +873,52 @@ function gta(p, fonts) {
     ["Vice City", 560, 470],
     ["Leonida Keys", 250, 600],
   ];
-  const D = `<div class="scene" style="${leave(T.e)}">
+  const D = `<div class="scene" style="${leave(T.l)}">
   <span class="kk" ${at(T.dd)}>Leonida</span>
-  <div class="st" style="font-size:84px">${typed("Where would we *meet?*", T.dd + 0.1, T.dd + 1.2, 0.04).html}</div>
+  <div class="st" style="font-size:96px">${typed("Where would we *meet?*", T.dd + 0.1, T.dd + 1.2, 0.04).html}</div>
   <div class="map">
     <svg viewBox="0 0 900 760" fill="none">
       <path d="M260 30 L620 30 L640 110 L600 210 L610 330 L660 430 L640 540 L590 610 L540 640 L500 600 L470 520 L410 460 L340 420 L300 330 L240 260 L120 230 L60 190 L80 150 L200 160 L250 110 Z"
-        stroke="${LAV}" stroke-width="4" stroke-linejoin="round" fill="rgba(201,195,244,.06)" stroke-dasharray="2600" stroke-dashoffset="2600"
-        style="animation:draw 1.2s ease-out ${d(T.dd + 0.4)} forwards"/>
-      ${[0, 1, 2, 3, 4].map((i) => `<circle cx="${470 - i * 52}" cy="${650 + i * 18}" r="${9 - i}" fill="${LAV}" opacity="0" style="animation:fadein .2s ${d(T.dd + 1.1 + i * 0.06)} forwards"/>`).join("")}
+        stroke="${SNOW}" stroke-width="5" stroke-linejoin="round" fill="rgba(240,143,179,.16)" stroke-dasharray="2600" stroke-dashoffset="2600"
+        style="animation:draw 1.1s ease-out ${d(T.dd + 0.3)} forwards"/>
+      ${[0, 1, 2, 3, 4].map((i) => `<circle cx="${470 - i * 52}" cy="${650 + i * 18}" r="${10 - i}" fill="${PEACH}" opacity="0" style="animation:fadein .2s ${d(T.dd + 1.0 + i * 0.06)} forwards"/>`).join("")}
     </svg>
-    ${pins.map(([n, x, y], i) => `<span class="pin" style="left:${x}px;top:${y}px;animation-delay:${d(T.dd + 1.2 + i * 0.12)}">${n}</span>`).join("")}
-    <span class="dot" style="left:250px;top:610px;background:${SNOW};animation:fadein .2s ${d(T.dd + 2.0)} forwards,walkA 1.2s cubic-bezier(.6,0,.3,1) ${d(T.dd + 2.2)} forwards">A</span>
-    <span class="dot" style="left:330px;top:410px;background:${LAV};animation:fadein .2s ${d(T.dd + 2.0)} forwards,walkB 1.2s cubic-bezier(.6,0,.3,1) ${d(T.dd + 2.2)} forwards">L</span>
+    ${pins.map(([n, x, y], i) => `<span class="pin" style="left:${x}px;top:${y}px;animation-delay:${d(T.dd + 1.0 + i * 0.1)}">${n}</span>`).join("")}
+    <span class="mk" style="left:250px;top:610px;background-image:url(${gtaArt("lucia.jpg")});animation:fadein .2s ${d(T.dd + 1.6)} forwards,walkL 1.1s cubic-bezier(.6,0,.3,1) ${d(T.dd + 1.9)} forwards"></span>
+    <span class="mk" style="left:330px;top:410px;background-image:url(${gtaArt("jason.jpg")});animation:fadein .2s ${d(T.dd + 1.6)} forwards,walkJ 1.1s cubic-bezier(.6,0,.3,1) ${d(T.dd + 1.9)} forwards"></span>
+    <span class="meet" ${at(T.dd + 3.0)}>Vice City ♡</span>
   </div>
-  <div class="mrow">
-    <span class="mb a" ${at(T.dd + 3.5)}>Ana: Vice City Beach. At sunset.</span>
-    <span class="mb b" ${at(T.dd + 4.2)}>Leo: Grassrivers. With the gators. 🐊</span>
+</div>`;
+
+  // L / J · whoever talks fills the screen, with a slow push-in on their face
+  const closeup = (img, fx, name, line, from, to) => {
+    const said = typed(line, from + 0.55, to - 0.2, 0.035);
+    return `<div class="full" style="animation:cin .3s ease-out ${d(from)} forwards,out .25s ease-in ${d(to - 0.25)} forwards">
+  <img src="${gtaArt(img)}" style="object-position:${fx} 0%;--fx:${fx};--fy:14%;animation:zoomin ${to - from}s cubic-bezier(.2,0,.4,1) ${d(from)} forwards" alt="">
+  <div class="shade"></div>
+  <div class="over" style="top:1120px">
+    <span class="who">${name}</span>
+    <div class="say">${said.html}</div>
   </div>
-</div>
-<span class="bigstamp" style="animation:stamp .38s cubic-bezier(.3,1.6,.5,1) ${d(T.dd + 5.2)} forwards,out .3s ease-in ${d(T.e - 0.3)} forwards">-ish</span>`;
+</div>`;
+  };
+  const L = closeup("lucia-close.jpg", "70%", "Lucia", "Vice City Beach. At sunset.", T.l, T.j);
+  const J = closeup(
+    "jason-close.jpg",
+    "28%",
+    "Jason",
+    "Grassrivers. With the gators. 🐊",
+    T.j,
+    T.s,
+  );
+
+  // S · split screen + the -ish stamp
+  const S = `<div class="full" style="animation:cin .25s ease-out ${d(T.s)} forwards,out .25s ease-in ${d(T.e - 0.25)} forwards">
+  <div class="half" style="left:0"><img src="${gtaArt("lucia-close.jpg")}" style="object-position:70% 0%;--fx:70%;--fy:14%;animation:zoomin ${T.e - T.s}s linear ${d(T.s)} forwards" alt=""><span class="hn">Lucia</span></div>
+  <div class="half" style="right:0"><img src="${gtaArt("jason-close.jpg")}" style="object-position:28% 0%;--fx:28%;--fy:14%;animation:zoomin ${T.e - T.s}s linear ${d(T.s)} forwards" alt=""><span class="hn">Jason</span></div>
+  <div class="shade" style="opacity:.6"></div>
+  <span class="bigstamp" ${at(T.s + 0.3)}>-ish</span>
+</div>`;
 
   // E · rapid fire
   const items = [
@@ -878,19 +942,26 @@ function gta(p, fonts) {
   <span class="kk" ${at(T.end)}>GTA VI couples edition</span>
   <div class="st" style="font-size:130px">${typed("Send this to your *player 2.*", T.end + 0.1, duration, 0.04).html}</div>
   <span class="cta" ${at(T.end + 1.6)}>Play the full game → link in bio</span>
-  <div class="art" style="height:560px;margin-top:10px;animation-delay:${d(T.end + 0.3)}"><img src="${gtaArt("bed.jpg")}" style="object-position:50% 30%;animation:kb ${duration - T.end}s linear ${d(T.end)} forwards" alt="">
-    <span class="credit">Artwork: Rockstar Games</span></div>
+  <div class="art" style="height:560px;margin-top:10px;animation-delay:${d(T.end + 0.3)}"><img src="${gtaArt("bed.jpg")}" style="object-position:50% 30%;animation:kb ${duration - T.end}s linear ${d(T.end)} forwards" alt=""></div>
 </div>`;
 
-  const body = `<div class="glow" style="background:${PINK};opacity:.08;animation:drift ${duration}s ease-in-out forwards"></div>
-${A}${B}${C}${D}${E}${F}
-<div class="flash" style="animation:flash .45s ${d(T.dd + 5.2)} forwards"></div>
+  const palms = `<svg class="palms" viewBox="0 0 1080 520" preserveAspectRatio="none">
+  <g fill="#1b1438">
+    <path d="M70 520 C80 420 95 320 120 220 L132 222 C110 320 100 420 96 520 Z"/>
+    <path d="M126 222 C60 190 10 200 -20 240 C30 215 80 215 126 230 Z M126 222 C110 160 60 130 10 140 C60 150 100 180 122 230 Z M126 222 C160 160 220 150 270 170 C220 170 170 190 130 232 Z M126 222 C190 210 240 240 260 290 C220 255 170 240 130 232 Z"/>
+    <path d="M990 520 C985 430 975 340 950 260 L938 263 C958 340 966 430 966 520 Z"/>
+    <path d="M944 262 C1000 230 1060 240 1100 280 C1050 255 1000 255 948 270 Z M944 262 C960 200 1010 175 1060 185 C1010 195 975 220 950 270 Z M944 262 C900 205 840 200 800 225 C850 222 900 235 940 272 Z"/>
+  </g>
+</svg>`;
+
+  const body = `${palms}
+${A}${B}${C}${D}${L}${J}${S}${E}${F}
+<div class="flash" style="animation:flash .45s ${d(T.s + 0.3)} forwards"></div>
 <style>
-@keyframes drift{0%{transform:translate(0,0)}50%{transform:translate(-300px,520px)}100%{transform:translate(-60px,900px)}}
 @keyframes draw{to{stroke-dashoffset:0}}
-@keyframes walkA{to{transform:translate(310px,-140px)}}
-@keyframes walkB{to{transform:translate(230px,60px)}}
-body{animation:shake .35s ${d(T.dd + 5.45)}}
+@keyframes walkL{to{transform:translate(285px,-215px)}}
+@keyframes walkJ{to{transform:translate(375px,-15px)}}
+body{animation:shake .35s ${d(T.s + 0.55)}}
 </style>
 <script>
 window.__tick = (ms) => {
@@ -899,7 +970,7 @@ window.__tick = (ms) => {
   el.textContent = Math.round(13 * (1 - Math.pow(1 - k, 3)));
 };
 </script>`;
-  return { duration, html: shell(fonts, duration, CHATPLUS_CSS + GTA_CSS, body) };
+  return { duration, html: shell(fonts, duration, CHATPLUS_CSS + GTA_CSS + GTA_THEME, body) };
 }
 
 const STYLES = { intro, chat, rapid, chatplus, howto, gta };

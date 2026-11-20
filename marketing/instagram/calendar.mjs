@@ -806,7 +806,7 @@ ${PLAY}`,
     format: "reel",
     kind: "animated",
     motion: "gta",
-    coverFrame: 6.6,
+    coverFrame: 22.9,
     pillar: "Fechas",
     title: "GTA VI couples edition",
     caption: `13 years later, GTA VI is finally here. 🎮 So is the real relationship test.
@@ -817,6 +817,6 @@ Send this to your player 2 and compare. ${PLAY}`,
     tags: "#gtavi #gta6 #gamercouple #couplesquestions #leonida",
     audio: "Audio en tendencia de GTA VI / gaming (usa uno del momento en Instagram)",
     notes:
-      "Extra por el lanzamiento de GTA VI (19 nov 2026), basado en lo viral de la semana: los contratos de pareja, Lucia y Jason, el mapa de Leonida y las misiones de “chore simulator”. Incluye arte oficial de Lucia y Jason aportado por el equipo (assets/gta, con crédito “Artwork: Rockstar Games”); sin logos ni tipografía del juego.",
+      "Extra por el lanzamiento de GTA VI (19 nov 2026), basado en lo viral de la semana: los contratos de pareja, Lucia y Jason, el mapa de Leonida y las misiones de “chore simulator”. Usa el arte de Lucia y Jason aportado por el equipo (assets/gta): primeros planos con zoom cuando habla cada uno, marcadores con su cara en el mapa y la paleta de atardecer de las referencias.",
   },
 ];
