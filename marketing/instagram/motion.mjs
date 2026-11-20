@@ -13,7 +13,7 @@
  */
 
 import { execFileSync } from "node:child_process";
-import { mkdirSync, rmSync } from "node:fs";
+import { mkdirSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 
 const FPS = 30;
@@ -670,6 +670,9 @@ window.__tick = (ms) => {
 // Every visual is original (no Rockstar art, logos or lettering): player
 // cards with initials, a hand-drawn abstract map, a paper contract.
 const PINK = "#f3c7dd";
+/** Launch artwork supplied for this reel (assets/gta), embedded as data URIs. */
+const gtaArt = (name) =>
+  `data:image/jpeg;base64,${readFileSync(new URL(`./assets/gta/${name}`, import.meta.url)).toString("base64")}`;
 const GTA_CSS = `
 .scene{position:absolute;left:90px;right:90px;top:380px;bottom:360px;display:flex;flex-direction:column;gap:30px}
 .st{font-family:Fraunces;font-weight:600;font-size:104px;line-height:1.02}
@@ -728,7 +731,13 @@ const GTA_CSS = `
 .tbar{height:12px;border-radius:6px;background:rgba(244,242,253,.12);overflow:hidden}
 .tbar i{display:block;height:100%;background:${SNOW};transform-origin:left;animation:drain 1.25s linear both}
 @keyframes drain{from{transform:scaleX(1)}to{transform:scaleX(0)}}
-.fin{position:absolute;left:90px;right:90px;top:620px;display:flex;flex-direction:column;gap:40px}`;
+.fin{position:absolute;left:90px;right:90px;top:620px;display:flex;flex-direction:column;gap:40px}
+.art{position:relative;border-radius:44px;overflow:hidden;box-shadow:0 40px 100px -30px rgba(0,0,0,.75);opacity:0;animation:pop .45s cubic-bezier(.2,1.3,.4,1) forwards}
+.art img{display:block;width:100%;height:100%;object-fit:cover;transform-origin:50% 40%}
+@keyframes kb{from{transform:scale(1.02)}to{transform:scale(1.14)}}
+.art .tag{position:absolute;left:24px;top:24px;font-weight:800;font-size:28px;padding:10px 22px;border-radius:999px;background:rgba(24,24,32,.75);color:${SNOW}}
+.credit{position:absolute;right:20px;bottom:16px;font-weight:700;font-size:18px;color:rgba(255,255,255,.85);text-shadow:0 1px 6px rgba(0,0,0,.6)}
+.medal.face{background-size:cover;background-position:center;box-shadow:0 0 0 6px rgba(201,195,244,.35)}`;
 
 function gta(p, fonts) {
   const d = (x) => `${x.toFixed(2)}s`;
@@ -738,10 +747,12 @@ function gta(p, fonts) {
   const duration = 28.4;
 
   // A · hook: the 13-year wait
-  const A = `<div class="scene" style="top:620px;${leave(T.b)}">
+  const A = `<div class="scene" style="top:400px;${leave(T.b)}">
   <span class="kk" ${at(0)}>We waited</span>
-  <span class="st" id="count" style="font-size:240px;color:${LAV}">0</span>
+  <span class="st" id="count" style="font-size:200px;color:${LAV}">0</span>
   <div class="st" style="font-size:110px">${typed("years. *It's finally here.*", 1.15, T.b, 0.04).html}</div>
+  <div class="art" style="height:500px;margin-top:20px;animation-delay:0.5s"><img src="${gtaArt("car.jpg")}" style="animation:kb ${T.b}s linear forwards" alt="">
+    <span class="tag">Lucia &amp; Jason</span><span class="credit">Artwork: Rockstar Games</span></div>
 </div>`;
 
   // B · pick your player
@@ -753,7 +764,7 @@ function gta(p, fonts) {
     t,
     r,
   ) => `<div class="pcard" style="--r:${r}deg;animation:cardin .45s cubic-bezier(.2,1.3,.4,1) ${d(t)} forwards">
-  <span class="medal">${letter}</span><span class="pname">${name}</span><span class="prole">${role}</span>
+  <span class="medal face" style="background-image:url(${gtaArt(letter === "L" ? "lucia.jpg" : "jason.jpg")})"></span><span class="pname">${name}</span><span class="prole">${role}</span>
   ${stats.map(([k, v], i) => `<span class="stat">${k}<i><b style="--v:${v};animation:fill .6s ease-out ${d(t + 0.5 + i * 0.18)} forwards"></b></i></span>`).join("")}
 </div>`;
   const B = `<div class="scene" style="${leave(T.c)}">
@@ -863,10 +874,12 @@ function gta(p, fonts) {
     })
     .join("");
 
-  const F = `<div class="fin">
+  const F = `<div class="fin" style="top:420px">
   <span class="kk" ${at(T.end)}>GTA VI couples edition</span>
   <div class="st" style="font-size:130px">${typed("Send this to your *player 2.*", T.end + 0.1, duration, 0.04).html}</div>
   <span class="cta" ${at(T.end + 1.6)}>Play the full game → link in bio</span>
+  <div class="art" style="height:560px;margin-top:10px;animation-delay:${d(T.end + 0.3)}"><img src="${gtaArt("bed.jpg")}" style="object-position:50% 30%;animation:kb ${duration - T.end}s linear ${d(T.end)} forwards" alt="">
+    <span class="credit">Artwork: Rockstar Games</span></div>
 </div>`;
 
   const body = `<div class="glow" style="background:${PINK};opacity:.08;animation:drift ${duration}s ease-in-out forwards"></div>

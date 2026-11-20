@@ -817,6 +817,6 @@ Send this to your player 2 and compare. ${PLAY}`,
     tags: "#gtavi #gta6 #gamercouple #couplesquestions #leonida",
     audio: "Audio en tendencia de GTA VI / gaming (usa uno del momento en Instagram)",
     notes:
-      "Extra por el lanzamiento de GTA VI (19 nov 2026), basado en lo viral de la semana: los contratos de pareja, Lucia y Jason, el mapa de Leonida y las misiones de “chore simulator”. Todo es diseño propio: sin arte, logos ni tipografías de Rockstar.",
+      "Extra por el lanzamiento de GTA VI (19 nov 2026), basado en lo viral de la semana: los contratos de pareja, Lucia y Jason, el mapa de Leonida y las misiones de “chore simulator”. Incluye arte oficial de Lucia y Jason aportado por el equipo (assets/gta, con crédito “Artwork: Rockstar Games”); sin logos ni tipografía del juego.",
   },
 ];
