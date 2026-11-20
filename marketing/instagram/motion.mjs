@@ -663,7 +663,233 @@ window.__tick = (ms) => {
   return { duration, html: shell(fonts, duration, CHATPLUS_CSS + HOWTO_CSS, body) };
 }
 
-const STYLES = { intro, chat, rapid, chatplus, howto };
+// ── GTA VI special ────────────────────────────────────────────────────────
+// A multi-scene launch reel built from what players were talking about at
+// launch: the 13-year wait, picking Lucia or Jason, the viral "GTA contract"
+// couples were signing, where you'd meet in Leonida, and a quick rapid fire.
+// Every visual is original (no Rockstar art, logos or lettering): player
+// cards with initials, a hand-drawn abstract map, a paper contract.
+const PINK = "#f3c7dd";
+const GTA_CSS = `
+.scene{position:absolute;left:90px;right:90px;top:380px;bottom:360px;display:flex;flex-direction:column;gap:30px}
+.st{font-family:Fraunces;font-weight:600;font-size:104px;line-height:1.02}
+.kk{font-weight:800;font-size:28px;letter-spacing:.16em;text-transform:uppercase;color:${PINK};opacity:0;animation:pop .3s forwards}
+.cards{display:flex;gap:28px;margin-top:10px}
+.pcard{flex:1;border-radius:48px;padding:44px 36px;background:rgba(244,242,253,.07);border:2px solid rgba(244,242,253,.14);display:flex;flex-direction:column;gap:16px;
+  opacity:0;transform:translateY(60px) rotate(var(--r))}
+@keyframes cardin{to{opacity:1;transform:rotate(var(--r))}}
+.medal{width:180px;height:180px;border-radius:50%;display:grid;place-items:center;font-family:Fraunces;font-weight:600;font-size:112px;color:${INK};
+  background:linear-gradient(135deg,${LAV},${PINK})}
+.pname{font-family:Fraunces;font-weight:600;font-size:80px;line-height:1}
+.prole{font-weight:800;font-size:28px;letter-spacing:.12em;text-transform:uppercase;opacity:.6}
+.stat{display:flex;flex-direction:column;gap:10px;font-weight:800;font-size:30px}
+.stat i{display:block;height:20px;border-radius:10px;background:rgba(244,242,253,.12);overflow:hidden}
+.stat i b{display:block;height:100%;background:${LAV};transform-origin:left;transform:scaleX(0)}
+@keyframes fill{to{transform:scaleX(var(--v))}}
+.ask{font-family:Fraunces;font-style:italic;font-weight:500;font-size:84px;margin-top:10px;color:${LAV};opacity:0;animation:pop .35s forwards}
+.paper{background:${PAPER};color:${INK};border-radius:40px;padding:56px 54px;display:flex;flex-direction:column;gap:30px;transform:rotate(-1.5deg);
+  box-shadow:0 40px 100px -30px rgba(0,0,0,.7);opacity:0;animation:pop .4s forwards;position:relative}
+.ph{font-weight:800;font-size:26px;letter-spacing:.14em;text-transform:uppercase;opacity:.55}
+.pt{font-family:Fraunces;font-weight:600;font-size:56px;line-height:1.05}
+.cl{font-weight:700;font-size:48px;line-height:1.25;--caret:${INK}}
+.sigs{display:flex;gap:30px;margin-top:90px}
+.sig{flex:1;border-top:3px solid ${INK};padding-top:12px;font-weight:800;font-size:24px;letter-spacing:.12em;text-transform:uppercase;opacity:.7;position:relative}
+.sig em{position:absolute;left:4px;bottom:52px;font-family:Fraunces;font-style:italic;font-weight:500;font-size:84px;color:#6c5fd0;letter-spacing:0;text-transform:none;
+  clip-path:inset(0 100% 0 0)}
+@keyframes write{to{clip-path:inset(0 0 0 0)}}
+.signed{position:absolute;right:50px;bottom:70px;font-family:Fraunces;font-style:italic;font-weight:600;font-size:120px;color:#6c5fd0;
+  opacity:0;transform:scale(2.6) rotate(-14deg);animation:stampin2 .35s cubic-bezier(.3,1.6,.5,1) forwards}
+@keyframes stampin2{to{opacity:1;transform:rotate(-10deg)}}
+.map{position:relative;width:900px;height:760px;margin-top:-20px;zoom:.8;flex:none}
+.map svg{position:absolute;inset:0}
+.pin{position:absolute;display:flex;align-items:center;gap:12px;font-weight:800;font-size:32px;white-space:nowrap;opacity:0;animation:pop .3s forwards}
+.pin::before{content:"";width:22px;height:22px;border-radius:50%;background:${PINK};box-shadow:0 0 0 8px rgba(243,199,221,.18)}
+.dot{position:absolute;width:56px;height:56px;margin:-28px 0 0 -28px;border-radius:50%;display:grid;place-items:center;font-weight:900;font-size:22px;color:${INK};
+  opacity:0;z-index:3;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.mrow{display:flex;flex-direction:column;gap:18px;margin-top:-30px}
+.mb{font-size:50px;font-weight:700;padding:28px 40px;border-radius:44px;color:${INK};max-width:820px;opacity:0;animation:pop .35s forwards}
+.mb.a{background:${SNOW};align-self:flex-start;border-bottom-left-radius:12px}
+.mb.b{background:${LAV};align-self:flex-end;border-bottom-right-radius:12px}
+.bigstamp{position:absolute;left:50%;top:50%;font-family:Fraunces;font-style:italic;font-weight:600;font-size:300px;color:${LAV};white-space:nowrap;z-index:9;
+  transform:translate(-50%,-50%) scale(3) rotate(-14deg);opacity:0;animation:stamp .38s cubic-bezier(.3,1.6,.5,1) forwards;text-shadow:0 20px 60px rgba(0,0,0,.6)}
+.item{position:absolute;left:90px;right:90px;top:400px;bottom:400px;display:flex;flex-direction:column;gap:22px;opacity:0}
+@keyframes life{0%{opacity:0}4%{opacity:1}94%{opacity:1}100%{opacity:0}}
+.meta{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;min-height:110px}
+.label{font-family:Fraunces;font-style:italic;font-weight:500;font-size:60px;line-height:1.1;color:${LAV};max-width:800px}
+.count2{font-weight:800;font-size:30px;opacity:.55;font-variant-numeric:tabular-nums}
+.opt{flex:1;display:grid;place-items:center;text-align:center;border-radius:48px;font-family:Fraunces;font-weight:600;font-size:118px;line-height:1;color:${INK}}
+.opt.a{background:${PAPER};animation:inL .28s cubic-bezier(.2,1.2,.4,1) both}
+.opt.b{background:${LAV};animation:inR .28s cubic-bezier(.2,1.2,.4,1) both}
+@keyframes inL{from{transform:translateX(-120px) rotate(-3deg);opacity:0}to{transform:none;opacity:1}}
+@keyframes inR{from{transform:translateX(120px) rotate(3deg);opacity:0}to{transform:none;opacity:1}}
+.or{align-self:center;margin:-62px 0;z-index:2;width:110px;height:110px;border-radius:50%;background:${INK};display:grid;place-items:center;
+  font-family:Fraunces;font-style:italic;font-size:46px;color:${SNOW};animation:spin .35s cubic-bezier(.2,1.6,.4,1) both}
+@keyframes spin{from{transform:scale(0) rotate(-90deg)}to{transform:none}}
+.tbar{height:12px;border-radius:6px;background:rgba(244,242,253,.12);overflow:hidden}
+.tbar i{display:block;height:100%;background:${SNOW};transform-origin:left;animation:drain 1.25s linear both}
+@keyframes drain{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+.fin{position:absolute;left:90px;right:90px;top:620px;display:flex;flex-direction:column;gap:40px}`;
+
+function gta(p, fonts) {
+  const d = (x) => `${x.toFixed(2)}s`;
+  const at = (x) => `style="animation-delay:${d(x)}"`;
+  const leave = (x) => `animation:leave .3s ease-in ${d(x - 0.3)} forwards`;
+  const T = { a: 0, b: 2.6, c: 7.4, dd: 13.4, e: 19.6, end: 24.9 };
+  const duration = 28.4;
+
+  // A · hook: the 13-year wait
+  const A = `<div class="scene" style="top:620px;${leave(T.b)}">
+  <span class="kk" ${at(0)}>We waited</span>
+  <span class="st" id="count" style="font-size:240px;color:${LAV}">0</span>
+  <div class="st" style="font-size:110px">${typed("years. *It's finally here.*", 1.15, T.b, 0.04).html}</div>
+</div>`;
+
+  // B · pick your player
+  const card = (
+    letter,
+    name,
+    role,
+    stats,
+    t,
+    r,
+  ) => `<div class="pcard" style="--r:${r}deg;animation:cardin .45s cubic-bezier(.2,1.3,.4,1) ${d(t)} forwards">
+  <span class="medal">${letter}</span><span class="pname">${name}</span><span class="prole">${role}</span>
+  ${stats.map(([k, v], i) => `<span class="stat">${k}<i><b style="--v:${v};animation:fill .6s ease-out ${d(t + 0.5 + i * 0.18)} forwards"></b></i></span>`).join("")}
+</div>`;
+  const B = `<div class="scene" style="${leave(T.c)}">
+  <span class="kk" ${at(T.b)}>Player select</span>
+  <div class="st">${typed("Pick your *player.*", T.b + 0.1, T.c, 0.04).html}</div>
+  <div class="cards">
+    ${card(
+      "L",
+      "Lucia",
+      "The planner",
+      [
+        ["Plans ahead", 0.95],
+        ["Patience", 0.4],
+        ["Texts back", 1],
+      ],
+      T.b + 0.7,
+      -2,
+    )}
+    ${card(
+      "J",
+      "Jason",
+      "The driver",
+      [
+        ["Plans ahead", 0.2],
+        ["Patience", 0.85],
+        ["Texts back", 0.12],
+      ],
+      T.b + 0.95,
+      2,
+    )}
+  </div>
+  <span class="ask" ${at(T.b + 3.0)}>So… which one are you?</span>
+</div>`;
+
+  // C · the viral contract
+  const clauses = [
+    "1. No interrupting missions for 10 days.",
+    "2. Max 50% of free time in Leonida.",
+    "3. Lucia is NOT your real girlfriend.",
+  ];
+  let ct = T.c + 1.1;
+  const clauseHtml = clauses
+    .map((c) => {
+      const out = typed(c, ct, ct + 0.2, 0.028);
+      ct = out.end + 0.15;
+      return `<div class="cl">${out.html}</div>`;
+    })
+    .join("");
+  const C = `<div class="scene" style="${leave(T.dd)}">
+  <span class="kk" ${at(T.c)}>Viral this week</span>
+  <div class="st" style="font-size:88px">${typed("The GTA VI *contract.*", T.c + 0.1, T.c + 1.2, 0.04).html}</div>
+  <div class="paper" ${at(T.c + 0.6)}>
+    <span class="ph">Relationship agreement · GTA VI edition</span>
+    ${clauseHtml}
+    <div class="sigs"><span class="sig"><em style="animation:write .5s ease-out ${d(ct + 0.1)} forwards">Ana</em>Player 1</span>
+      <span class="sig"><em style="animation:write .5s ease-out ${d(ct + 0.55)} forwards">Leo</em>Player 2</span></div>
+    <span class="signed" ${at(ct + 1.1)}>Signed.</span>
+  </div>
+  <span class="ask" ${at(ct + 1.5)}>Would you sign it?</span>
+</div>`;
+
+  // D · where we'd meet in Leonida (abstract, hand-drawn map)
+  const pins = [
+    ["Mount Kalaga", 300, 40],
+    ["Port Gellhorn", 80, 170],
+    ["Ambrosia", 470, 200],
+    ["Grassrivers", 330, 400],
+    ["Vice City", 560, 470],
+    ["Leonida Keys", 250, 600],
+  ];
+  const D = `<div class="scene" style="${leave(T.e)}">
+  <span class="kk" ${at(T.dd)}>Leonida</span>
+  <div class="st" style="font-size:84px">${typed("Where would we *meet?*", T.dd + 0.1, T.dd + 1.2, 0.04).html}</div>
+  <div class="map">
+    <svg viewBox="0 0 900 760" fill="none">
+      <path d="M260 30 L620 30 L640 110 L600 210 L610 330 L660 430 L640 540 L590 610 L540 640 L500 600 L470 520 L410 460 L340 420 L300 330 L240 260 L120 230 L60 190 L80 150 L200 160 L250 110 Z"
+        stroke="${LAV}" stroke-width="4" stroke-linejoin="round" fill="rgba(201,195,244,.06)" stroke-dasharray="2600" stroke-dashoffset="2600"
+        style="animation:draw 1.2s ease-out ${d(T.dd + 0.4)} forwards"/>
+      ${[0, 1, 2, 3, 4].map((i) => `<circle cx="${470 - i * 52}" cy="${650 + i * 18}" r="${9 - i}" fill="${LAV}" opacity="0" style="animation:fadein .2s ${d(T.dd + 1.1 + i * 0.06)} forwards"/>`).join("")}
+    </svg>
+    ${pins.map(([n, x, y], i) => `<span class="pin" style="left:${x}px;top:${y}px;animation-delay:${d(T.dd + 1.2 + i * 0.12)}">${n}</span>`).join("")}
+    <span class="dot" style="left:250px;top:610px;background:${SNOW};animation:fadein .2s ${d(T.dd + 2.0)} forwards,walkA 1.2s cubic-bezier(.6,0,.3,1) ${d(T.dd + 2.2)} forwards">A</span>
+    <span class="dot" style="left:330px;top:410px;background:${LAV};animation:fadein .2s ${d(T.dd + 2.0)} forwards,walkB 1.2s cubic-bezier(.6,0,.3,1) ${d(T.dd + 2.2)} forwards">L</span>
+  </div>
+  <div class="mrow">
+    <span class="mb a" ${at(T.dd + 3.5)}>Ana: Vice City Beach. At sunset.</span>
+    <span class="mb b" ${at(T.dd + 4.2)}>Leo: Grassrivers. With the gators. 🐊</span>
+  </div>
+</div>
+<span class="bigstamp" style="animation:stamp .38s cubic-bezier(.3,1.6,.5,1) ${d(T.dd + 5.2)} forwards,out .3s ease-in ${d(T.e - 0.3)} forwards">-ish</span>`;
+
+  // E · rapid fire
+  const items = [
+    ["Who's the Lucia?", "Me", "You"],
+    ["Who actually texts back?", "Me", "You"],
+    ["Who gets lost in Grassrivers?", "Me", "You"],
+    ["Who does the grocery-run mission?", "Me", "You"],
+  ];
+  const E = items
+    .map(([label, a, b], i) => {
+      const s = T.e + i * 1.25;
+      return `<section class="item" style="animation:life 1.25s linear ${d(s)} both">
+  <div class="meta"><span class="label">${label}</span><span class="count2">${i + 1}/${items.length}</span></div>
+  <div class="opt a" ${at(s)}>${a}</div><div class="or" ${at(s)}>or</div><div class="opt b" ${at(s)}>${b}</div>
+  <div class="tbar"><i ${at(s)}></i></div>
+</section>`;
+    })
+    .join("");
+
+  const F = `<div class="fin">
+  <span class="kk" ${at(T.end)}>GTA VI couples edition</span>
+  <div class="st" style="font-size:130px">${typed("Send this to your *player 2.*", T.end + 0.1, duration, 0.04).html}</div>
+  <span class="cta" ${at(T.end + 1.6)}>Play the full game → link in bio</span>
+</div>`;
+
+  const body = `<div class="glow" style="background:${PINK};opacity:.08;animation:drift ${duration}s ease-in-out forwards"></div>
+${A}${B}${C}${D}${E}${F}
+<div class="flash" style="animation:flash .45s ${d(T.dd + 5.2)} forwards"></div>
+<style>
+@keyframes drift{0%{transform:translate(0,0)}50%{transform:translate(-300px,520px)}100%{transform:translate(-60px,900px)}}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes walkA{to{transform:translate(310px,-140px)}}
+@keyframes walkB{to{transform:translate(230px,60px)}}
+body{animation:shake .35s ${d(T.dd + 5.45)}}
+</style>
+<script>
+window.__tick = (ms) => {
+  const t = ms / 1000, el = document.getElementById("count");
+  const k = Math.min(1, Math.max(0, (t - 0.15) / 0.9));
+  el.textContent = Math.round(13 * (1 - Math.pow(1 - k, 3)));
+};
+</script>`;
+  return { duration, html: shell(fonts, duration, CHATPLUS_CSS + GTA_CSS, body) };
+}
+
+const STYLES = { intro, chat, rapid, chatplus, howto, gta };
 
 /** Renders the post's motion reel to `file` (H.264, 30 fps, silent). */
 export async function renderMotion(page, p, fonts, file, tmpDir) {

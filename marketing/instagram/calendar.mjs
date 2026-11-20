@@ -805,33 +805,18 @@ ${PLAY}`,
     date: "2026-11-20",
     format: "reel",
     kind: "animated",
-    motion: "rapid",
+    motion: "gta",
+    coverFrame: 6.6,
     pillar: "Fechas",
-    mood: "GTA VI",
-    title: "GTA VI: who's more likely to…",
-    cover: "Who's more likely to… *GTA VI couples edition*",
-    hookTitle: "GTA VI is out. *Who's more likely to…*",
-    hookSub: "Couples edition. Point at them.",
-    items: [
-      ["…disappear into the game all weekend?", "Me", "You"],
-      ["…say “one more mission” at 3am?", "Me", "You"],
-      ["…get five stars in five minutes?", "Me", "You"],
-      ["…just drive around with the radio on?", "Me", "You"],
-      ["…steal the controller?", "Me", "You"],
-      ["…skip every cutscene?", "Me", "You"],
-      ["…get way too attached to a car?", "Me", "You"],
-      ["…blame the game for being late?", "Me", "You"],
-    ],
-    endTitle: "Did you *agree?*",
-    endLine: "Send this to your player 2 🎮",
-    caption: `GTA VI is finally here. So is the real relationship test. 🎮
+    title: "GTA VI couples edition",
+    caption: `13 years later, GTA VI is finally here. 🎮 So is the real relationship test.
 
-Who's more likely to…? Point at each other, then send this to your player 2 and compare.
+Are you the Lucia or the Jason? Would you sign the GTA contract? And where in Leonida would you two meet?
 
-${PLAY}`,
-    tags: "#gtavi #gta6 #gamercouple #couplesquestions #whosmorelikelyto",
+Send this to your player 2 and compare. ${PLAY}`,
+    tags: "#gtavi #gta6 #gamercouple #couplesquestions #leonida",
     audio: "Audio en tendencia de GTA VI / gaming (usa uno del momento en Instagram)",
     notes:
-      "Extra de temporada por el lanzamiento de GTA VI (19 nov 2026). Solo menciona el nombre del juego: sin logos, tipografías ni arte de Rockstar.",
+      "Extra por el lanzamiento de GTA VI (19 nov 2026), basado en lo viral de la semana: los contratos de pareja, Lucia y Jason, el mapa de Leonida y las misiones de “chore simulator”. Todo es diseño propio: sin arte, logos ni tipografías de Rockstar.",
   },
 ];

@@ -241,6 +241,9 @@ function slidesFor(p) {
 }
 
 const reelCover = (p) => {
+  // Replaced by a frame of the finished video right after it renders.
+  if (p.kind === "animated" && p.coverFrame != null && p.motion === "gta")
+    return coverSlide(STORY, p.tint, null, "", p.title, "");
   if (p.kind === "filmed")
     return coverSlide(
       STORY,
